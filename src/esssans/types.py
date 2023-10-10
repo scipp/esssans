@@ -183,3 +183,20 @@ class CleanMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
     """Monitor data cleaned of background counts"""
+
+
+# 4  Direct beam iterations
+
+DirectBeamNumberOfSamplingPoints = NewType('DirectBeamNumberOfSamplingPoints', int)
+"""Number of points to sample the direct beam with"""
+
+
+DirectBeamSamplingWavelengthWidth = NewType(
+    'DirectBeamSamplingWavelengthWidth', sc.Variable
+)
+"""Width in wavelength of the sampling points for the direct beam"""
+
+DirectBeamWavelengthSamplingPoints = NewType(
+    'DirectBeamWavelengthSamplingPoints', sc.Variable
+)
+"""Locations in wavelength where the direct beam is sampled"""
