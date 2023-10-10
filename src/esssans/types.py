@@ -16,12 +16,19 @@ import scipp as sc
 # 1.1  Run types
 BackgroundRun = NewType('BackgroundRun', int)
 """Background run"""
-DirectRun = NewType('DirectRun', int)
-"""Direct run"""
+EmptySampleHolderRun = NewType('EmptySampleHolderRun', int)
+"""Run where the sample holder was empty (sometimes called 'direct run')"""
 SampleRun = NewType('SampleRun', int)
 """Sample run"""
-RunType = TypeVar('RunType', BackgroundRun, DirectRun, SampleRun)
-"""TypeVar used for specifying BackgroundRun, DirectRun or SampleRun"""
+SampleTransmissionRun = NewType('SampleTransmissionRun', int)
+"""Sample run for measuring transmission with monitors"""
+RunType = TypeVar(
+    'RunType', BackgroundRun, EmptySampleHolderRun, SampleRun, SampleTransmissionRun
+)
+"""
+TypeVar used for specifying BackgroundRun, EmptySampleHolderRun, SampleRun, or
+SampleTransmissionRun.
+"""
 
 # 1.2  Monitor types
 Incident = NewType('Incident', int)
@@ -81,7 +88,7 @@ class NeXusMonitorName(sciline.Scope[MonitorType, str], str):
 
 
 class Filename(sciline.Scope[RunType, str], str):
-    """Filename of BackgroundRun|DirectRun|SampleRun"""
+    """Filename of BackgroundRun|EmptySampleHolderRun|SampleRun"""
 
 
 # 3  Workflow (intermediate) results

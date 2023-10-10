@@ -14,7 +14,7 @@ from .types import (
     CleanMonitor,
     CleanSummedQ,
     Denominator,
-    DirectRun,
+    EmptySampleHolderRun,
     Incident,
     IofQ,
     NormWavelengthTerm,
@@ -67,8 +67,8 @@ def solid_angle_rectangular_approximation(
 def transmission_fraction(
     sample_incident_monitor: CleanMonitor[SampleRun, Incident],
     sample_transmission_monitor: CleanMonitor[SampleRun, Transmission],
-    direct_incident_monitor: CleanMonitor[DirectRun, Incident],
-    direct_transmission_monitor: CleanMonitor[DirectRun, Transmission],
+    direct_incident_monitor: CleanMonitor[EmptySampleHolderRun, Incident],
+    direct_transmission_monitor: CleanMonitor[EmptySampleHolderRun, Transmission],
 ) -> TransmissionFraction:
     """
     Approximation based on equations in
@@ -112,8 +112,8 @@ _broadcasters = {
 
 def iofq_norm_wavelength_term(
     data_transmission_monitor: CleanMonitor[RunType, Transmission],
-    direct_incident_monitor: CleanMonitor[DirectRun, Incident],
-    direct_transmission_monitor: CleanMonitor[DirectRun, Transmission],
+    direct_incident_monitor: CleanMonitor[EmptySampleHolderRun, Incident],
+    direct_transmission_monitor: CleanMonitor[EmptySampleHolderRun, Transmission],
     direct_beam: Optional[CleanDirectBeam],
     uncertainties: UncertaintyBroadcastMode,
 ) -> NormWavelengthTerm[RunType]:
