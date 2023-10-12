@@ -20,25 +20,10 @@ from .types import (
     RawData,
     RawMonitor,
     RunType,
+    SampleRun,
+    SourcePosition,
     WavelengthBins,
 )
-
-
-def pooch_load_nexus(filename: Filename[RunType]) -> RawData[RunType]:
-    from .data import get_path
-
-    da = scn.load_nexus(filename=get_path(filename))
-    da.coords['sample_position'] = sc.vector([0, 0, 0], unit='m')
-    da.bins.constituents['data'].variances = da.bins.constituents['data'].values
-    return RawData[RunType](da)
-
-
-# def get_monitor(
-#     da: RawData[RunType], nexus_name: NeXusMonitorName[MonitorType]
-# ) -> RawMonitor[RunType, MonitorType]:
-#     # See https://github.com/scipp/sciline/issues/52 why copy needed
-#     mon = da.attrs[nexus_name].value.copy()
-#     return RawMonitor[RunType, MonitorType](mon)
 
 
 def define_wavelength_sampling_points(
@@ -56,7 +41,6 @@ def define_wavelength_sampling_points(
 
 
 providers = [
-    pooch_load_nexus,
     define_wavelength_sampling_points,
 ]
 """

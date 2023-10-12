@@ -15,6 +15,7 @@ from . import (
     conversions,
     directbeam,
     i_of_q,
+    larmor,
     normalization,
     sans2d,
 )
