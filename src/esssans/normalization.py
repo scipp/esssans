@@ -9,7 +9,7 @@ from scipp.core import concepts
 
 from .types import (
     CalibratedMaskedData,
-    Clean,
+    CleanMasked,
     CleanDirectBeam,
     CleanMonitor,
     CleanSummedQ,
@@ -173,7 +173,7 @@ def iofq_denominator(
     wavelength_term: NormWavelengthTerm[RunType],
     solid_angle: SolidAngle[RunType],
     uncertainties: UncertaintyBroadcastMode,
-) -> Clean[RunType, Denominator]:
+) -> CleanMasked[RunType, Denominator]:
     """
     Compute the denominator term for the I(Q) normalization.
 
@@ -205,7 +205,7 @@ def iofq_denominator(
     """  # noqa: E501
     broadcast = _broadcasters[uncertainties]
     denominator = solid_angle * broadcast(wavelength_term, sizes=solid_angle.sizes)
-    return Clean[RunType, Denominator](denominator)
+    return CleanMasked[RunType, Denominator](denominator)
 
 
 def normalize(

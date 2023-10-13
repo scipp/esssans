@@ -152,7 +152,15 @@ class NormWavelengthTerm(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Normalization term (numerator) for IofQ before scaling with solid-angle."""
 
 
-class Clean(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray):
+class CleanMasked(
+    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
+):
+    """Data with calibrated pixel positions and pixel-specific masks applied"""
+
+
+class CleanWavelength(
+    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
+):
     """
     Prerequisite for IofQ numerator or denominator.
 
@@ -162,14 +170,14 @@ class Clean(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArra
     """
 
 
-class CleanMasked(
+class CleanWavelengthMasked(
     sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength masking to :py:class:`Clean`"""
+    """Result of applying wavelength masking to :py:class:`CleanWavelength`"""
 
 
 class CleanQ(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanMasked` to Q"""
+    """Result of converting :py:class:`CleanWavelengthMasked` to Q"""
 
 
 class CleanSummedQ(

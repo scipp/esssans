@@ -12,12 +12,15 @@ import scippneutron as scn
 
 from .common import gravity_vector
 from .types import (
+    CalibratedMaskedData,
+    CleanMasked,
     DirectBeamNumberOfSamplingPoints,
     DirectBeamSamplingWavelengthWidth,
     DirectBeamWavelengthSamplingPoints,
     Filename,
     MaskedData,
     NeXusMonitorName,
+    Numerator,
     MonitorType,
     RawData,
     RawMonitor,
@@ -45,13 +48,23 @@ def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
 
     # da = scn.load_nexus(filename=get_path(filename))
     da = scn.load_nexus(filename)
-    da.coords['sample_position'] = sc.vector([0, 0, 0], unit='m')
+    if 'gravity' not in da.coords:
+        da.coords["gravity"] = gravity_vector()
+    if 'sample_position' not in da.coords:
+        da.coords['sample_position'] = sc.vector([0, 0, 0], unit='m')
     da.bins.constituents['data'].variances = da.bins.constituents['data'].values
     for name in ('monitor_1', 'monitor_2'):
         monitor = da.attrs[name].value
         if 'source_position' not in monitor.coords:
             monitor.coords["source_position"] = da.coords['source_position']
         monitor.values[0].variances = monitor.values[0].values
+    pixel_shape = da.coords['pixel_shape'].values[0]
+    da.coords['pixel_width'] = sc.norm(
+        pixel_shape['face1_edge'] - pixel_shape['face1_center']
+    ).data
+    da.coords['pixel_height'] = sc.norm(
+        pixel_shape['face2_center'] - pixel_shape['face1_center']
+    ).data
     return RawData[RunType](da)
 
 
@@ -90,10 +103,27 @@ def detector_tube_edge_mask(
 
 def mask_detectors(
     da: DataAsStraws[RunType],
+) -> MaskedData[RunType]:
+    """Apply pixel-specific masks to raw data.
+
+    Parameters
+    ----------
+    da:
+        Raw data.
+    edge_mask:
+        Mask for detector edges.
+    holder_mask:
+        Mask for sample holder.
+    """
+    return MaskedData[RunType](da)
+
+
+def mask_after_calibration(
+    da: CalibratedMaskedData[RunType],
     straw_mask: Optional[DetectorStrawMask],
     beam_stop_mask: Optional[DetectorBeamStopMask],
     tube_edge_mask: Optional[DetectorTubeEdgeMask],
-) -> MaskedData[RunType]:
+) -> CleanMasked[RunType, Numerator]:
     """Apply pixel-specific masks to raw data.
 
     Parameters
@@ -112,7 +142,7 @@ def mask_detectors(
         da.masks['beam_stop'] = beam_stop_mask
     if tube_edge_mask is not None:
         da.masks['tube_edges'] = tube_edge_mask
-    return MaskedData[RunType](da)
+    return CleanMasked[RunType, Numerator](da)
 
 
 providers = [
@@ -122,6 +152,7 @@ providers = [
     detector_beam_stop_mask,
     detector_tube_edge_mask,
     mask_detectors,
+    mask_after_calibration,
 ]
 """
 Providers for direct beam

@@ -10,6 +10,8 @@ import scipp as sc
 
 from .common import gravity_vector
 from .types import (
+    CalibratedMaskedData,
+    CleanMasked,
     DetectorEdgeMask,
     DirectBeam,
     DirectBeamFilename,
@@ -17,6 +19,7 @@ from .types import (
     MaskedData,
     MonitorType,
     NeXusMonitorName,
+    Numerator,
     RawData,
     RawMonitor,
     RunType,
@@ -91,6 +94,18 @@ def mask_detectors(
     return MaskedData[RunType](da)
 
 
+def mask_detectors_after_calibration(
+    da: CalibratedMaskedData[RunType],
+) -> MaskedData[RunType]:
+    return MaskedData[RunType](da)
+
+
+def mask_after_calibration(
+    da: CalibratedMaskedData[RunType],
+) -> CleanMasked[RunType, Numerator]:
+    return CleanMasked[RunType, Numerator](da)
+
+
 providers = [
     pooch_load_direct_beam,
     pooch_load,
@@ -98,6 +113,7 @@ providers = [
     detector_edge_mask,
     sample_holder_mask,
     mask_detectors,
+    mask_after_calibration,
 ]
 """
 Providers for loading and masking Sans2d data.
