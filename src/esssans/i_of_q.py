@@ -126,7 +126,7 @@ def resample_direct_beam(
 def merge_spectra(
     data: CleanQ[RunType, IofQPart],
     q_bins: QBins,
-    wavelength_bands: WavelengthBands,
+    wavelength_bands: Optional[WavelengthBands],
 ) -> CleanSummedQ[RunType, IofQPart]:
     """
     Merges all spectra:
