@@ -1,3 +1,5 @@
+# Add a copy of dependencies from pyproject.toml here.
+# This ensures that dependencies are pinned for CI.
 dask
 graphviz
 plopp
