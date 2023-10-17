@@ -16,19 +16,34 @@ import scipp as sc
 # 1.1  Run types
 BackgroundRun = NewType('BackgroundRun', int)
 """Background run"""
-EmptySampleHolderRun = NewType('EmptySampleHolderRun', int)
+EmptyBeamRun = NewType('EmptyBeamRun', int)
 """Run where the sample holder was empty (sometimes called 'direct run')"""
 SampleRun = NewType('SampleRun', int)
 """Sample run"""
 SampleTransmissionRun = NewType('SampleTransmissionRun', int)
 """Sample run for measuring transmission with monitors"""
 RunType = TypeVar(
-    'RunType', BackgroundRun, EmptySampleHolderRun, SampleRun, SampleTransmissionRun
+    'RunType',
+    BackgroundRun,
+    EmptyBeamRun,
+    SampleRun,
+    SampleTransmissionRun,
+    # BackgroundTransmissionRun,
 )
 """
-TypeVar used for specifying BackgroundRun, EmptySampleHolderRun, SampleRun, or
-SampleTransmissionRun.
+TypeVar used for specifying BackgroundRun, EmptyBeamRun, SampleRun.
 """
+
+# BackgroundTransmissionRun = NewType('BackgroundTransmissionRun', int)
+# """Background run for measuring transmission with monitors"""
+# TransmissionRunType = TypeVar(
+#     'TransmissionRunType',
+#     SampleTransmissionRun,
+#     BackgroundTransmissionRun,
+# )
+# """
+# TypeVar used for specifying SampleTransmissionRun or BackgroundTransmissionRun.
+# """
 
 # 1.2  Monitor types
 # SampleIncidentMonitor = NewType('SampleIncidentMonitor', int)

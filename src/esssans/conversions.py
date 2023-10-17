@@ -24,6 +24,7 @@ from .types import (
     RunType,
     WavelengthMask,
     WavelengthMonitor,
+    WavelengthBins,
 )
 
 
@@ -178,14 +179,16 @@ def calibrate_positions(
 def detector_to_wavelength(
     detector: CalibratedMaskedData[RunType],
     graph: ElasticCoordTransformGraph,
+    wavelength_bins: WavelengthBins,
 ) -> CleanWavelength[RunType, Numerator]:
+    out = detector.transform_coords('wavelength', graph=graph)
     return CleanWavelength[RunType, Numerator](
-        detector.transform_coords('wavelength', graph=graph)
+        out['wavelength', wavelength_bins[0] : wavelength_bins[-1]]
     )
 
 
 def mask_wavelength(
-    da: CleanMasked[RunType, IofQPart], mask: Optional[WavelengthMask]
+    da: CleanWavelength[RunType, IofQPart], mask: Optional[WavelengthMask]
 ) -> CleanWavelengthMasked[RunType, IofQPart]:
     if mask is not None:
         # If we have binned data and the wavelength coord is multi-dimensional, we need

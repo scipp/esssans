@@ -12,12 +12,15 @@ import scippneutron as scn
 
 from .common import gravity_vector
 from .types import (
+    BackgroundRun,
     CalibratedMaskedData,
     CleanMasked,
     DirectBeamNumberOfSamplingPoints,
     DirectBeamSamplingWavelengthWidth,
     DirectBeamWavelengthSamplingPoints,
+    EmptyBeamRun,
     Filename,
+    Incident,
     MaskedData,
     NeXusMonitorName,
     Numerator,
@@ -26,7 +29,9 @@ from .types import (
     RawMonitor,
     RunType,
     SampleRun,
+    SampleTransmissionRun,
     SourcePosition,
+    Transmission,
     WavelengthBins,
 )
 
@@ -68,6 +73,46 @@ def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
     return RawData[RunType](da)
 
 
+# def get_monitor(
+#     da: RawData[RunType], nexus_name: NeXusMonitorName[MonitorType]
+# ) -> RawMonitor[RunType, MonitorType]:
+#     # See https://github.com/scipp/sciline/issues/52 why copy needed
+#     mon = da.attrs[nexus_name].value.copy()
+#     return RawMonitor[RunType, MonitorType](mon)
+
+
+def get_empty_beam_transmission_monitor(
+    da: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[EmptyBeamRun, Transmission]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[EmptyBeamRun, Transmission](mon)
+
+
+def get_empty_beam_incident_monitor(
+    da: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[EmptyBeamRun, Incident]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[EmptyBeamRun, Incident](mon)
+
+
+def get_background_transmission_monitor(
+    da: RawData[BackgroundRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[BackgroundRun, Transmission]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[BackgroundRun, Transmission](mon)
+
+
+def get_sample_transmission_monitor(
+    da: RawData[SampleTransmissionRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[SampleRun, Transmission]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[SampleRun, Transmission](mon)
+
+
 def to_straws(da: RawData[RunType]) -> DataAsStraws[RunType]:
     return DataAsStraws[RunType](
         da.fold(
@@ -76,14 +121,16 @@ def to_straws(da: RawData[RunType]) -> DataAsStraws[RunType]:
     )
 
 
-def detector_straw_mask(sample_straws: DataAsStraws[SampleRun]) -> DetectorStrawMask:
+def detector_straw_mask(
+    sample_straws: CalibratedMaskedData[SampleRun],
+) -> DetectorStrawMask:
     return DetectorStrawMask(
         sample_straws.sum(['tof', 'pixel']).data < sc.scalar(300.0, unit='counts')
     )
 
 
 def detector_beam_stop_mask(
-    sample_straws: DataAsStraws[SampleRun],
+    sample_straws: CalibratedMaskedData[SampleRun],
 ) -> DetectorBeamStopMask:
     pos = sample_straws.coords['position']
     x = pos.fields.x
@@ -94,7 +141,7 @@ def detector_beam_stop_mask(
 
 
 def detector_tube_edge_mask(
-    sample_straws: DataAsStraws[SampleRun],
+    sample_straws: CalibratedMaskedData[SampleRun],
 ) -> DetectorTubeEdgeMask:
     return DetectorTubeEdgeMask(
         abs(sample_straws.coords['position'].fields.x) > sc.scalar(0.36, unit='m')
@@ -151,6 +198,10 @@ providers = [
     detector_straw_mask,
     detector_beam_stop_mask,
     detector_tube_edge_mask,
+    get_empty_beam_incident_monitor,
+    get_empty_beam_transmission_monitor,
+    get_background_transmission_monitor,
+    get_sample_transmission_monitor,
     mask_detectors,
     mask_after_calibration,
 ]

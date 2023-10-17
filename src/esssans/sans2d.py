@@ -94,10 +94,10 @@ def mask_detectors(
     return MaskedData[RunType](da)
 
 
-def mask_detectors_after_calibration(
-    da: CalibratedMaskedData[RunType],
-) -> MaskedData[RunType]:
-    return MaskedData[RunType](da)
+# def mask_detectors_after_calibration(
+#     da: CalibratedMaskedData[RunType],
+# ) -> MaskedData[RunType]:
+#     return MaskedData[RunType](da)
 
 
 def mask_after_calibration(
