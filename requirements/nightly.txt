@@ -25,11 +25,9 @@ contourpy==1.1.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
-dask==2023.10.0
+dask==2023.5.0
     # via -r nightly.in
 decorator==5.1.1
-    # via ipython
-exceptiongroup==1.1.3
     # via ipython
 executing==2.0.0
     # via stack-data
@@ -51,9 +49,11 @@ idna==3.4
     # via requests
 importlib-metadata==6.8.0
     # via dask
+importlib-resources==6.1.0
+    # via matplotlib
 ipydatawidgets==4.3.5
     # via pythreejs
-ipython==8.16.1
+ipython==8.12.3
     # via ipywidgets
 ipywidgets==8.1.1
     # via
@@ -67,11 +67,11 @@ kiwisolver==1.4.5
     # via matplotlib
 locket==1.0.0
     # via partd
-matplotlib==3.8.0
+matplotlib==3.7.3
     # via plopp
 matplotlib-inline==0.1.6
     # via ipython
-numpy==1.26.1
+numpy==1.24.4
     # via
     #   contourpy
     #   h5py
@@ -135,7 +135,7 @@ scippneutron @ git+https://github.com/scipp/scippneutron@main
     # via -r nightly.in
 scippnexus==23.8.0
     # via scippneutron
-scipy==1.11.3
+scipy==1.10.1
     # via
     #   scippneutron
     #   scippnexus
@@ -159,6 +159,8 @@ traitlets==5.11.2
     #   traittypes
 traittypes==0.2.1
     # via ipydatawidgets
+typing-extensions==4.8.0
+    # via ipython
 urllib3==2.0.6
     # via requests
 wcwidth==0.2.8
@@ -166,4 +168,6 @@ wcwidth==0.2.8
 widgetsnbextension==4.0.9
     # via ipywidgets
 zipp==3.17.0
-    # via importlib-metadata
+    # via
+    #   importlib-metadata
+    #   importlib-resources
