@@ -177,14 +177,21 @@ def calibrate_positions(
 # for RawData, MaskedData, ... no reason to restrict necessarily.
 # Would we be fine with just choosing on option, or will this get in the way for users?
 def detector_to_wavelength(
-    detector: CalibratedMaskedData[RunType],
+    # detector: CalibratedMaskedData[RunType],
+    detector: CleanMasked[RunType, Numerator],
     graph: ElasticCoordTransformGraph,
     wavelength_bins: WavelengthBins,
 ) -> CleanWavelength[RunType, Numerator]:
     out = detector.transform_coords('wavelength', graph=graph)
+    # print(out)
     return CleanWavelength[RunType, Numerator](
-        out['wavelength', wavelength_bins[0] : wavelength_bins[-1]]
+        out.bin(
+            wavelength=sc.concat(
+                [wavelength_bins[0], wavelength_bins[-1]], dim='wavelength'
+            )
+        )
     )
+    # return CleanWavelength[RunType, Numerator](out)
 
 
 def mask_wavelength(
