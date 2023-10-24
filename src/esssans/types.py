@@ -201,6 +201,12 @@ class CleanSummedQ(
     """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
 
 
+class CombinedWavelength(
+    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
+):
+    """Combined wavelength data from all runs"""
+
+
 class IofQ(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """I(Q)"""
 
@@ -244,6 +250,8 @@ DirectBeamWavelengthSamplingPoints = NewType(
 
 SourcePosition = NewType('SourcePosition', sc.Variable)
 """The position of the source"""
+
+BandNumber = NewType('BandNumber', str)
 
 
 class PatchedMonitor(

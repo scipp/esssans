@@ -6,17 +6,23 @@ HDF5 format.
 """
 from typing import Optional
 
+import sciline
 import scipp as sc
 import scippneutron as scn
 
 from .common import gravity_vector
 from .types import (
+    BandNumber,
+    CleanWavelength,
+    CombinedWavelength,
     DirectBeamNumberOfSamplingPoints,
     DirectBeamSamplingWavelengthWidth,
     DirectBeamWavelengthSamplingPoints,
     Filename,
+    IofQPart,
     NeXusMonitorName,
     MonitorType,
+    Numerator,
     RawData,
     RawMonitor,
     RunType,
@@ -40,8 +46,17 @@ def define_wavelength_sampling_points(
     )
 
 
+def concatenate_wavelength_bands(
+    runs: sciline.Series[BandNumber, CleanWavelength[RunType, IofQPart]]
+) -> CombinedWavelength[RunType, IofQPart]:
+    return CombinedWavelength[RunType, IofQPart](
+        sc.concat(list(runs.values()), dim='band')
+    )
+
+
 providers = [
     define_wavelength_sampling_points,
+    concatenate_wavelength_bands,
 ]
 """
 Providers for direct beam

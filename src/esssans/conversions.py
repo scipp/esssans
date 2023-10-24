@@ -15,6 +15,7 @@ from .types import (
     CleanWavelength,
     CleanWavelengthMasked,
     CleanQ,
+    CombinedWavelength,
     CorrectForGravity,
     IofQPart,
     MaskedData,
@@ -195,7 +196,7 @@ def detector_to_wavelength(
 
 
 def mask_wavelength(
-    da: CleanWavelength[RunType, IofQPart], mask: Optional[WavelengthMask]
+    da: CombinedWavelength[RunType, IofQPart], mask: Optional[WavelengthMask]
 ) -> CleanWavelengthMasked[RunType, IofQPart]:
     if mask is not None:
         # If we have binned data and the wavelength coord is multi-dimensional, we need
