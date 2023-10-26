@@ -183,15 +183,25 @@ def detector_to_wavelength(
     graph: ElasticCoordTransformGraph,
     wavelength_bins: WavelengthBins,
 ) -> CleanWavelength[RunType, Numerator]:
-    out = detector.transform_coords('wavelength', graph=graph)
+    data_wav = detector.transform_coords('wavelength', graph=graph)
     # print(out)
-    return CleanWavelength[RunType, Numerator](
-        out.bin(
+
+    if wavelength_bins.ndim == 1:
+        out = data_wav.bin(
             wavelength=sc.concat(
                 [wavelength_bins[0], wavelength_bins[-1]], dim='wavelength'
             )
         )
-    )
+    else:
+        dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
+        out = sc.concat(
+            [
+                data_wav.bin(wavelength=wavelength_bins[dim, i])
+                for i in range(wavelength_bins.sizes[dim])
+            ],
+            dim=dim,
+        )
+    return CleanWavelength[RunType, Numerator](out)
     # return CleanWavelength[RunType, Numerator](out)
 
 

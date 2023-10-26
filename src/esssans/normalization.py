@@ -168,7 +168,9 @@ def iofq_norm_wavelength_term(
         denominator = direct_beam * broadcast(denominator, sizes=direct_beam.sizes)
     # Convert wavelength coordinate to midpoints for future histogramming
     # if wavelength_to_midpoints:
-    denominator.coords['wavelength'] = sc.midpoints(denominator.coords['wavelength'])
+    denominator.coords['wavelength'] = sc.midpoints(
+        denominator.coords['wavelength'], dim='wavelength'
+    )
     return NormWavelengthTerm[RunType](denominator)
 
 

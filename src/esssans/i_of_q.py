@@ -91,6 +91,16 @@ def preprocess_monitor_data(
     return CleanMonitor(monitor)
 
 
+def _interpolate(da: sc.DataArray, wavelength_bins: sc.Variable):
+    func = interp1d(
+        sc.values(da),
+        'wavelength',
+        fill_value="extrapolate",
+        bounds_error=False,
+    )
+    return func(wavelength_bins, midpoints=True)
+
+
 def resample_direct_beam(
     direct_beam: DirectBeam, wavelength_bins: WavelengthBins
 ) -> CleanDirectBeam:
@@ -119,19 +129,18 @@ def resample_direct_beam(
             'An interpolation is being performed on the direct_beam function. '
             'The variances in the direct_beam function will be dropped.'
         )
-    func = interp1d(
-        sc.values(direct_beam),
-        'wavelength',
-        fill_value="extrapolate",
-        bounds_error=False,
-    )
-    direct_beam = func(wavelength_bins, midpoints=True)
-    # logger = get_logger('sans')
-    # logger.warning(
-    #     'An interpolation was performed on the direct_beam function. '
-    #     'The variances in the direct_beam function have been dropped.'
-    # )
-    return CleanDirectBeam(direct_beam)
+    if wavelength_bins.ndim == 1:
+        out = _interpolate(direct_beam, wavelength_bins)
+    else:
+        dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
+        out = sc.concat(
+            [
+                _interpolate(direct_beam, wavelength_bins[dim, i])
+                for i in range(wavelength_bins.sizes[dim])
+            ],
+            dim=dim,
+        )
+    return CleanDirectBeam(out)
 
 
 def merge_spectra(
