@@ -54,10 +54,21 @@ def concatenate_wavelength_bands(
     )
 
 
+def single_wavelength_band(
+    da: CleanWavelength[RunType, IofQPart]
+) -> CombinedWavelength[RunType, IofQPart]:
+    return CombinedWavelength[RunType, IofQPart](da)
+
+
 providers = [
     define_wavelength_sampling_points,
-    concatenate_wavelength_bands,
+    single_wavelength_band,
 ]
 """
 Providers for direct beam
 """
+
+providers_wavelength_bands = [
+    define_wavelength_sampling_points,
+    concatenate_wavelength_bands,
+]

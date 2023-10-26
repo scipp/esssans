@@ -113,6 +113,12 @@ def resample_direct_beam(
     """
     if sc.identical(direct_beam.coords['wavelength'], wavelength_bins):
         return direct_beam
+    if direct_beam.variances is not None:
+        logger = get_logger('sans')
+        logger.warning(
+            'An interpolation is being performed on the direct_beam function. '
+            'The variances in the direct_beam function will be dropped.'
+        )
     func = interp1d(
         sc.values(direct_beam),
         'wavelength',
@@ -120,11 +126,11 @@ def resample_direct_beam(
         bounds_error=False,
     )
     direct_beam = func(wavelength_bins, midpoints=True)
-    logger = get_logger('sans')
-    logger.warning(
-        'An interpolation was performed on the direct_beam function. '
-        'The variances in the direct_beam function have been dropped.'
-    )
+    # logger = get_logger('sans')
+    # logger.warning(
+    #     'An interpolation was performed on the direct_beam function. '
+    #     'The variances in the direct_beam function have been dropped.'
+    # )
     return CleanDirectBeam(direct_beam)
 
 
@@ -187,7 +193,7 @@ def _events_merge_spectra(
     """
     Merge spectra of event data
     """
-    q_all_pixels = data_q.bins.concat(set(data_q.dims) - {'Q'})
+    q_all_pixels = data_q.bins.concat(set(data_q.dims) - {'Q', 'band'})
     edges = _to_q_bins(q_bins)
     if wavelength_bands is not None:
         edges[wavelength_bands.dim] = wavelength_bands
@@ -203,15 +209,21 @@ def _dense_merge_spectra(
     Merge spectra of dense data
     """
     bands = []
-    sum_dims = set(data_q.dims) - {'Q'}
+    sum_dims = set(data_q.dims) - {'Q', 'band'}
     edges = _to_q_bins(q_bins)
-    if wavelength_bands is None:
+    if 'band' not in data_q.dims:
         return data_q.hist(**edges).sum(sum_dims)
-    for i in range(wavelength_bands.sizes['wavelength'] - 1):
-        band = data_q['wavelength', wavelength_bands[i] : wavelength_bands[i + 1]]
-        bands.append(band.hist(**edges).sum(sum_dims))
-    q_summed = sc.concat(bands, 'wavelength')
+    for i in range(data_q.sizes['band']):
+        bands.append(data_q['band', i].hist(**edges).sum(sum_dims))
+    q_summed = sc.concat(bands, 'band')
     return q_summed
+    # if wavelength_bands is None:
+    #     return data_q.hist(**edges).sum(sum_dims)
+    # for i in range(wavelength_bands.sizes['wavelength'] - 1):
+    #     band = data_q['wavelength', wavelength_bands[i] : wavelength_bands[i + 1]]
+    #     bands.append(band.hist(**edges).sum(sum_dims))
+    # q_summed = sc.concat(bands, 'wavelength')
+    # return q_summed
 
 
 def subtract_background(
