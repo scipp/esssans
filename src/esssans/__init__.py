@@ -13,7 +13,6 @@ from . import (
     beam_center_finder,
     common,
     conversions,
-    directbeam,
     i_of_q,
     larmor,
     normalization,

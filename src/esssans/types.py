@@ -46,25 +46,6 @@ TypeVar used for specifying BackgroundRun, EmptyBeamRun, SampleRun.
 # """
 
 # 1.2  Monitor types
-# SampleIncidentMonitor = NewType('SampleIncidentMonitor', int)
-# """Sample incident monitor"""
-# SampleTransmissionMonitor = NewType('SampleTransmissionMonitor', int)
-# """Sample transmission monitor"""
-# EmptySampleHolderIncidentMonitor = NewType('EmptySampleHolderIncidentMonitor', int)
-# """Empty sample holder incident monitor"""
-# EmptySampleHolderTransmissionMonitor = NewType(
-#     'EmptySampleHolderTransmissionMonitor', int
-# )
-# """Empty sample holder transmission monitor"""
-# MonitorType = TypeVar(
-#     'MonitorType',
-#     SampleIncidentMonitor,
-#     SampleTransmissionMonitor,
-#     EmptySampleHolderIncidentMonitor,
-#     EmptySampleHolderTransmissionMonitor,
-# )
-# """TypeVar used for specifying Incident or Transmission monitor type"""
-
 Incident = NewType('Incident', int)
 """Incident monitor"""
 Transmission = NewType('Transmission', int)
@@ -231,30 +212,3 @@ class CleanMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
     """Monitor data cleaned of background counts"""
-
-
-# 4  Direct beam iterations
-
-DirectBeamNumberOfSamplingPoints = NewType('DirectBeamNumberOfSamplingPoints', int)
-"""Number of points to sample the direct beam with"""
-
-DirectBeamSamplingWavelengthWidth = NewType(
-    'DirectBeamSamplingWavelengthWidth', sc.Variable
-)
-"""Width in wavelength of the sampling points for the direct beam"""
-
-DirectBeamWavelengthSamplingPoints = NewType(
-    'DirectBeamWavelengthSamplingPoints', sc.Variable
-)
-"""Locations in wavelength where the direct beam is sampled"""
-
-SourcePosition = NewType('SourcePosition', sc.Variable)
-"""The position of the source"""
-
-BandNumber = NewType('BandNumber', str)
-
-
-class PatchedMonitor(
-    sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
-):
-    """Patched monitor data"""

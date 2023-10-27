@@ -4,7 +4,8 @@
 Loading and masking specific to the ISIS Sans2d instrument and files stored in Scipp's
 HDF5 format.
 """
-from typing import Optional, NewType, TypeVar
+from functools import lru_cache
+from typing import Optional, NewType
 
 import sciline
 import scipp as sc
@@ -15,24 +16,18 @@ from .types import (
     BackgroundRun,
     CalibratedMaskedData,
     CleanMasked,
-    DirectBeamNumberOfSamplingPoints,
-    DirectBeamSamplingWavelengthWidth,
-    DirectBeamWavelengthSamplingPoints,
     EmptyBeamRun,
     Filename,
     Incident,
     MaskedData,
     NeXusMonitorName,
     Numerator,
-    MonitorType,
     RawData,
     RawMonitor,
     RunType,
     SampleRun,
     SampleTransmissionRun,
-    SourcePosition,
     Transmission,
-    WavelengthBins,
 )
 
 
@@ -48,10 +43,8 @@ class DataAsStraws(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Data reshaped to have a straw dimension"""
 
 
+@lru_cache
 def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
-    # from .data import get_path
-
-    # da = scn.load_nexus(filename=get_path(filename))
     da = scn.load_nexus(filename)
     if 'gravity' not in da.coords:
         da.coords["gravity"] = gravity_vector()
@@ -71,14 +64,6 @@ def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
         pixel_shape['face2_center'] - pixel_shape['face1_center']
     ).data
     return RawData[RunType](da)
-
-
-# def get_monitor(
-#     da: RawData[RunType], nexus_name: NeXusMonitorName[MonitorType]
-# ) -> RawMonitor[RunType, MonitorType]:
-#     # See https://github.com/scipp/sciline/issues/52 why copy needed
-#     mon = da.attrs[nexus_name].value.copy()
-#     return RawMonitor[RunType, MonitorType](mon)
 
 
 def get_empty_beam_transmission_monitor(

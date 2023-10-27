@@ -129,18 +129,25 @@ def resample_direct_beam(
             'An interpolation is being performed on the direct_beam function. '
             'The variances in the direct_beam function will be dropped.'
         )
-    if wavelength_bins.ndim == 1:
-        out = _interpolate(direct_beam, wavelength_bins)
-    else:
-        dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
-        out = sc.concat(
-            [
-                _interpolate(direct_beam, wavelength_bins[dim, i])
-                for i in range(wavelength_bins.sizes[dim])
-            ],
-            dim=dim,
-        )
-    return CleanDirectBeam(out)
+    func = interp1d(
+        sc.values(direct_beam),
+        'wavelength',
+        fill_value="extrapolate",
+        bounds_error=False,
+    )
+    return CleanDirectBeam(func(wavelength_bins, midpoints=True))
+    # if wavelength_bins.ndim == 1:
+    #     out = _interpolate(direct_beam, wavelength_bins)
+    # else:
+    #     dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
+    #     out = sc.concat(
+    #         [
+    #             _interpolate(direct_beam, wavelength_bins[dim, i])
+    #             for i in range(wavelength_bins.sizes[dim])
+    #         ],
+    #         dim=dim,
+    #     )
+    # return CleanDirectBeam(out)
 
 
 def merge_spectra(
@@ -179,9 +186,11 @@ def merge_spectra(
         out = _dense_merge_spectra(
             data_q=data, q_bins=q_bins, wavelength_bands=wavelength_bands
         )
-    if (wavelength_bands is not None) and (wavelength_bands.sizes['wavelength'] == 2):
-        out = out['wavelength', 0]
-    return CleanSummedQ[RunType, IofQPart](out)
+    # if wavelength_bands is not None:
+    #     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
+    #     if wavelength_bands.sizes[band_dim] == 1:
+    #     out = out['wavelength', 0]
+    return CleanSummedQ[RunType, IofQPart](out.squeeze())
 
 
 def _to_q_bins(q_bins: Union[int, sc.Variable]) -> Dict[str, Union[int, sc.Variable]]:
@@ -202,11 +211,22 @@ def _events_merge_spectra(
     """
     Merge spectra of event data
     """
-    q_all_pixels = data_q.bins.concat(set(data_q.dims) - {'Q', 'band'})
+    q_all_pixels = data_q.bins.concat(set(data_q.dims) - {'Q'})
     edges = _to_q_bins(q_bins)
-    if wavelength_bands is not None:
-        edges[wavelength_bands.dim] = wavelength_bands
-    return q_all_pixels.bin(**edges)
+    if wavelength_bands is None:
+        return q_all_pixels.bin(**edges)
+    if wavelength_bands.ndim == 1:
+        wavelength_bands = wavelength_bands.fold(
+            dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
+        )
+    # Note: cannot simply add the wavenlength_bands to the edges, because the
+    # wavelength_bands may overlap.
+    bands = []
+    band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
+    for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
+        edges['wavelength'] = wav_range
+        bands.append(q_all_pixels.bin(**edges))
+    return sc.concat(bands, band_dim)
 
 
 def _dense_merge_spectra(
@@ -217,21 +237,28 @@ def _dense_merge_spectra(
     """
     Merge spectra of dense data
     """
-    bands = []
-    sum_dims = set(data_q.dims) - {'Q', 'band'}
+    # bands = []
+    sum_dims = set(data_q.dims) - {'Q'}
     edges = _to_q_bins(q_bins)
-    if 'band' not in data_q.dims:
-        return data_q.hist(**edges).sum(sum_dims)
-    for i in range(data_q.sizes['band']):
-        bands.append(data_q['band', i].hist(**edges).sum(sum_dims))
-    q_summed = sc.concat(bands, 'band')
-    return q_summed
-    # if wavelength_bands is None:
+    # if 'band' not in data_q.dims:
     #     return data_q.hist(**edges).sum(sum_dims)
+    # for i in range(data_q.sizes['band']):
+    #     bands.append(data_q['band', i].hist(**edges).sum(sum_dims))
+    # q_summed = sc.concat(bands, 'band')
+    # return q_summed
+    if wavelength_bands is None:
+        return data_q.hist(**edges).sum(sum_dims)
+    if wavelength_bands.ndim == 1:
+        wavelength_bands = wavelength_bands.fold(
+            dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
+        )
+    bands = []
     # for i in range(wavelength_bands.sizes['wavelength'] - 1):
-    #     band = data_q['wavelength', wavelength_bands[i] : wavelength_bands[i + 1]]
-    #     bands.append(band.hist(**edges).sum(sum_dims))
-    # q_summed = sc.concat(bands, 'wavelength')
+    band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
+    for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
+        band = data_q['wavelength', wav_range[0] : wav_range[1]]
+        bands.append(band.hist(**edges).sum(sum_dims))
+    return sc.concat(bands, band_dim)
     # return q_summed
 
 
