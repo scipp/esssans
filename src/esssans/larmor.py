@@ -5,7 +5,7 @@ Loading and masking specific to the ISIS Sans2d instrument and files stored in S
 HDF5 format.
 """
 from functools import lru_cache
-from typing import Optional, NewType
+from typing import NewType, Optional
 
 import sciline
 import scipp as sc
@@ -29,7 +29,6 @@ from .types import (
     SampleTransmissionRun,
     Transmission,
 )
-
 
 DetectorStrawMask = NewType('DetectorStrawMask', sc.Variable)
 """Detector straw mask"""

@@ -12,9 +12,9 @@ from .types import (
     BeamCenter,
     CalibratedMaskedData,
     CleanMasked,
+    CleanQ,
     CleanWavelength,
     CleanWavelengthMasked,
-    CleanQ,
     CorrectForGravity,
     IofQPart,
     MaskedData,
@@ -24,7 +24,6 @@ from .types import (
     RunType,
     WavelengthMask,
     WavelengthMonitor,
-    WavelengthBins,
 )
 
 
