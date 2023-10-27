@@ -91,16 +91,6 @@ def preprocess_monitor_data(
     return CleanMonitor(monitor)
 
 
-def _interpolate(da: sc.DataArray, wavelength_bins: sc.Variable):
-    func = interp1d(
-        sc.values(da),
-        'wavelength',
-        fill_value="extrapolate",
-        bounds_error=False,
-    )
-    return func(wavelength_bins, midpoints=True)
-
-
 def resample_direct_beam(
     direct_beam: DirectBeam, wavelength_bins: WavelengthBins
 ) -> CleanDirectBeam:
@@ -136,18 +126,6 @@ def resample_direct_beam(
         bounds_error=False,
     )
     return CleanDirectBeam(func(wavelength_bins, midpoints=True))
-    # if wavelength_bins.ndim == 1:
-    #     out = _interpolate(direct_beam, wavelength_bins)
-    # else:
-    #     dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
-    #     out = sc.concat(
-    #         [
-    #             _interpolate(direct_beam, wavelength_bins[dim, i])
-    #             for i in range(wavelength_bins.sizes[dim])
-    #         ],
-    #         dim=dim,
-    #     )
-    # return CleanDirectBeam(out)
 
 
 def merge_spectra(
@@ -186,10 +164,6 @@ def merge_spectra(
         out = _dense_merge_spectra(
             data_q=data, q_bins=q_bins, wavelength_bands=wavelength_bands
         )
-    # if wavelength_bands is not None:
-    #     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
-    #     if wavelength_bands.sizes[band_dim] == 1:
-    #     out = out['wavelength', 0]
     return CleanSummedQ[RunType, IofQPart](out.squeeze())
 
 
@@ -216,6 +190,7 @@ def _events_merge_spectra(
     if wavelength_bands is None:
         return q_all_pixels.bin(**edges)
     if wavelength_bands.ndim == 1:
+        # We expect wavelength_bands to be two-dimensional below
         wavelength_bands = wavelength_bands.fold(
             dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
         )
@@ -237,29 +212,21 @@ def _dense_merge_spectra(
     """
     Merge spectra of dense data
     """
-    # bands = []
     sum_dims = set(data_q.dims) - {'Q'}
     edges = _to_q_bins(q_bins)
-    # if 'band' not in data_q.dims:
-    #     return data_q.hist(**edges).sum(sum_dims)
-    # for i in range(data_q.sizes['band']):
-    #     bands.append(data_q['band', i].hist(**edges).sum(sum_dims))
-    # q_summed = sc.concat(bands, 'band')
-    # return q_summed
     if wavelength_bands is None:
         return data_q.hist(**edges).sum(sum_dims)
     if wavelength_bands.ndim == 1:
+        # We expect wavelength_bands to be two-dimensional below
         wavelength_bands = wavelength_bands.fold(
             dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
         )
     bands = []
-    # for i in range(wavelength_bands.sizes['wavelength'] - 1):
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
     for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
         band = data_q['wavelength', wav_range[0] : wav_range[1]]
         bands.append(band.hist(**edges).sum(sum_dims))
     return sc.concat(bands, band_dim)
-    # return q_summed
 
 
 def subtract_background(

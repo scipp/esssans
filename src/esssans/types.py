@@ -28,22 +28,11 @@ RunType = TypeVar(
     EmptyBeamRun,
     SampleRun,
     SampleTransmissionRun,
-    # BackgroundTransmissionRun,
 )
 """
 TypeVar used for specifying BackgroundRun, EmptyBeamRun, SampleRun.
 """
 
-# BackgroundTransmissionRun = NewType('BackgroundTransmissionRun', int)
-# """Background run for measuring transmission with monitors"""
-# TransmissionRunType = TypeVar(
-#     'TransmissionRunType',
-#     SampleTransmissionRun,
-#     BackgroundTransmissionRun,
-# )
-# """
-# TypeVar used for specifying SampleTransmissionRun or BackgroundTransmissionRun.
-# """
 
 # 1.2  Monitor types
 Incident = NewType('Incident', int)
@@ -180,12 +169,6 @@ class CleanSummedQ(
     sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
 ):
     """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
-
-
-class CombinedWavelength(
-    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
-):
-    """Combined wavelength data from all runs"""
 
 
 class IofQ(sciline.Scope[RunType, sc.DataArray], sc.DataArray):

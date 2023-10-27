@@ -8,7 +8,6 @@ import scippneutron as scn
 from scipp.core import concepts
 
 from .types import (
-    CalibratedMaskedData,
     CleanMasked,
     CleanDirectBeam,
     CleanMonitor,
@@ -25,7 +24,6 @@ from .types import (
     SolidAngle,
     Transmission,
     TransmissionFraction,
-    # TransmissionRunType,
     UncertaintyBroadcastMode,
 )
 from .uncertainty import (
@@ -35,7 +33,6 @@ from .uncertainty import (
 
 
 def solid_angle_rectangular_approximation(
-    # data: CalibratedMaskedData[RunType],
     data: CleanMasked[RunType, Numerator],
 ) -> SolidAngle[RunType]:
     """

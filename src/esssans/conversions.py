@@ -15,7 +15,6 @@ from .types import (
     CleanWavelength,
     CleanWavelengthMasked,
     CleanQ,
-    CombinedWavelength,
     CorrectForGravity,
     IofQPart,
     MaskedData,
@@ -178,33 +177,12 @@ def calibrate_positions(
 # for RawData, MaskedData, ... no reason to restrict necessarily.
 # Would we be fine with just choosing on option, or will this get in the way for users?
 def detector_to_wavelength(
-    # detector: CalibratedMaskedData[RunType],
     detector: CleanMasked[RunType, Numerator],
     graph: ElasticCoordTransformGraph,
-    wavelength_bins: WavelengthBins,
 ) -> CleanWavelength[RunType, Numerator]:
     return CleanWavelength[RunType, Numerator](
         detector.transform_coords('wavelength', graph=graph)
     )
-    # print(out)
-
-    # if wavelength_bins.ndim == 1:
-    #     out = data_wav.bin(
-    #         wavelength=sc.concat(
-    #             [wavelength_bins[0], wavelength_bins[-1]], dim='wavelength'
-    #         )
-    #     )
-    # else:
-    #     dim = (set(wavelength_bins.dims) - {'wavelength'}).pop()
-    #     out = sc.concat(
-    #         [
-    #             data_wav.bin(wavelength=wavelength_bins[dim, i])
-    #             for i in range(wavelength_bins.sizes[dim])
-    #         ],
-    #         dim=dim,
-    #     )
-    # return CleanWavelength[RunType, Numerator](out)
-    # # return CleanWavelength[RunType, Numerator](out)
 
 
 def mask_wavelength(
