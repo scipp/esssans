@@ -6,7 +6,7 @@ This modules defines the domain types uses in esssans.
 The domain types are used to define parameters and to request results from a Sciline
 pipeline."""
 from enum import Enum
-from typing import NewType, TypeVar
+from typing import List, NewType, TypeVar
 
 import sciline
 import scipp as sc
@@ -85,6 +85,9 @@ WavelengthMask = NewType('WavelengthMask', sc.DataArray)
 
 CorrectForGravity = NewType('CorrectForGravity', bool)
 """Whether to correct for gravity when computing wavelength and Q."""
+
+FinalDims = NewType('FinalDims', List[str])
+"""Final dimensions of IofQ"""
 
 
 class NeXusMonitorName(sciline.Scope[MonitorType, str], str):

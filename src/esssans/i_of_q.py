@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import scipp as sc
 from scipp.scipy.interpolate import interp1d
@@ -16,6 +16,7 @@ from .types import (
     CleanQ,
     CleanSummedQ,
     DirectBeam,
+    FinalDims,
     IofQ,
     IofQPart,
     MonitorType,
@@ -132,6 +133,7 @@ def merge_spectra(
     data: CleanQ[RunType, IofQPart],
     q_bins: QBins,
     wavelength_bands: Optional[WavelengthBands],
+    final_dims: Optional[FinalDims],
 ) -> CleanSummedQ[RunType, IofQPart]:
     """
     Merges all spectra:
@@ -156,13 +158,21 @@ def merge_spectra(
     :
         The input data converted to Q and then summed over all detector pixels.
     """
+    if final_dims is None:
+        final_dims = ['Q']
     if data.bins is not None:
         out = _events_merge_spectra(
-            data_q=data, q_bins=q_bins, wavelength_bands=wavelength_bands
+            data_q=data,
+            q_bins=q_bins,
+            wavelength_bands=wavelength_bands,
+            final_dims=final_dims,
         )
     else:
         out = _dense_merge_spectra(
-            data_q=data, q_bins=q_bins, wavelength_bands=wavelength_bands
+            data_q=data,
+            q_bins=q_bins,
+            wavelength_bands=wavelength_bands,
+            final_dims=final_dims,
         )
     return CleanSummedQ[RunType, IofQPart](out.squeeze())
 
@@ -180,12 +190,13 @@ def _to_q_bins(q_bins: Union[int, sc.Variable]) -> Dict[str, Union[int, sc.Varia
 def _events_merge_spectra(
     data_q: sc.DataArray,
     q_bins: Union[int, sc.Variable],
+    final_dims: List[str],
     wavelength_bands: Optional[sc.Variable] = None,
 ) -> sc.DataArray:
     """
     Merge spectra of event data
     """
-    q_all_pixels = data_q.bins.concat(set(data_q.dims) - {'Q'})
+    q_all_pixels = data_q.bins.concat(set(data_q.dims) - set(final_dims))
     edges = _to_q_bins(q_bins)
     if wavelength_bands is None:
         return q_all_pixels.bin(**edges)
@@ -207,12 +218,13 @@ def _events_merge_spectra(
 def _dense_merge_spectra(
     data_q: sc.DataArray,
     q_bins: Union[int, sc.Variable],
+    final_dims: List[str],
     wavelength_bands: Optional[sc.Variable] = None,
 ) -> sc.DataArray:
     """
     Merge spectra of dense data
     """
-    sum_dims = set(data_q.dims) - {'Q'}
+    sum_dims = set(data_q.dims) - set(final_dims)
     edges = _to_q_bins(q_bins)
     if wavelength_bands is None:
         return data_q.hist(**edges).sum(sum_dims)

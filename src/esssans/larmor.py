@@ -106,10 +106,15 @@ def get_sample_transmission_monitor(
 
 
 def to_straws(da: RawData[RunType]) -> DataAsStraws[RunType]:
+    # return DataAsStraws[RunType](
+    #     da.fold(
+    #         dim='detector_id', sizes=dict(layer=4, tube=32, straw=7, pixel=512)
+    #     ).flatten(dims=['layer', 'tube', 'straw'], to='straw')
+    # )
     return DataAsStraws[RunType](
         da.fold(
             dim='detector_id', sizes=dict(layer=4, tube=32, straw=7, pixel=512)
-        ).flatten(dims=['layer', 'tube', 'straw'], to='straw')
+        ).flatten(dims=['tube', 'straw'], to='straw')
     )
 
 
