@@ -89,6 +89,14 @@ def get_background_transmission_monitor(
     return RawMonitor[BackgroundRun, Transmission](mon)
 
 
+def get_sample_incident_monitor(
+    da: RawData[SampleRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[SampleRun, Incident]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[SampleRun, Incident](mon)
+
+
 def get_sample_transmission_monitor(
     da: RawData[SampleTransmissionRun], nexus_name: NeXusMonitorName[Transmission]
 ) -> RawMonitor[SampleRun, Transmission]:
@@ -185,6 +193,7 @@ providers = [
     get_empty_beam_incident_monitor,
     get_empty_beam_transmission_monitor,
     get_background_transmission_monitor,
+    get_sample_incident_monitor,
     get_sample_transmission_monitor,
     mask_detectors,
     mask_after_calibration,
