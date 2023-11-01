@@ -4,6 +4,7 @@
 Loading and masking specific to the ISIS Sans2d instrument and files stored in Scipp's
 HDF5 format.
 """
+from functools import lru_cache
 from typing import Optional
 
 import scipp as sc
@@ -28,6 +29,7 @@ from .types import (
 )
 
 
+@lru_cache
 def pooch_load(filename: Filename[RunType]) -> RawData[RunType]:
     from .data import get_path
 
@@ -53,6 +55,7 @@ def pooch_load(filename: Filename[RunType]) -> RawData[RunType]:
     return RawData[RunType](dg)
 
 
+@lru_cache
 def pooch_load_direct_beam(filename: DirectBeamFilename) -> DirectBeam:
     from .data import get_path
 
@@ -119,7 +122,7 @@ def mask_after_calibration(
 
 
 providers = [
-    pooch_load_direct_beam,
+    # pooch_load_direct_beam,
     pooch_load,
     get_monitor,
     detector_edge_mask,
