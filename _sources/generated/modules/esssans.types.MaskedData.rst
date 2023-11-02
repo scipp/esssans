@@ -1,0 +1,88 @@
+esssans.types.MaskedData
+========================
+
+.. currentmodule:: esssans.types
+
+.. autoclass:: MaskedData
+   :members:
+   :special-members: __getitem__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MaskedData.__init__
+      ~MaskedData.all
+      ~MaskedData.any
+      ~MaskedData.assign_attrs
+      ~MaskedData.assign_coords
+      ~MaskedData.assign_masks
+      ~MaskedData.astype
+      ~MaskedData.bin
+      ~MaskedData.broadcast
+      ~MaskedData.ceil
+      ~MaskedData.copy
+      ~MaskedData.drop_attrs
+      ~MaskedData.drop_coords
+      ~MaskedData.drop_masks
+      ~MaskedData.flatten
+      ~MaskedData.floor
+      ~MaskedData.fold
+      ~MaskedData.group
+      ~MaskedData.groupby
+      ~MaskedData.hist
+      ~MaskedData.max
+      ~MaskedData.mean
+      ~MaskedData.min
+      ~MaskedData.nanhist
+      ~MaskedData.nanmax
+      ~MaskedData.nanmean
+      ~MaskedData.nanmin
+      ~MaskedData.nansum
+      ~MaskedData.plot
+      ~MaskedData.rebin
+      ~MaskedData.rename
+      ~MaskedData.rename_dims
+      ~MaskedData.round
+      ~MaskedData.save_hdf5
+      ~MaskedData.squeeze
+      ~MaskedData.sum
+      ~MaskedData.to
+      ~MaskedData.to_hdf5
+      ~MaskedData.transform_coords
+      ~MaskedData.transpose
+      ~MaskedData.underlying_size
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MaskedData.attrs
+      ~MaskedData.bins
+      ~MaskedData.coords
+      ~MaskedData.data
+      ~MaskedData.dim
+      ~MaskedData.dims
+      ~MaskedData.dtype
+      ~MaskedData.masks
+      ~MaskedData.meta
+      ~MaskedData.name
+      ~MaskedData.ndim
+      ~MaskedData.shape
+      ~MaskedData.size
+      ~MaskedData.sizes
+      ~MaskedData.unit
+      ~MaskedData.value
+      ~MaskedData.values
+      ~MaskedData.variance
+      ~MaskedData.variances
+   
+   
