@@ -98,6 +98,10 @@ class Filename(sciline.Scope[RunType, str], str):
     """Filename of BackgroundRun|EmptySampleHolderRun|SampleRun"""
 
 
+class TimeIntegrationNormFactor(sciline.Scope[RunType, float], float):
+    """Factor for normalizing by incident monitor counts"""
+
+
 # 3  Workflow (intermediate) results
 
 DetectorEdgeMask = NewType('DetectorEdgeMask', sc.Variable)
@@ -126,6 +130,15 @@ class SolidAngle(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
 
 class RawData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Raw data"""
+
+
+class IntegrationTimeNormalizedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
+    """Data where raw counts have been scaled to match the integration time of the
+    reference run"""
+
+
+UnmergedSampleRawData = NewType('UnmergedSampleRawData', sc.DataArray)
+"""Single sample run"""
 
 
 class MaskedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
@@ -188,6 +201,13 @@ class RawMonitor(
     """Raw monitor data"""
 
 
+class IntegrationTimeNormalizedMonitor(
+    sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
+):
+    """Monitor data where raw counts have been scaled to match the integration time of
+    the reference (sample) run"""
+
+
 class WavelengthMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
@@ -198,3 +218,6 @@ class CleanMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
     """Monitor data cleaned of background counts"""
+
+
+SampleRunID = NewType('SampleRunID', int)

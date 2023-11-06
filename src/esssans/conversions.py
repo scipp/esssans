@@ -17,10 +17,10 @@ from .types import (
     CleanWavelengthMasked,
     CorrectForGravity,
     IofQPart,
+    IntegrationTimeNormalizedMonitor,
     MaskedData,
     MonitorType,
     Numerator,
-    RawMonitor,
     RunType,
     WavelengthMask,
     WavelengthMonitor,
@@ -152,7 +152,8 @@ def sans_monitor() -> MonitorCoordTransformGraph:
 
 
 def monitor_to_wavelength(
-    monitor: RawMonitor[RunType, MonitorType], graph: MonitorCoordTransformGraph
+    monitor: IntegrationTimeNormalizedMonitor[RunType, MonitorType],
+    graph: MonitorCoordTransformGraph,
 ) -> WavelengthMonitor[RunType, MonitorType]:
     return WavelengthMonitor[RunType, MonitorType](
         monitor.transform_coords('wavelength', graph=graph)
