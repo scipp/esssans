@@ -132,9 +132,10 @@ class RawData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Raw data"""
 
 
-class IntegrationTimeNormalizedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
-    """Data where raw counts have been scaled to match the integration time of the
-    reference run"""
+class DataNormalizedByIncidentMonitor(
+    sciline.Scope[RunType, sc.DataArray], sc.DataArray
+):
+    """Data where raw counts have been normalized by the incident monitor counts"""
 
 
 UnmergedSampleRawData = NewType('UnmergedSampleRawData', sc.DataArray)
@@ -201,11 +202,11 @@ class RawMonitor(
     """Raw monitor data"""
 
 
-class IntegrationTimeNormalizedMonitor(
+class MonitorNormalizedByIncidentMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
-    """Monitor data where raw counts have been scaled to match the integration time of
-    the reference (sample) run"""
+    """Monitor data where raw counts have been normalized by the counts of the
+    incident monitor"""
 
 
 class WavelengthMonitor(

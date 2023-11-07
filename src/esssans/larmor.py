@@ -16,12 +16,12 @@ from .types import (
     BackgroundRun,
     CalibratedMaskedData,
     CleanMasked,
+    DataNormalizedByIncidentMonitor,
     EmptyBeamRun,
     Filename,
     Incident,
-    IntegrationTimeNormalizedData,
-    IntegrationTimeNormalizedMonitor,
     MaskedData,
+    MonitorNormalizedByIncidentMonitor,
     MonitorType,
     NeXusMonitorName,
     Numerator,
@@ -31,7 +31,6 @@ from .types import (
     SampleRun,
     SampleRunID,
     SampleTransmissionRun,
-    TimeIntegrationNormFactor,
     Transmission,
     UnmergedSampleRawData,
 )
@@ -157,6 +156,14 @@ def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
 #     # return summed_binned_data
 
 
+def get_empty_beam_incident_monitor(
+    da: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[EmptyBeamRun, Incident]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[EmptyBeamRun, Incident](mon)
+
+
 def get_empty_beam_transmission_monitor(
     da: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Transmission]
 ) -> RawMonitor[EmptyBeamRun, Transmission]:
@@ -165,12 +172,12 @@ def get_empty_beam_transmission_monitor(
     return RawMonitor[EmptyBeamRun, Transmission](mon)
 
 
-def get_empty_beam_incident_monitor(
-    da: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Incident]
-) -> RawMonitor[EmptyBeamRun, Incident]:
+def get_background_incident_monitor(
+    da: RawData[BackgroundRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[BackgroundRun, Incident]:
     # See https://github.com/scipp/sciline/issues/52 why copy needed
     mon = da.attrs[nexus_name].value.copy()
-    return RawMonitor[EmptyBeamRun, Incident](mon)
+    return RawMonitor[BackgroundRun, Incident](mon)
 
 
 def get_background_transmission_monitor(
@@ -197,32 +204,98 @@ def get_sample_transmission_monitor(
     return RawMonitor[SampleRun, Transmission](mon)
 
 
-def get_time_integration_norm_factor(
-    incident_monitor: RawMonitor[RunType, Incident],
-    reference_monitor: RawMonitor[SampleRun, Incident],
-) -> TimeIntegrationNormFactor[RunType]:
-    return TimeIntegrationNormFactor[RunType](
-        sc.values(incident_monitor.data.sum()) / sc.values(reference_monitor.data.sum())
+def get_sampletransmission_incident_monitor(
+    da: RawData[SampleTransmissionRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[SampleTransmissionRun, Incident]:
+    # See https://github.com/scipp/sciline/issues/52 why copy needed
+    mon = da.attrs[nexus_name].value.copy()
+    return RawMonitor[SampleTransmissionRun, Incident](mon)
+
+
+def normalize_empty_beam_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[EmptyBeamRun, Incident],
+    incident_monitor: RawMonitor[EmptyBeamRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
     )
 
 
-def normalize_detector_counts_by_time_integration_factor(
-    da: RawData[RunType], norm_factor: TimeIntegrationNormFactor[RunType]
-) -> IntegrationTimeNormalizedData[RunType]:
-    return IntegrationTimeNormalizedData[RunType](da / norm_factor)
+def normalize_empty_beam_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[EmptyBeamRun, Transmission],
+    incident_monitor: RawMonitor[EmptyBeamRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
 
 
-def normalize_monitor_counts_by_time_integration_factor(
-    monitor: RawMonitor[RunType, MonitorType],
-    norm_factor: TimeIntegrationNormFactor[RunType],
-) -> IntegrationTimeNormalizedMonitor[RunType, MonitorType]:
-    return IntegrationTimeNormalizedMonitor[RunType, MonitorType](monitor / norm_factor)
+def normalize_background_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[BackgroundRun, Incident],
+    incident_monitor: RawMonitor[BackgroundRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[BackgroundRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[BackgroundRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_background_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[BackgroundRun, Transmission],
+    incident_monitor: RawMonitor[BackgroundRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[BackgroundRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[BackgroundRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_sample_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[SampleRun, Incident],
+    incident_monitor: RawMonitor[SampleRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[SampleRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[SampleRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_sample_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[SampleRun, Transmission],
+    incident_monitor: RawMonitor[SampleTransmissionRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[SampleRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[SampleRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+# def get_time_integration_norm_factor(
+#     incident_monitor: RawMonitor[RunType, Incident],
+#     reference_monitor: RawMonitor[SampleRun, Incident],
+# ) -> TimeIntegrationNormFactor[RunType]:
+#     return TimeIntegrationNormFactor[RunType](
+#         sc.values(incident_monitor.data.sum()) / sc.values(reference_monitor.data.sum())
+#     )
+
+
+def normalize_detector_counts_by_incident_monitor(
+    da: RawData[RunType], incident_monitor: RawMonitor[RunType, Incident]
+) -> DataNormalizedByIncidentMonitor[RunType]:
+    return DataNormalizedByIncidentMonitor[RunType](
+        da / sc.values(incident_monitor.data.sum())
+    )
+
+
+# def normalize_monitor_counts_by_incident_monitor(
+#     monitor: RawMonitor[RunType, MonitorType],
+#     incident_monitor: RawMonitor[RunType, Incident],
+# ) -> MonitorNormalizedByIncidentMonitor[RunType, MonitorType]:
+#     return MonitorNormalizedByIncidentMonitor[RunType, MonitorType](
+#         monitor / sc.values(incident_monitor.data.sum())
+#     )
 
 
 # def merge_monitor_data(monitors: sciline.Series[SampleRunID, Result]) -> RawMonitor[RunType, MonitorType]:
 
 
-def to_straws(da: IntegrationTimeNormalizedData[RunType]) -> DataAsStraws[RunType]:
+def to_straws(da: DataNormalizedByIncidentMonitor[RunType]) -> DataAsStraws[RunType]:
     # return DataAsStraws[RunType](
     #     da.fold(
     #         dim='detector_id', sizes=dict(layer=4, tube=32, straw=7, pixel=512)
@@ -239,7 +312,9 @@ def detector_straw_mask(
     sample_straws: CalibratedMaskedData[SampleRun],
 ) -> DetectorLowCountsStrawMask:
     return DetectorLowCountsStrawMask(
-        sample_straws.sum(['tof', 'pixel']).data < sc.scalar(300.0, unit='counts')
+        # sample_straws.sum(['tof', 'pixel']).data < sc.scalar(300.0, unit='counts')
+        sample_straws.sum(['tof', 'pixel']).data
+        < sc.scalar(2.5e-5)
     )
 
 
@@ -332,16 +407,16 @@ providers = [
     get_background_transmission_monitor,
     get_sample_incident_monitor,
     get_sample_transmission_monitor,
+    get_sampletransmission_incident_monitor,
     mask_detectors,
     mask_after_calibration,
-    normalize_detector_counts_by_time_integration_factor,
-    normalize_monitor_counts_by_time_integration_factor,
-    get_time_integration_norm_factor,
-    # load_sample_larmor_run,
-    # load_background_larmor_run,
-    # load_emptybeam_larmor_run,
-    # load_sampletransmission_larmor_run,
-    # merge_sample_runs,
+    normalize_detector_counts_by_incident_monitor,
+    normalize_empty_beam_incident_monitor_by_incident_monitor,
+    normalize_empty_beam_transmission_monitor_by_incident_monitor,
+    normalize_background_incident_monitor_by_incident_monitor,
+    normalize_background_transmission_monitor_by_incident_monitor,
+    normalize_sample_incident_monitor_by_incident_monitor,
+    normalize_sample_transmission_monitor_by_incident_monitor,
 ]
 """
 Providers for direct beam
