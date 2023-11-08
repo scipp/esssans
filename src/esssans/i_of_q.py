@@ -196,7 +196,11 @@ def _events_merge_spectra(
     """
     Merge spectra of event data
     """
+    # import time
+
+    # t0 = time.time()
     q_all_pixels = data_q.bins.concat(set(data_q.dims) - set(final_dims))
+    # print(f"concat time: {time.time() - t0}")
     edges = _to_q_bins(q_bins)
     if wavelength_bands is None:
         return q_all_pixels.bin(**edges)
@@ -205,14 +209,34 @@ def _events_merge_spectra(
         wavelength_bands = wavelength_bands.fold(
             dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
         )
+
     # Note: cannot simply add the wavenlength_bands to the edges, because the
-    # wavelength_bands may overlap.
-    bands = []
+    # wavelength_bands may overlap. So instead, we loop over the bands and bin each
+    # band separately.
+    #
+    # Note: it is more memory efficient to concatenate the bands as we loop, rather
+    # than to keep all bands in a list and then concatenate the results.
+    # t0 = time.time()
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
+    out = None
     for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
-        edges['wavelength'] = wav_range
-        bands.append(q_all_pixels.bin(**edges))
-    return sc.concat(bands, band_dim)
+        print(wav_range)
+        # edges['wavelength'] = wav_range
+        # t0 = time.time()
+        band = q_all_pixels.bin(wavelength=wav_range).bin(**edges).squeeze()
+        # band = (
+        #     data_q.bin(wavelength=wav_range).squeeze()
+        #     # .bin(**edges)
+        #     # .bins.concat(set(data_q.dims) - set(final_dims))
+        # )
+        # print(f"bin time: {time.time() - t0}")
+        # t0 = time.time()
+        if out is None:
+            out = band
+        else:
+            out = sc.concat([out, band], band_dim)
+        # print(f"concat time: {time.time() - t0}")
+    return out
 
 
 def _dense_merge_spectra(

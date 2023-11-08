@@ -82,78 +82,78 @@ def load_larmor_run(filename: Filename[RunType]) -> RawData[RunType]:
     return RawData[RunType](da)
 
 
-# def load_sample_larmor_run(filename: Filename[SampleRun]) -> UnmergedSampleRawData:
-#     return UnmergedSampleRawData(load_larmor_run(filename))
+def load_sample_larmor_run(filename: Filename[SampleRun]) -> UnmergedSampleRawData:
+    return UnmergedSampleRawData(load_larmor_run(filename))
 
 
-# def load_background_larmor_run(
-#     filename: Filename[BackgroundRun],
-# ) -> RawData[BackgroundRun]:
-#     return RawData[BackgroundRun](load_larmor_run(filename))
+def load_background_larmor_run(
+    filename: Filename[BackgroundRun],
+) -> RawData[BackgroundRun]:
+    return RawData[BackgroundRun](load_larmor_run(filename))
 
 
-# def load_emptybeam_larmor_run(
-#     filename: Filename[EmptyBeamRun],
-# ) -> RawData[EmptyBeamRun]:
-#     return RawData[EmptyBeamRun](load_larmor_run(filename))
+def load_emptybeam_larmor_run(
+    filename: Filename[EmptyBeamRun],
+) -> RawData[EmptyBeamRun]:
+    return RawData[EmptyBeamRun](load_larmor_run(filename))
 
 
-# def load_sampletransmission_larmor_run(
-#     filename: Filename[SampleTransmissionRun],
-# ) -> RawData[SampleTransmissionRun]:
-#     return RawData[SampleTransmissionRun](load_larmor_run(filename))
+def load_sampletransmission_larmor_run(
+    filename: Filename[SampleTransmissionRun],
+) -> RawData[SampleTransmissionRun]:
+    return RawData[SampleTransmissionRun](load_larmor_run(filename))
 
 
-# def _merge_run_events(a, b):
-#     out = a.squeeze().bins.concatenate(b.squeeze())
-#     for key in a.attrs:
-#         if key.startswith('monitor'):
-#             out.attrs[key] = sc.scalar(
-#                 a.attrs[key].value.bins.concatenate(b.attrs[key].value)
-#             )
-#     return out
+def _merge_run_events(a, b):
+    out = a.squeeze().bins.concatenate(b.squeeze())
+    for key in a.attrs:
+        if key.startswith('monitor'):
+            out.attrs[key] = sc.scalar(
+                a.attrs[key].value.bins.concatenate(b.attrs[key].value)
+            )
+    return out
 
 
-# def merge_sample_runs(
-#     runs: sciline.Series[SampleRunID, UnmergedSampleRawData]
-# ) -> RawData[SampleRun]:
-#     out = reduce(_merge_run_events, runs.values())
-#     return RawData[SampleRun](out.bin(tof=1))
-#     # input_file1 = f'{data_path}/{runs[0]}-2022-02-28_2215.nxs'
-#     # # fixed_file1 = f'{input_file1[:-4]}_fixed.nxs'
-#     # data1 = scn.load_nexus(data_file=input_file1)
-#     # da1 = data1.squeeze().copy()
-#     # summed_data = da1
-#     # summed_monitors_1 = da1.attrs['monitor_1'].value
-#     # summed_monitors_2 = da1.attrs['monitor_2'].value
-#     # # TODO: Should I take tof min and max and use it for setting boundaries
+def merge_sample_runs(
+    runs: sciline.Series[SampleRunID, UnmergedSampleRawData]
+) -> RawData[SampleRun]:
+    out = reduce(_merge_run_events, runs.values())
+    return RawData[SampleRun](out.bin(tof=1))
+    # input_file1 = f'{data_path}/{runs[0]}-2022-02-28_2215.nxs'
+    # # fixed_file1 = f'{input_file1[:-4]}_fixed.nxs'
+    # data1 = scn.load_nexus(data_file=input_file1)
+    # da1 = data1.squeeze().copy()
+    # summed_data = da1
+    # summed_monitors_1 = da1.attrs['monitor_1'].value
+    # summed_monitors_2 = da1.attrs['monitor_2'].value
+    # # TODO: Should I take tof min and max and use it for setting boundaries
 
-#     # start_tof = data1.coords['tof'][0].values
-#     # end_tof = data1.coords['tof'][-1].values
-#     # for run in runs[1:]:
-#     #     input_file2 = f'{data_path}/{run}-2022-02-28_2215.nxs'
-#     #     # fixed_file2 = f'{input_file2[:-4]}_fixed.nxs'
-#     #     data2 = scn.load_nexus(data_file=input_file2)
-#     #     if start_tof < data2.coords['tof'][0].values:
-#     #         start_tof = data1.coords['tof'][0].values
-#     #     if end_tof > data2.coords['tof'][-1].values:
-#     #         end_tof = data2.coords['tof'][-1].values
-#     #     da2 = data2.squeeze().copy()
-#     #     summed_data = summed_data.bins.concatenate(da2)
-#     #     summed_monitors_1 = summed_monitors_1.bins.concatenate(
-#     #         da2.attrs['monitor_1'].value
-#     #     )
-#     #     summed_monitors_2 = summed_monitors_2.bins.concatenate(
-#     #         da2.attrs['monitor_2'].value
-#     #     )
+    # start_tof = data1.coords['tof'][0].values
+    # end_tof = data1.coords['tof'][-1].values
+    # for run in runs[1:]:
+    #     input_file2 = f'{data_path}/{run}-2022-02-28_2215.nxs'
+    #     # fixed_file2 = f'{input_file2[:-4]}_fixed.nxs'
+    #     data2 = scn.load_nexus(data_file=input_file2)
+    #     if start_tof < data2.coords['tof'][0].values:
+    #         start_tof = data1.coords['tof'][0].values
+    #     if end_tof > data2.coords['tof'][-1].values:
+    #         end_tof = data2.coords['tof'][-1].values
+    #     da2 = data2.squeeze().copy()
+    #     summed_data = summed_data.bins.concatenate(da2)
+    #     summed_monitors_1 = summed_monitors_1.bins.concatenate(
+    #         da2.attrs['monitor_1'].value
+    #     )
+    #     summed_monitors_2 = summed_monitors_2.bins.concatenate(
+    #         da2.attrs['monitor_2'].value
+    #     )
 
-#     # edges = sc.linspace('tof', start_tof, end_tof, 2, unit='ns')
-#     # summed_binned_data = sc.bin(summed_data, tof=edges)
+    # edges = sc.linspace('tof', start_tof, end_tof, 2, unit='ns')
+    # summed_binned_data = sc.bin(summed_data, tof=edges)
 
-#     # # Adding montors from first data set
-#     # summed_binned_data.attrs['monitor_1'] = data1.attrs['monitor_1']
-#     # summed_binned_data.attrs['monitor_2'] = data1.attrs['monitor_2']
-#     # return summed_binned_data
+    # # Adding montors from first data set
+    # summed_binned_data.attrs['monitor_1'] = data1.attrs['monitor_1']
+    # summed_binned_data.attrs['monitor_2'] = data1.attrs['monitor_2']
+    # return summed_binned_data
 
 
 def get_empty_beam_incident_monitor(
@@ -397,7 +397,7 @@ def mask_after_calibration(
 
 
 providers = [
-    load_larmor_run,
+    # load_larmor_run,
     to_straws,
     detector_straw_mask,
     detector_beam_stop_mask,
@@ -417,6 +417,11 @@ providers = [
     normalize_background_transmission_monitor_by_incident_monitor,
     normalize_sample_incident_monitor_by_incident_monitor,
     normalize_sample_transmission_monitor_by_incident_monitor,
+    load_background_larmor_run,
+    load_emptybeam_larmor_run,
+    load_sample_larmor_run,
+    load_sampletransmission_larmor_run,
+    merge_sample_runs,
 ]
 """
 Providers for direct beam
