@@ -202,8 +202,9 @@ def _events_merge_spectra(
     q_all_pixels = data_q.bins.concat(set(data_q.dims) - set(final_dims))
     # print(f"concat time: {time.time() - t0}")
     edges = _to_q_bins(q_bins)
+    q_binned = q_all_pixels.bin(**edges)
     if wavelength_bands is None:
-        return q_all_pixels.bin(**edges)
+        return q_binned  # q_all_pixels.bin(**edges)
     if wavelength_bands.ndim == 1:
         # We expect wavelength_bands to be two-dimensional below
         wavelength_bands = wavelength_bands.fold(
@@ -223,7 +224,8 @@ def _events_merge_spectra(
         print(wav_range)
         # edges['wavelength'] = wav_range
         # t0 = time.time()
-        band = q_all_pixels.bin(wavelength=wav_range).bin(**edges).squeeze()
+        # band = q_all_pixels.bin(wavelength=wav_range).squeeze()
+        band = q_binned.bin(wavelength=wav_range).squeeze()
         # band = (
         #     data_q.bin(wavelength=wav_range).squeeze()
         #     # .bin(**edges)
