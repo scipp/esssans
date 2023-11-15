@@ -23,7 +23,6 @@ from .types import (
     Filename,
     Incident,
     MaskedData,
-    MonitorType,
     NeXusMonitorName,
     Numerator,
     RawData,

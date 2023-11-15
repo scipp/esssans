@@ -39,7 +39,6 @@ def make_wavelength_bins_and_bands(
     sampling_width:
         The width of the wavelength bands.
     """
-    # Derived params
     sampling_half_width = sampling_width * 0.5
 
     wavelength_sampling_points = sc.linspace(
@@ -165,27 +164,7 @@ def direct_beam(
                     direct_beam=direct_beam['layer', i],
                     I0=I0,
                 )
-                # eff = []
-                # for sl in sc.collapse(iofq_slices['layer', i], keep='Q').values():
-                #     vals = sl.values
-                #     sel = (vals > 0.0) & np.isfinite(vals)
-                #     f = np.median(vals[sel] / iofq_full['layer', i].values[sel])
-                #     eff.append(f)
-
-                # direct_beam['layer', i] *= sc.array(dims=['wavelength'], values=eff)
-                # scaling = sc.values(iofq_full['layer', i]['Q', 0].data) / I0
-                # direct_beam['layer', i] *= scaling
         else:
-            # eff = []
-            # for sl in sc.collapse(iofq_slices, keep='Q').values():
-            #     vals = sl.values
-            #     sel = (vals > 0.0) & np.isfinite(vals)
-            #     f = np.median(vals[sel] / iofq_full.values[sel])
-            #     eff.append(f)
-
-            # direct_beam *= sc.array(dims=['wavelength'], values=eff)
-            # scaling = sc.values(iofq_full['Q', 0].data) / I0
-            # direct_beam *= scaling
             direct_beam = _direct_beam_iteration(
                 iofq_full=iofq_full,
                 iofq_slices=iofq_slices,
