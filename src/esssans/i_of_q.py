@@ -160,6 +160,11 @@ def merge_spectra(
     """
     if final_dims is None:
         final_dims = ['Q']
+    if (wavelength_bands is not None) and (wavelength_bands.ndim == 1):
+        # We expect wavelength_bands to be two-dimensional below
+        wavelength_bands = wavelength_bands.fold(
+            dim='wavelength', sizes={**{'band': 1}, **wavelength_bands.sizes}
+        )
     if data.bins is not None:
         out = _events_merge_spectra(
             data_q=data,
@@ -201,11 +206,6 @@ def _events_merge_spectra(
     q_binned = q_all_pixels.bin(**edges)
     if wavelength_bands is None:
         return q_binned
-    if wavelength_bands.ndim == 1:
-        # We expect wavelength_bands to be two-dimensional below
-        wavelength_bands = wavelength_bands.fold(
-            dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
-        )
 
     # Note: cannot simply add the wavenlength_bands to the edges, because the
     # wavelength_bands may overlap. So instead, we loop over the bands and bin each
@@ -237,11 +237,6 @@ def _dense_merge_spectra(
     edges = _to_q_bins(q_bins)
     if wavelength_bands is None:
         return data_q.hist(**edges).sum(sum_dims)
-    if wavelength_bands.ndim == 1:
-        # We expect wavelength_bands to be two-dimensional below
-        wavelength_bands = wavelength_bands.fold(
-            dim='wavelength', sizes={**{'band': -1}, **wavelength_bands.sizes}
-        )
     bands = []
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
     for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
