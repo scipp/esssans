@@ -6,7 +6,7 @@ This modules defines the domain types uses in esssans.
 The domain types are used to define parameters and to request results from a Sciline
 pipeline."""
 from enum import Enum
-from typing import NewType, TypeVar
+from typing import List, NewType, TypeVar
 
 import sciline
 import scipp as sc
@@ -16,12 +16,27 @@ import scipp as sc
 # 1.1  Run types
 BackgroundRun = NewType('BackgroundRun', int)
 """Background run"""
-DirectRun = NewType('DirectRun', int)
-"""Direct run"""
+EmptyBeamRun = NewType('EmptyBeamRun', int)
+"""Run where the sample holder was empty (sometimes called 'direct run')"""
 SampleRun = NewType('SampleRun', int)
 """Sample run"""
-RunType = TypeVar('RunType', BackgroundRun, DirectRun, SampleRun)
-"""TypeVar used for specifying BackgroundRun, DirectRun or SampleRun"""
+SampleTransmissionRun = NewType('SampleTransmissionRun', int)
+"""Sample run for measuring transmission with monitors"""
+BackgroundTransmissionRun = NewType('BackgroundTransmissionRun', int)
+"""Background run for measuring transmission with monitors"""
+RunType = TypeVar(
+    'RunType',
+    BackgroundRun,
+    BackgroundTransmissionRun,
+    EmptyBeamRun,
+    SampleRun,
+    SampleTransmissionRun,
+)
+"""
+TypeVar used for specifying BackgroundRun, BackgroundTransmissionRun, EmptyBeamRun,
+SampleRun, or SampleTransmissionRun.
+"""
+
 
 # 1.2  Monitor types
 Incident = NewType('Incident', int)
@@ -75,13 +90,16 @@ WavelengthMask = NewType('WavelengthMask', sc.DataArray)
 CorrectForGravity = NewType('CorrectForGravity', bool)
 """Whether to correct for gravity when computing wavelength and Q."""
 
+FinalDims = NewType('FinalDims', List[str])
+"""Final dimensions of IofQ"""
+
 
 class NeXusMonitorName(sciline.Scope[MonitorType, str], str):
     """Name of Incident|Transmission monitor in NeXus file"""
 
 
 class Filename(sciline.Scope[RunType, str], str):
-    """Filename of BackgroundRun|DirectRun|SampleRun"""
+    """Filename of BackgroundRun|EmptySampleHolderRun|SampleRun"""
 
 
 # 3  Workflow (intermediate) results
@@ -114,6 +132,16 @@ class RawData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Raw data"""
 
 
+class DataNormalizedByIncidentMonitor(
+    sciline.Scope[RunType, sc.DataArray], sc.DataArray
+):
+    """Data where raw counts have been normalized by the incident monitor counts"""
+
+
+UnmergedSampleRawData = NewType('UnmergedSampleRawData', sc.DataArray)
+"""Single sample run"""
+
+
 class MaskedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Raw data with pixel-specific masks applied"""
 
@@ -126,7 +154,15 @@ class NormWavelengthTerm(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Normalization term (numerator) for IofQ before scaling with solid-angle."""
 
 
-class Clean(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray):
+class CleanMasked(
+    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
+):
+    """Data with calibrated pixel positions and pixel-specific masks applied"""
+
+
+class CleanWavelength(
+    sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
+):
     """
     Prerequisite for IofQ numerator or denominator.
 
@@ -136,14 +172,14 @@ class Clean(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArra
     """
 
 
-class CleanMasked(
+class CleanWavelengthMasked(
     sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength masking to :py:class:`Clean`"""
+    """Result of applying wavelength masking to :py:class:`CleanWavelength`"""
 
 
 class CleanQ(sciline.ScopeTwoParams[RunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanMasked` to Q"""
+    """Result of converting :py:class:`CleanWavelengthMasked` to Q"""
 
 
 class CleanSummedQ(
@@ -166,6 +202,13 @@ class RawMonitor(
     """Raw monitor data"""
 
 
+class MonitorNormalizedByIncidentMonitor(
+    sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
+):
+    """Monitor data where raw counts have been normalized by the counts of the
+    incident monitor"""
+
+
 class WavelengthMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
@@ -176,3 +219,6 @@ class CleanMonitor(
     sciline.ScopeTwoParams[RunType, MonitorType, sc.DataArray], sc.DataArray
 ):
     """Monitor data cleaned of background counts"""
+
+
+SampleRunID = NewType('SampleRunID', int)
