@@ -11,12 +11,17 @@ import scipp as sc
 
 from .common import gravity_vector
 from .types import (
+    BackgroundRun,
+    BackgroundTransmissionRun,
     CalibratedMaskedData,
     CleanMasked,
+    DataNormalizedByIncidentMonitor,
     DetectorEdgeMask,
     DirectBeam,
     DirectBeamFilename,
+    EmptyBeamRun,
     Filename,
+    Incident,
     MaskedData,
     MonitorType,
     NeXusMonitorName,
@@ -26,6 +31,8 @@ from .types import (
     RunType,
     SampleHolderMask,
     SampleRun,
+    SampleTransmissionRun,
+    Transmission,
 )
 
 
@@ -62,15 +69,62 @@ def pooch_load_direct_beam(filename: DirectBeamFilename) -> DirectBeam:
     return DirectBeam(sc.io.load_hdf5(filename=get_path(filename)))
 
 
-def get_monitor(
-    dg: RawData[RunType], nexus_name: NeXusMonitorName[MonitorType]
-) -> RawMonitor[RunType, MonitorType]:
+def _get_monitor(dg: sc.DataGroup, nexus_name: str) -> sc.DataArray:
     # See https://github.com/scipp/sciline/issues/52 why copy needed
-    mon = dg['monitors'][nexus_name]['data'].copy()
-    return RawMonitor[RunType, MonitorType](mon)
+    return dg['monitors'][nexus_name]['data'].copy()
 
 
-def detector_edge_mask(raw: RawData[SampleRun]) -> DetectorEdgeMask:
+def get_empty_beam_incident_monitor(
+    dg: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[EmptyBeamRun, Incident]:
+    return RawMonitor[EmptyBeamRun, Incident](_get_monitor(dg, nexus_name))
+
+
+def get_empty_beam_transmission_monitor(
+    dg: RawData[EmptyBeamRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[EmptyBeamRun, Transmission]:
+    return RawMonitor[EmptyBeamRun, Transmission](_get_monitor(dg, nexus_name))
+
+
+def get_background_incident_monitor(
+    dg: RawData[BackgroundRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[BackgroundRun, Incident]:
+    return RawMonitor[BackgroundRun, Incident](_get_monitor(dg, nexus_name))
+
+
+def get_background_transmission_monitor(
+    dg: RawData[BackgroundRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[BackgroundRun, Transmission]:
+    return RawMonitor[BackgroundRun, Transmission](_get_monitor(dg, nexus_name))
+
+
+def get_sample_incident_monitor(
+    dg: RawData[SampleRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[SampleRun, Incident]:
+    return RawMonitor[SampleRun, Incident](_get_monitor(dg, nexus_name))
+
+
+def get_sample_transmission_monitor(
+    dg: RawData[SampleTransmissionRun], nexus_name: NeXusMonitorName[Transmission]
+) -> RawMonitor[SampleRun, Transmission]:
+    return RawMonitor[SampleRun, Transmission](_get_monitor(dg, nexus_name))
+
+
+def get_sampletransmission_incident_monitor(
+    dg: RawData[SampleTransmissionRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[SampleTransmissionRun, Incident]:
+    return RawMonitor[SampleTransmissionRun, Incident](_get_monitor(dg, nexus_name))
+
+
+def get_backgroundtransmission_incident_monitor(
+    da: RawData[BackgroundTransmissionRun], nexus_name: NeXusMonitorName[Incident]
+) -> RawMonitor[BackgroundTransmissionRun, Incident]:
+    return RawMonitor[BackgroundTransmissionRun, Incident](_get_monitor(da, nexus_name))
+
+
+def detector_edge_mask(
+    raw: DataNormalizedByIncidentMonitor[SampleRun],
+) -> DetectorEdgeMask:
     sample = raw['data']
     mask_edges = (
         sc.abs(sample.coords['position'].fields.x) > sc.scalar(0.48, unit='m')
@@ -78,11 +132,14 @@ def detector_edge_mask(raw: RawData[SampleRun]) -> DetectorEdgeMask:
     return DetectorEdgeMask(mask_edges)
 
 
-def sample_holder_mask(raw: RawData[SampleRun]) -> SampleHolderMask:
+def sample_holder_mask(
+    raw: DataNormalizedByIncidentMonitor[SampleRun],
+) -> SampleHolderMask:
     sample = raw['data']
     summed = sample.sum('tof')
     holder_mask = (
-        (summed.data < sc.scalar(100, unit='counts'))
+        # (summed.data < sc.scalar(100, unit='counts'))
+        (summed.data < sc.scalar(4.4e-06))
         & (sample.coords['position'].fields.x > sc.scalar(0, unit='m'))
         & (sample.coords['position'].fields.x < sc.scalar(0.42, unit='m'))
         & (sample.coords['position'].fields.y < sc.scalar(0.05, unit='m'))
@@ -91,8 +148,16 @@ def sample_holder_mask(raw: RawData[SampleRun]) -> SampleHolderMask:
     return SampleHolderMask(holder_mask)
 
 
+def normalize_detector_counts_by_incident_monitor(
+    dg: RawData[RunType], incident_monitor: RawMonitor[RunType, Incident]
+) -> DataNormalizedByIncidentMonitor[RunType]:
+    out = dg.copy(deep=False)
+    out['data'] = dg['data'] / sc.values(incident_monitor.data.sum())
+    return DataNormalizedByIncidentMonitor[RunType](out)
+
+
 def mask_detectors(
-    dg: RawData[RunType],
+    dg: DataNormalizedByIncidentMonitor[RunType],
     edge_mask: Optional[DetectorEdgeMask],
     holder_mask: Optional[SampleHolderMask],
 ) -> MaskedData[RunType]:
@@ -122,13 +187,21 @@ def mask_after_calibration(
 
 
 providers = [
-    # pooch_load_direct_beam,
+    pooch_load_direct_beam,
     pooch_load,
-    get_monitor,
+    get_empty_beam_incident_monitor,
+    get_empty_beam_transmission_monitor,
+    get_background_incident_monitor,
+    get_background_transmission_monitor,
+    get_backgroundtransmission_incident_monitor,
+    get_sample_incident_monitor,
+    get_sample_transmission_monitor,
+    get_sampletransmission_incident_monitor,
     detector_edge_mask,
     sample_holder_mask,
     mask_detectors,
     mask_after_calibration,
+    normalize_detector_counts_by_incident_monitor,
 ]
 """
 Providers for loading and masking Sans2d data.

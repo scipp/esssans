@@ -196,15 +196,11 @@ def _events_merge_spectra(
     """
     Merge spectra of event data
     """
-    # import time
-
-    # t0 = time.time()
     q_all_pixels = data_q.bins.concat(set(data_q.dims) - set(final_dims))
-    # print(f"concat time: {time.time() - t0}")
     edges = _to_q_bins(q_bins)
     q_binned = q_all_pixels.bin(**edges)
     if wavelength_bands is None:
-        return q_binned  # q_all_pixels.bin(**edges)
+        return q_binned
     if wavelength_bands.ndim == 1:
         # We expect wavelength_bands to be two-dimensional below
         wavelength_bands = wavelength_bands.fold(
@@ -217,27 +213,14 @@ def _events_merge_spectra(
     #
     # Note: it is more memory efficient to concatenate the bands as we loop, rather
     # than to keep all bands in a list and then concatenate the results.
-    # t0 = time.time()
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
     out = None
     for wav_range in sc.collapse(wavelength_bands, keep='wavelength').values():
-        print(wav_range)
-        # edges['wavelength'] = wav_range
-        # t0 = time.time()
-        # band = q_all_pixels.bin(wavelength=wav_range).squeeze()
         band = q_binned.bin(wavelength=wav_range).squeeze()
-        # band = (
-        #     data_q.bin(wavelength=wav_range).squeeze()
-        #     # .bin(**edges)
-        #     # .bins.concat(set(data_q.dims) - set(final_dims))
-        # )
-        # print(f"bin time: {time.time() - t0}")
-        # t0 = time.time()
         if out is None:
             out = band
         else:
             out = sc.concat([out, band], band_dim)
-        # print(f"concat time: {time.time() - t0}")
     return out
 
 

@@ -8,19 +8,26 @@ import scippneutron as scn
 from scipp.core import concepts
 
 from .types import (
+    BackgroundRun,
+    BackgroundTransmissionRun,
     CleanDirectBeam,
     CleanMasked,
     CleanMonitor,
     CleanSummedQ,
     CleanWavelength,
+    DataNormalizedByIncidentMonitor,
     Denominator,
     EmptyBeamRun,
     Incident,
     IofQ,
+    MonitorNormalizedByIncidentMonitor,
     NormWavelengthTerm,
     Numerator,
+    RawData,
+    RawMonitor,
     RunType,
     SampleRun,
+    SampleTransmissionRun,
     SolidAngle,
     Transmission,
     TransmissionFraction,
@@ -30,6 +37,60 @@ from .uncertainty import (
     broadcast_with_upper_bound_variances,
     drop_variances_if_broadcast,
 )
+
+
+def normalize_empty_beam_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[EmptyBeamRun, Incident],
+    incident_monitor: RawMonitor[EmptyBeamRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_empty_beam_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[EmptyBeamRun, Transmission],
+    incident_monitor: RawMonitor[EmptyBeamRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[EmptyBeamRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_background_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[BackgroundRun, Incident],
+    incident_monitor: RawMonitor[BackgroundRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[BackgroundRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[BackgroundRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_background_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[BackgroundRun, Transmission],
+    incident_monitor: RawMonitor[BackgroundTransmissionRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[BackgroundRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[BackgroundRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_sample_incident_monitor_by_incident_monitor(
+    monitor: RawMonitor[SampleRun, Incident],
+    incident_monitor: RawMonitor[SampleRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[SampleRun, Incident]:
+    return MonitorNormalizedByIncidentMonitor[SampleRun, Incident](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
+
+
+def normalize_sample_transmission_monitor_by_incident_monitor(
+    monitor: RawMonitor[SampleRun, Transmission],
+    incident_monitor: RawMonitor[SampleTransmissionRun, Incident],
+) -> MonitorNormalizedByIncidentMonitor[SampleRun, Transmission]:
+    return MonitorNormalizedByIncidentMonitor[SampleRun, Transmission](
+        monitor / sc.values(incident_monitor.data.sum())
+    )
 
 
 def solid_angle_rectangular_approximation(
@@ -249,5 +310,11 @@ providers = [
     iofq_norm_wavelength_term,
     iofq_denominator,
     normalize,
+    normalize_empty_beam_incident_monitor_by_incident_monitor,
+    normalize_empty_beam_transmission_monitor_by_incident_monitor,
+    normalize_background_incident_monitor_by_incident_monitor,
+    normalize_background_transmission_monitor_by_incident_monitor,
+    normalize_sample_incident_monitor_by_incident_monitor,
+    normalize_sample_transmission_monitor_by_incident_monitor,
     solid_angle_rectangular_approximation,
 ]

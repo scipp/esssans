@@ -22,9 +22,12 @@ SampleRun = NewType('SampleRun', int)
 """Sample run"""
 SampleTransmissionRun = NewType('SampleTransmissionRun', int)
 """Sample run for measuring transmission with monitors"""
+BackgroundTransmissionRun = NewType('BackgroundTransmissionRun', int)
+"""Background run for measuring transmission with monitors"""
 RunType = TypeVar(
     'RunType',
     BackgroundRun,
+    BackgroundTransmissionRun,
     EmptyBeamRun,
     SampleRun,
     SampleTransmissionRun,
