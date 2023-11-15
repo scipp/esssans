@@ -7,13 +7,7 @@ import numpy as np
 import scipp as sc
 from sciline import Pipeline
 
-from .types import (
-    DirectBeam,
-    FinalDims,
-    IofQ,
-    SampleRun,
-    WavelengthBands,
-)
+from .types import DirectBeam, FinalDims, IofQ, SampleRun, WavelengthBands
 
 
 def make_wavelength_bins_and_bands(
