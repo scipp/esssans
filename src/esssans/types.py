@@ -33,7 +33,8 @@ RunType = TypeVar(
     SampleTransmissionRun,
 )
 """
-TypeVar used for specifying BackgroundRun, EmptyBeamRun, SampleRun.
+TypeVar used for specifying BackgroundRun, BackgroundTransmissionRun, EmptyBeamRun,
+SampleRun, or SampleTransmissionRun.
 """
 
 
@@ -99,10 +100,6 @@ class NeXusMonitorName(sciline.Scope[MonitorType, str], str):
 
 class Filename(sciline.Scope[RunType, str], str):
     """Filename of BackgroundRun|EmptySampleHolderRun|SampleRun"""
-
-
-class TimeIntegrationNormFactor(sciline.Scope[RunType, float], float):
-    """Factor for normalizing by incident monitor counts"""
 
 
 # 3  Workflow (intermediate) results

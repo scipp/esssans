@@ -275,5 +275,5 @@ providers = [
     merge_sample_runs,
 ]
 """
-Providers for direct beam
+Providers for LoKI
 """
