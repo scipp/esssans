@@ -10,11 +10,12 @@ import esssans as sans
 from esssans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
+    BackgroundTransmissionRun,
     BeamCenter,
     CorrectForGravity,
     DirectBeam,
     DirectBeamFilename,
-    DirectRun,
+    EmptyBeamRun,
     Filename,
     Incident,
     IofQ,
@@ -23,6 +24,7 @@ from esssans.types import (
     QBins,
     RawData,
     SampleRun,
+    SampleTransmissionRun,
     SolidAngle,
     Transmission,
     UncertaintyBroadcastMode,
@@ -55,7 +57,9 @@ def make_params() -> dict:
     )
     params[Filename[BackgroundRun]] = 'SANS2D00063159.hdf5'
     params[Filename[SampleRun]] = 'SANS2D00063114.hdf5'
-    params[Filename[DirectRun]] = 'SANS2D00063091.hdf5'
+    params[Filename[EmptyBeamRun]] = 'SANS2D00063091.hdf5'
+    params[Filename[SampleTransmissionRun]] = params[Filename[SampleRun]]
+    params[Filename[BackgroundTransmissionRun]] = params[Filename[BackgroundRun]]
     params[DirectBeamFilename] = 'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.hdf5'
     params[NonBackgroundWavelengthRange] = sc.array(
         dims=['wavelength'], values=[0.7, 17.1], unit='angstrom'

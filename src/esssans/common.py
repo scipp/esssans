@@ -54,6 +54,12 @@ def mask_range(
             f'Coordinate {dim} must be bin-edges to mask a range, found midpoints.'
         )
 
+    if (dim in da.coords) and (da.coords[dim].ndim > 1):
+        raise sc.DimensionError(
+            'Cannot mask range on data with multi-dimensional coordinate. '
+            f'Found dimensions {da.coords[dim].dims} for coordinate {dim}.'
+        )
+
     lu = sc.DataArray(data=mask.data, coords={dim: edges})
     if da.bins is not None:
         if dim in da.coords:
