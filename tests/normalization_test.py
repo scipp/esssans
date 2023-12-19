@@ -14,7 +14,7 @@ _SANS2D_PIXEL_LENGTH = 0.002033984375 * sc.Unit('m')
 _SANS2D_SOLID_ANGLE_REFERENCE_FILE = 'SANS2D00063091.SolidAngle_from_mantid.hdf5'
 
 
-def _sans2d_setup_requirements_for_solid_angle(da):
+def _sans2d_geometry():
     R = _SANS2D_PIXEL_RADIUS.value
     L = _SANS2D_PIXEL_LENGTH.value
     pixel_shape = {
@@ -30,7 +30,7 @@ def _sans2d_setup_requirements_for_solid_angle(da):
     }
     # Rotate +y to -x
     transform = sc.spatial.rotation(value=[0, 0, 1 / 2**0.5, 1 / 2**0.5])
-    return da, pixel_shape, transform
+    return dict(pixel_shape=pixel_shape, transform=transform)
 
 
 def _mantid_sans2d_solid_angle_data():
@@ -66,7 +66,8 @@ def _mantid_sans2d_solid_angle_data():
 def test_solid_angle_compare_to_mantid():
     da = _mantid_sans2d_solid_angle_data()
     solid_angle = normalization.solid_angle(
-        *_sans2d_setup_requirements_for_solid_angle(da)
+        da,
+        **_sans2d_geometry(),
     ).data
     assert sc.allclose(
         da.data['tof', 0], solid_angle, atol=0.0 * sc.Unit('dimensionless')
@@ -76,7 +77,8 @@ def test_solid_angle_compare_to_mantid():
 def test_solid_angle_compare_to_reference_file():
     da = sc.io.load_hdf5(filename=get_path(_SANS2D_SOLID_ANGLE_REFERENCE_FILE))
     solid_angle = normalization.solid_angle(
-        *_sans2d_setup_requirements_for_solid_angle(da)
+        da,
+        **_sans2d_geometry(),
     ).data
     assert sc.allclose(
         da.data['tof', 0], solid_angle, atol=0.0 * sc.Unit('dimensionless')
