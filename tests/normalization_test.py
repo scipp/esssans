@@ -15,9 +15,6 @@ _SANS2D_SOLID_ANGLE_REFERENCE_FILE = 'SANS2D00063091.SolidAngle_from_mantid.hdf5
 
 
 def _sans2d_setup_requirements_for_solid_angle(da):
-    '''da.coords contains the pixel positions and the sample position'''
-    pixel_positions = da.coords['position'] - da.coords['sample_position']
-
     R = _SANS2D_PIXEL_RADIUS.value
     L = _SANS2D_PIXEL_LENGTH.value
     pixel_shape = {
@@ -33,16 +30,6 @@ def _sans2d_setup_requirements_for_solid_angle(da):
     }
     # Rotate +y to -x
     transform = sc.spatial.rotation(value=[0, 0, 1 / 2**0.5, 1 / 2**0.5])
-
-    da = sc.DataArray(
-        coords={'position': pixel_positions},
-        # Some dummy counts
-        data=sc.array(
-            dims=['spectrum'],
-            values=np.random.randint(0, 100, *pixel_positions.shape),
-            unit='counts',
-        ),
-    )
     return da, pixel_shape, transform
 
 
