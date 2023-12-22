@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
+import uuid
 from typing import Dict, List, NewType, Optional, Union
 
 import numpy as np
@@ -20,17 +21,34 @@ from .logging import get_logger
 from .normalization import iofq_denominator, normalize, solid_angle
 from .types import (
     BeamCenter,
+    CalibratedMaskedData,
+    CleanMasked,
     DetectorPixelShape,
     IofQ,
     LabFrameTransform,
     MaskedData,
     NormWavelengthTerm,
+    Numerator,
     QBins,
     SampleRun,
     UncertaintyBroadcastMode,
     WavelengthBands,
     WavelengthBins,
 )
+
+
+def _clean_masked_provider(
+    da: CalibratedMaskedData[SampleRun],
+) -> CleanMasked[SampleRun, Numerator]:
+    """
+    This provider is used to replace a step in the main I(Q) pipeline that would mask
+    some detector pixels after the calibration from the beam center finder has been
+    applied.
+
+    Here, we are only interested in the beam center, and not the remainder of the
+    pipeline, so we simply return the input data.
+    """
+    return CleanMasked[SampleRun, Numerator](da)
 
 
 def _xy_extrema(pos: sc.Variable) -> sc.Variable:
@@ -68,10 +86,13 @@ def beam_center_from_center_of_mass(
         The beam center position as a vector.
     """
 
-    summed = data.sum(list(set(data.dims) - set(data.coords['position'].dims)))
+    data = data.flatten(dims=data.coords['position'].dims, to=uuid.uuid4().hex)
+    pos = data.coords['position']
+    summed = data.sum(list(set(data.dims) - set(pos.dims)))
     v = sc.values(summed)
     mask = concepts.irreducible_mask(summed, dim=None)
-    pos = data.coords['position']
+    if mask is None:
+        mask = sc.zeros(sizes=pos.sizes, dtype='bool')
     extrema = _xy_extrema(pos[~mask])
     # Mean including existing masks
     cutoff = 0.1 * v.mean().data
@@ -87,6 +108,7 @@ def beam_center_from_center_of_mass(
     v = v.data[select]
     pos = pos[select]
     com = sc.sum(pos * v) / v.sum()
+
     # We compute the shift between the incident beam direction and the center-of-mass
     incident_beam = data.transform_coords('incident_beam', graph=graph).coords[
         'incident_beam'
@@ -163,6 +185,7 @@ def _iofq_in_quadrants(
         detector_to_wavelength,
         solid_angle,
         calibrate_positions,
+        _clean_masked_provider,
     ]
     params = {}
     params[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.upper_bound
@@ -380,6 +403,15 @@ def beam_center_from_iofq(
     tolerance = tolerance or 0.1
     logger.info(f'Using minimizer: {minimizer}')
     logger.info(f'Using tolerance: {tolerance}')
+
+    # Flatten positions dim which is required during the iterations for slicing with a
+    # boolean mask
+    pos_dims = data.coords['position'].dims
+    new_dim = uuid.uuid4().hex
+    data = data.flatten(dims=pos_dims, to=new_dim)
+    dims_to_flatten = [dim for dim in norm.dims if dim in pos_dims]
+    if dims_to_flatten:
+        norm = norm.flatten(dims=dims_to_flatten, to=new_dim)
 
     # Use center of mass to get initial guess for beam center
     com_shift = beam_center_from_center_of_mass(data, graph)
