@@ -138,6 +138,9 @@ def dimension_slicing(
 ) -> SlicedMaskedData[RunType]:
     """
     Slice out a subset of the detector tubes/straws/layers/pixels.
+
+    Note that the slicing must be done after masking and computing the beam center, if
+    not the results will be different between sliced and non-sliced data.
     """
     out = data
     if slices is not None:
