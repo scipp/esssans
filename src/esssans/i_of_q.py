@@ -11,10 +11,12 @@ from .logging import get_logger
 from .types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
+    CalibratedMaskedData,
     CleanDirectBeam,
     CleanMonitor,
     CleanQ,
     CleanSummedQ,
+    DetectorSlices,
     DimsToKeep,
     DirectBeam,
     IofQ,
@@ -24,6 +26,7 @@ from .types import (
     QBins,
     RunType,
     SampleRun,
+    SlicedMaskedData,
     UncertaintyBroadcastMode,
     WavelengthBands,
     WavelengthBins,
@@ -127,6 +130,20 @@ def resample_direct_beam(
         bounds_error=False,
     )
     return CleanDirectBeam(func(wavelength_bins, midpoints=True))
+
+
+def dimension_slicing(
+    data: CalibratedMaskedData[RunType],
+    slices: Optional[DetectorSlices] = None,
+) -> SlicedMaskedData[RunType]:
+    """
+    Slice out a subset of the detector tubes/straws/layers/pixels.
+    """
+    out = data
+    if slices is not None:
+        for dim, sl in slices.items():
+            out = out[dim, sl]
+    return SlicedMaskedData[RunType](out)
 
 
 def _process_wavelength_bands(
@@ -297,4 +314,5 @@ providers = (
     resample_direct_beam,
     merge_spectra,
     subtract_background,
+    dimension_slicing,
 )

@@ -21,6 +21,7 @@ from .types import (
     Numerator,
     RawMonitor,
     RunType,
+    SlicedMaskedData,
     WavelengthMask,
     WavelengthMonitor,
 )
@@ -200,7 +201,7 @@ def calibrate_positions(
 # for RawData, MaskedData, ... no reason to restrict necessarily.
 # Would we be fine with just choosing on option, or will this get in the way for users?
 def detector_to_wavelength(
-    detector: CalibratedMaskedData[RunType],
+    detector: SlicedMaskedData[RunType],
     graph: ElasticCoordTransformGraph,
 ) -> CleanWavelength[RunType, Numerator]:
     return CleanWavelength[RunType, Numerator](

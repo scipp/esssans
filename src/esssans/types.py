@@ -142,6 +142,10 @@ BeamStopPosition = NewType('BeamStopPosition', sc.Variable)
 BeamStopRadius = NewType('BeamStopRadius', sc.Variable)
 """Radius of the beam stop"""
 
+DetectorSlices = NewType('DetectorSlices', dict)
+"""Dictionary of slices that will be applied to the detector data for selecting only
+certain tubes/straws/layers/pixels."""
+
 # 3  Workflow (intermediate) results
 
 
@@ -192,6 +196,10 @@ class MaskedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
 
 class CalibratedMaskedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
     """Raw data with pixel-specific masks applied and calibrated pixel positions"""
+
+
+class SlicedMaskedData(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
+    """Data that has potentially had some tubes/straws/layers/pixels sliced out"""
 
 
 class NormWavelengthTerm(sciline.Scope[RunType, sc.DataArray], sc.DataArray):
