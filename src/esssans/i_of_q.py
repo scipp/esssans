@@ -21,6 +21,7 @@ from .types import (
     IofQPart,
     MonitorType,
     NonBackgroundWavelengthRange,
+    ProcessedWavelengthBands,
     QBins,
     RunType,
     SampleRun,
@@ -129,10 +130,10 @@ def resample_direct_beam(
     return CleanDirectBeam(func(wavelength_bins, midpoints=True))
 
 
-def _process_wavelength_bands(
+def process_wavelength_bands(
     wavelength_bands: Optional[WavelengthBands],
     wavelength_bins: WavelengthBins,
-) -> Optional[WavelengthBands]:
+) -> ProcessedWavelengthBands:
     """
     Perform some checks and potential reshaping on the wavelength bands.
 
@@ -169,7 +170,7 @@ def merge_spectra(
     data: CleanQ[RunType, IofQPart],
     q_bins: QBins,
     wavelength_bins: WavelengthBins,
-    wavelength_bands: Optional[WavelengthBands],
+    wavelength_bands: ProcessedWavelengthBands,
     dims_to_keep: Optional[DimsToKeep],
 ) -> CleanSummedQ[RunType, IofQPart]:
     """
@@ -204,7 +205,7 @@ def merge_spectra(
     if dims_to_keep is not None:
         dims_to_reduce -= set(dims_to_keep)
 
-    wavelength_bands = _process_wavelength_bands(
+    wavelength_bands = process_wavelength_bands(
         wavelength_bands=wavelength_bands, wavelength_bins=wavelength_bins
     )
 
@@ -297,4 +298,5 @@ providers = (
     resample_direct_beam,
     merge_spectra,
     subtract_background,
+    process_wavelength_bands,
 )

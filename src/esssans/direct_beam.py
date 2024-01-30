@@ -7,7 +7,7 @@ import numpy as np
 import scipp as sc
 from sciline import Pipeline
 
-from .types import BackgroundSubtractedIofQ, DirectBeam, WavelengthBands
+from .types import BackgroundSubtractedIofQ, DirectBeam, ProcessedWavelengthBands
 
 
 def _compute_efficiency_correction(
@@ -33,7 +33,9 @@ def _compute_efficiency_correction(
         The intensity of the I(Q) for the known sample at the lowest Q value.
     """
     invalid = (iofq_bands.data <= sc.scalar(0.0)) | ~sc.isfinite(iofq_bands.data)
-    data = np.where(invalid.values, np.nan, (iofq_bands.data / iofq_full.data).values)
+    data = np.where(
+        invalid.values, np.nan, (iofq_bands.data / sc.values(iofq_full.data)).values
+    )
     eff = np.nanmedian(data, axis=iofq_bands.dims.index('Q'))
 
     scaling = sc.values(iofq_full['Q', 0].data) / I0
@@ -85,7 +87,7 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     """
 
     direct_beam_function = None
-    wavelength_bands = pipeline.compute(WavelengthBands)
+    wavelength_bands = pipeline.compute(ProcessedWavelengthBands)
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
 
     full_wavelength_range = sc.concat(
@@ -94,7 +96,7 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
 
     pipeline_bands = pipeline.copy()
     pipeline_full = pipeline_bands.copy()
-    pipeline_full[WavelengthBands] = full_wavelength_range
+    pipeline_full[ProcessedWavelengthBands] = full_wavelength_range
 
     results = []
 
