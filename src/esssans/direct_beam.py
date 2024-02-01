@@ -14,12 +14,15 @@ from .types import (
     CleanSummedQ,
     DirectBeam,
     Incident,
+    Denominator,
     Numerator,
     SampleRun,
     SolidAngle,
     TransmissionFraction,
     WavelengthBands,
+    WavelengthBins,
 )
+from .i_of_q import resample_direct_beam
 
 
 def _compute_efficiency_correction(
@@ -106,7 +109,10 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     # Append full wavelength range as extra band. This allows for running only a
     # single pipeline to compute both the I(Q) in bands and the I(Q) for the full
     # wavelength range.
-    pipeline[WavelengthBands] = sc.concat([bands, full_wavelength_range], dim=band_dim)
+    # pipeline[WavelengthBands] = sc.concat([bands, full_wavelength_range], dim=band_dim)
+    wavelength_bins = pipeline.compute(WavelengthBins)
+    pipeline[WavelengthBands] = wavelength_bins
+    # bands = pipeline.compute(WavelengthBands)
 
     results = []
 
@@ -121,20 +127,85 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         CleanSummedQ[SampleRun, Numerator],
         CleanSummedQ[BackgroundRun, Numerator],
     )
+    parts = (
+        CleanSummedQ[SampleRun, Numerator],
+        CleanSummedQ[BackgroundRun, Numerator],
+        CleanSummedQ[SampleRun, Denominator],
+        CleanSummedQ[BackgroundRun, Denominator],
+    )
 
     for key, result in pipeline.compute(checkpoints).items():
         pipeline[key] = result
 
+    # The first time we compute I(Q), the direct beam function is not in the
+    # parameters, nor given by any providers, so it will be considered flat.
+    # TODO: Should we have a check that DirectBeam cannot be computed from the
+    # pipeline?
+    parts = pipeline.compute(parts)
+    # iofq0 = pipeline.compute(BackgroundSubtractedIofQ)
+    # del iofq0.coords['wavelength']
+    # iofq0 = iofq0.rename_dims({band_dim: 'wavelength'})
+    # iofq0.coords['wavelength'] = wavelength_bins
+    # print(iofq0)
+
+    nom = parts[CleanSummedQ[SampleRun, Numerator]]
+    denom0 = parts[CleanSummedQ[SampleRun, Denominator]].rename_dims(
+        {band_dim: 'wavelength'}
+    )
+    del nom.coords['wavelength']
+    nom = nom.rename_dims({band_dim: 'wavelength'})
+    nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+    denom0.coords['wavelength'] = wavelength_bins
+
+    bnom = parts[CleanSummedQ[BackgroundRun, Numerator]]
+    bdenom0 = parts[CleanSummedQ[BackgroundRun, Denominator]].rename_dims(
+        {band_dim: 'wavelength'}
+    )
+    del bnom.coords['wavelength']
+    bnom = bnom.rename_dims({band_dim: 'wavelength'})
+    bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+    bdenom0.coords['wavelength'] = wavelength_bins
+
+    print(denom0)
+    print(f'{bands=}')
     for it in range(niter):
         print("Iteration", it)
+        if direct_beam_function is not None:
+            denom = denom0 * resample_direct_beam(
+                direct_beam_function, wavelength_bins=wavelength_bins
+            )
+            bdenom = bdenom0 * resample_direct_beam(
+                direct_beam_function, wavelength_bins=wavelength_bins
+            )
+            # iofq = iofq0 / resample_direct_beam(
+            #    direct_beam_function, wavelength_bins=iofq.coords['wavelength']
+            # )
+        else:
+            denom = denom0.copy(deep=False)
+            bdenom = bdenom0.copy(deep=False)
+            # iofq = iofq0.copy(deep=False)
+        # iofq_full = iofq.mean('wavelength')
+        iofq_full = nom.sum('wavelength') / denom.sum('wavelength') - bnom.sum(
+            'wavelength'
+        ) / bdenom.sum('wavelength')
+        sections = []
+        # tmp = iofq.copy(deep=False)
+        # denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        # bdenom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        for i in range(bands.sizes[band_dim]):
+            bounds = bands[band_dim, i]
+            band_num = nom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
+            band_denom = denom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
+            bband_num = bnom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
+            bband_denom = bdenom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
+            sections.append(band_num / band_denom - bband_num / bband_denom)
+        iofq_bands = sc.concat(sections, dim=band_dim)
+        iofq_bands.coords['wavelength'] = bands
 
-        # The first time we compute I(Q), the direct beam function is not in the
-        # parameters, nor given by any providers, so it will be considered flat.
-        # TODO: Should we have a check that DirectBeam cannot be computed from the
-        # pipeline?
-        iofq = pipeline.compute(BackgroundSubtractedIofQ)
-        iofq_full = iofq['band', -1]
-        iofq_bands = iofq['band', :-1]
+        print(iofq_full)
+        print(iofq_bands)
+        # iofq_full = iofq['band', -1]
+        # iofq_bands = iofq['band', :-1]
 
         if direct_beam_function is None:
             # Make a flat direct beam
@@ -152,7 +223,7 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         )
 
         # Insert new direct beam function into pipeline
-        pipeline[DirectBeam] = direct_beam_function
+        # pipeline[DirectBeam] = direct_beam_function
 
         results.append(
             {
