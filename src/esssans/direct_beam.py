@@ -171,27 +171,23 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     for it in range(niter):
         print("Iteration", it)
         if direct_beam_function is not None:
-            denom = denom0 * resample_direct_beam(
+            db = resample_direct_beam(
                 direct_beam_function, wavelength_bins=wavelength_bins
             )
-            bdenom = bdenom0 * resample_direct_beam(
-                direct_beam_function, wavelength_bins=wavelength_bins
-            )
-            # iofq = iofq0 / resample_direct_beam(
-            #    direct_beam_function, wavelength_bins=iofq.coords['wavelength']
-            # )
+            denom = denom0 * db
+            bdenom = bdenom0 * db
         else:
             denom = denom0.copy(deep=False)
             bdenom = bdenom0.copy(deep=False)
-            # iofq = iofq0.copy(deep=False)
-        # iofq_full = iofq.mean('wavelength')
         iofq_full = nom.sum('wavelength') / denom.sum('wavelength') - bnom.sum(
             'wavelength'
         ) / bdenom.sum('wavelength')
         sections = []
         # tmp = iofq.copy(deep=False)
-        # denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-        # bdenom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        bdenom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
         for i in range(bands.sizes[band_dim]):
             bounds = bands[band_dim, i]
             band_num = nom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
@@ -200,6 +196,7 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
             bband_denom = bdenom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
             sections.append(band_num / band_denom - bband_num / bband_denom)
         iofq_bands = sc.concat(sections, dim=band_dim)
+        iofq_bands.data = sc.nan_to_num(iofq_bands.data, nan=sc.scalar(0.0))
         iofq_bands.coords['wavelength'] = bands
 
         print(iofq_full)
