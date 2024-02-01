@@ -216,6 +216,7 @@ def merge_spectra(
             q_bins=q_bins,
             wavelength_bands=wavelength_bands,
             dims_to_reduce=dims_to_reduce,
+            wav=wavelength_bins,
         )
     else:
         out = _dense_merge_spectra(
@@ -223,6 +224,7 @@ def merge_spectra(
             q_bins=q_bins,
             wavelength_bands=wavelength_bands,
             dims_to_reduce=dims_to_reduce,
+            wav=wavelength_bins,
         )
     return CleanSummedQ[RunType, IofQPart](out.squeeze())
 
@@ -242,6 +244,7 @@ def _events_merge_spectra(
     q_bins: Union[int, sc.Variable],
     dims_to_reduce: List[str],
     wavelength_bands: sc.Variable,
+    wav: sc.Variable,
 ) -> sc.DataArray:
     """
     Merge spectra of event data
@@ -249,6 +252,7 @@ def _events_merge_spectra(
     q_all_pixels = data_q.bins.concat(dims_to_reduce)
     edges = _to_q_bins(q_bins)
     q_binned = q_all_pixels.bin(**edges)
+    return q_binned.bin(wavelength=wav)
     dim = 'wavelength'
     wav_binned = q_binned.bin({dim: sc.sort(wavelength_bands.flatten(to=dim), dim)})
     # At this point we kind of already have what we need, would be cheapest to just
@@ -271,6 +275,7 @@ def _dense_merge_spectra(
     q_bins: Union[int, sc.Variable],
     dims_to_reduce: List[str],
     wavelength_bands: sc.Variable,
+    wav: sc.Variable,
 ) -> sc.DataArray:
     """
     Merge spectra of dense data
@@ -278,6 +283,8 @@ def _dense_merge_spectra(
     edges = _to_q_bins(q_bins)
     bands = []
     band_dim = (set(wavelength_bands.dims) - {'wavelength'}).pop()
+
+    return data_q.flatten(to='dummy').hist(wavelength=wav, Q=q_bins)
 
     # We want to flatten data to make histogramming cheaper (avoiding allocation of
     # large output before summing). We strip unnecessary content since it makes

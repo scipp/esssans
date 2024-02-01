@@ -111,7 +111,8 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     # wavelength range.
     # pipeline[WavelengthBands] = sc.concat([bands, full_wavelength_range], dim=band_dim)
     wavelength_bins = pipeline.compute(WavelengthBins)
-    pipeline[WavelengthBands] = wavelength_bins
+    # pipeline[WavelengthBands] = wavelength_bins
+    del pipeline._providers[WavelengthBands]
     # bands = pipeline.compute(WavelengthBands)
 
     results = []
@@ -149,24 +150,25 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     # print(iofq0)
 
     nom = parts[CleanSummedQ[SampleRun, Numerator]]
-    denom0 = parts[CleanSummedQ[SampleRun, Denominator]].rename_dims(
-        {band_dim: 'wavelength'}
-    )
-    del nom.coords['wavelength']
-    nom = nom.rename_dims({band_dim: 'wavelength'})
-    nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-    denom0.coords['wavelength'] = wavelength_bins
+    denom0 = parts[CleanSummedQ[SampleRun, Denominator]]
+    # denom0 = denom0.rename_dims({band_dim: 'wavelength'})
+    # del nom.coords['wavelength']
+    # nom = nom.rename_dims({band_dim: 'wavelength'})
+    # nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+    # denom0.coords['wavelength'] = wavelength_bins
 
     bnom = parts[CleanSummedQ[BackgroundRun, Numerator]]
-    bdenom0 = parts[CleanSummedQ[BackgroundRun, Denominator]].rename_dims(
-        {band_dim: 'wavelength'}
-    )
-    del bnom.coords['wavelength']
-    bnom = bnom.rename_dims({band_dim: 'wavelength'})
-    bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-    bdenom0.coords['wavelength'] = wavelength_bins
+    bdenom0 = parts[CleanSummedQ[BackgroundRun, Denominator]]
+    # bdenom0 = bdenom0.rename_dims({band_dim: 'wavelength'})
+    # del bnom.coords['wavelength']
+    # bnom = bnom.rename_dims({band_dim: 'wavelength'})
+    # bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+    # bdenom0.coords['wavelength'] = wavelength_bins
 
+    print(nom)
     print(denom0)
+    print(bnom)
+    print(bdenom0)
     print(f'{bands=}')
     for it in range(niter):
         print("Iteration", it)
@@ -179,23 +181,17 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         else:
             denom = denom0.copy(deep=False)
             bdenom = bdenom0.copy(deep=False)
+        print(denom)
         iofq_full = nom.sum('wavelength') / denom.sum('wavelength') - bnom.sum(
             'wavelength'
         ) / bdenom.sum('wavelength')
         sections = []
-        # tmp = iofq.copy(deep=False)
-        if True:
-            denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-            bdenom.coords['wavelength'] = sc.midpoints(
-                wavelength_bins, dim='wavelength'
-            )
-            nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-            bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-        else:
-            denom.coords['wavelength'] = wavelength_bins
-            bdenom.coords['wavelength'] = wavelength_bins
-            nom.coords['wavelength'] = wavelength_bins
-            bnom.coords['wavelength'] = wavelength_bins
+        wav = wavelength_bins
+        wav = sc.midpoints(wavelength_bins, dim='wavelength')
+        denom.coords['wavelength'] = wav
+        bdenom.coords['wavelength'] = wav
+        nom.coords['wavelength'] = wav
+        bnom.coords['wavelength'] = wav
         for i in range(bands.sizes[band_dim]):
             bounds = bands[band_dim, i]
             band_num = nom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
