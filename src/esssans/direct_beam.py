@@ -184,10 +184,18 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         ) / bdenom.sum('wavelength')
         sections = []
         # tmp = iofq.copy(deep=False)
-        denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-        bdenom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-        nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
-        bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        if True:
+            denom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+            bdenom.coords['wavelength'] = sc.midpoints(
+                wavelength_bins, dim='wavelength'
+            )
+            nom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+            bnom.coords['wavelength'] = sc.midpoints(wavelength_bins, dim='wavelength')
+        else:
+            denom.coords['wavelength'] = wavelength_bins
+            bdenom.coords['wavelength'] = wavelength_bins
+            nom.coords['wavelength'] = wavelength_bins
+            bnom.coords['wavelength'] = wavelength_bins
         for i in range(bands.sizes[band_dim]):
             bounds = bands[band_dim, i]
             band_num = nom['wavelength', bounds[0] : bounds[1]].sum('wavelength')
@@ -197,6 +205,7 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
             sections.append(band_num / band_denom - bband_num / bband_denom)
         iofq_bands = sc.concat(sections, dim=band_dim)
         iofq_bands.data = sc.nan_to_num(iofq_bands.data, nan=sc.scalar(0.0))
+        print(iofq_bands['band', :10].values)
         iofq_bands.coords['wavelength'] = bands
 
         print(iofq_full)
