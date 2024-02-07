@@ -31,8 +31,8 @@ MaskedDetectorIDs = NewType('MaskedDetectorIDs', sc.Variable)
 """1-D variable listing all masked detector IDs."""
 
 
-def to_path(filename: FilenameType, path: DataFolder) -> FilePath[FilenameType]:
-    return f'{path}/{filename}'
+# def to_path(filename: FilenameType, path: DataFolder) -> FilePath[FilenameType]:
+#     return f'{path}/{filename}'
 
 
 def read_xml_detector_masking(
@@ -85,4 +85,4 @@ def load_direct_beam(filename: FilePath[DirectBeamFilename]) -> DirectBeam:
     return DirectBeam(sc.io.load_hdf5(filename))
 
 
-providers = (read_xml_detector_masking, to_path, load_run, load_direct_beam)
+providers = (read_xml_detector_masking, load_run, load_direct_beam)

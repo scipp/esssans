@@ -10,6 +10,8 @@
 # )
 from . import general
 from . import io
+from . import sans2d
+from . import zoom
 
 # masking
 from .components import (
@@ -34,10 +36,12 @@ __all__ = [
     'Filename',
     'apply_component_user_offsets_to_raw_data',
     'io',
-    'masking',
+    # 'masking',
     'PixelMask',
     'PixelMaskFilename',
     'providers',
     'SampleOffset',
     'plot_flat_detector_xy',
+    'sans2d',
+    'zoom',
 ]

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
-from typing import NewType
+from typing import NewType, Optional
 
 import numpy as np
 import sciline
@@ -10,7 +10,7 @@ import scipp as sc
 from ..data import Registry
 from ..types import LoadedFileContents, MaskedData, RawData, RunType, SampleRun
 from .components import RawDataWithComponentUserOffsets
-from .io import FilenameType, FilePath, MaskedDetectorIDs
+from .io import DataFolder, FilenameType, FilePath, MaskedDetectorIDs
 
 
 _registry = Registry(
@@ -41,8 +41,12 @@ _registry = Registry(
 )
 
 
-def get_path(filename: FilenameType) -> FilePath[FilenameType]:
+def get_path(
+    filename: FilenameType, folder: Optional[DataFolder]
+) -> FilePath[FilenameType]:
     """Translate any filename to a path to the file obtained from pooch registry."""
+    if folder is not None:
+        return f'{folder}/{filename}'
     mapping = {
         'Direct_Zoom_4m_8mm_100522.txt': 'Direct_Zoom_4m_8mm_100522.txt.h5',
         'ZOOM00034786.nxs': 'ZOOM00034786.nxs.h5.zip',
