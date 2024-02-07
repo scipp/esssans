@@ -14,11 +14,11 @@ _registry = Registry(
         # Direct beam file (efficiency of detectors as a function of wavelength)
         'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.dat.h5': 'md5:43f4188301d709aa49df0631d03a67cb',  # noqa: E501
         # Empty beam run (no sample and no sample holder/can)
-        'SANS2D00063091.nxs.h5': 'md5:d2a5e59a4489220ecb59d221cb07397e',
+        'SANS2D00063091.nxs.h5': 'md5:2f9b77f188cd28fa644bd9b32c8cae31',
         # Sample run (sample and sample holder/can)
-        'SANS2D00063114.nxs.h5': 'md5:ffcf9f4c8b1ff02f5f03a569b4930ce1',
+        'SANS2D00063114.nxs.h5': 'md5:6fb10ecd898c439fded3e3561fed023e',
         # Background run (no sample, sample holder/can only)
-        'SANS2D00063159.nxs.h5': 'md5:92f1da2697818416d6e1497035da5dae',
+        'SANS2D00063159.nxs.h5': 'md5:b310546631deaa7a337222723b15b5f9',
         # Solid angles of the SANS2D detector pixels computed by Mantid (for tests)
         'SANS2D00063091.SolidAngle_from_mantid.hdf5': 'md5:d57b82db377cb1aea0beac7202713861',  # noqa: E501
     },
@@ -39,7 +39,7 @@ def get_detector_data(
 ) -> RawData[RunType]:
     da = dg['data']
     # Remove half of the pixels as the second detector panel is not in the beam path
-    return RawData[RunType](da['spectrum', : da.sizes['spectrum'] // 2])
+    return RawData[RunType](da['spectrum', : da.sizes['spectrum'] // 2].copy())
 
 
 DetectorEdgeMask = NewType('DetectorEdgeMask', sc.Variable)
