@@ -8,7 +8,7 @@ from typing import NewType, TypeVar
 import sciline
 import scipp as sc
 
-from ..types import RunType
+from ..types import DirectBeam, DirectBeamFilename, LoadedFileContents, RunType
 
 PixelMaskFilename = NewType('PixelMaskFilename', str)
 CalibrationFilename = NewType('CalibrationFilename', str)
@@ -77,4 +77,12 @@ def read_xml_detector_masking(
     )
 
 
-providers = (read_xml_detector_masking, to_path)
+def load_run(filename: FilePath[Filename[RunType]]) -> LoadedFileContents[RunType]:
+    return LoadedFileContents[RunType](sc.io.load_hdf5(filename))
+
+
+def load_direct_beam(filename: FilePath[DirectBeamFilename]) -> DirectBeam:
+    return DirectBeam(sc.io.load_hdf5(filename))
+
+
+providers = (read_xml_detector_masking, to_path, load_run, load_direct_beam)

@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 """
-Loading and masking specific to the ISIS Sans2d instrument and files stored in Scipp's
-HDF5 format.
+Providers for the ISIS instruments.
 """
 import scipp as sc
 
 from ..types import (
     DetectorPixelShape,
-    Incident,
     LabFrameTransform,
     LoadedFileContents,
     MonitorType,
@@ -18,13 +16,7 @@ from ..types import (
     RunTitle,
     RunType,
     SampleRun,
-    Transmission,
 )
-
-default_parameters = {
-    NeXusMonitorName[Incident]: 'monitor2',
-    NeXusMonitorName[Transmission]: 'monitor4',
-}
 
 
 def get_monitor(
