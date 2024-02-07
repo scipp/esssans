@@ -1,0 +1,90 @@
+esssans.types.TransmissionFraction
+==================================
+
+.. currentmodule:: esssans.types
+
+.. autoclass:: TransmissionFraction
+   :members:
+   :special-members: __getitem__
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TransmissionFraction.__init__
+      ~TransmissionFraction.all
+      ~TransmissionFraction.any
+      ~TransmissionFraction.assign_attrs
+      ~TransmissionFraction.assign_coords
+      ~TransmissionFraction.assign_masks
+      ~TransmissionFraction.astype
+      ~TransmissionFraction.bin
+      ~TransmissionFraction.broadcast
+      ~TransmissionFraction.ceil
+      ~TransmissionFraction.copy
+      ~TransmissionFraction.deprecated_drop_attrs
+      ~TransmissionFraction.drop_attrs
+      ~TransmissionFraction.drop_coords
+      ~TransmissionFraction.drop_masks
+      ~TransmissionFraction.flatten
+      ~TransmissionFraction.floor
+      ~TransmissionFraction.fold
+      ~TransmissionFraction.group
+      ~TransmissionFraction.groupby
+      ~TransmissionFraction.hist
+      ~TransmissionFraction.max
+      ~TransmissionFraction.mean
+      ~TransmissionFraction.min
+      ~TransmissionFraction.nanhist
+      ~TransmissionFraction.nanmax
+      ~TransmissionFraction.nanmean
+      ~TransmissionFraction.nanmin
+      ~TransmissionFraction.nansum
+      ~TransmissionFraction.plot
+      ~TransmissionFraction.rebin
+      ~TransmissionFraction.rename
+      ~TransmissionFraction.rename_dims
+      ~TransmissionFraction.round
+      ~TransmissionFraction.save_hdf5
+      ~TransmissionFraction.squeeze
+      ~TransmissionFraction.sum
+      ~TransmissionFraction.to
+      ~TransmissionFraction.transform_coords
+      ~TransmissionFraction.transpose
+      ~TransmissionFraction.underlying_size
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TransmissionFraction.attrs
+      ~TransmissionFraction.bins
+      ~TransmissionFraction.coords
+      ~TransmissionFraction.data
+      ~TransmissionFraction.deprecated_attrs
+      ~TransmissionFraction.deprecated_meta
+      ~TransmissionFraction.dim
+      ~TransmissionFraction.dims
+      ~TransmissionFraction.dtype
+      ~TransmissionFraction.masks
+      ~TransmissionFraction.meta
+      ~TransmissionFraction.name
+      ~TransmissionFraction.ndim
+      ~TransmissionFraction.shape
+      ~TransmissionFraction.size
+      ~TransmissionFraction.sizes
+      ~TransmissionFraction.unit
+      ~TransmissionFraction.value
+      ~TransmissionFraction.values
+      ~TransmissionFraction.variance
+      ~TransmissionFraction.variances
+   
+   
