@@ -17,9 +17,9 @@ _registry = Registry(
     instrument='zoom',
     files={
         # Sample run (sample and sample holder/can) with applied 192tubeCalibration_11-02-2019_r5_10lines.nxs  # noqa: E501
-        'ZOOM00034786.nxs.h5.zip': 'md5:b27e56358151ba3eed18b9857932eee8',
+        'ZOOM00034786.nxs.h5.zip': 'md5:ec442dd46e9ac787a186abb9f29bdf9e',
         # Empty beam run (no sample and no sample holder/can) - Scipp-hdf5 format
-        'ZOOM00034787.nxs.h5': 'md5:8b1e1842c8efc473de0cce756016cac2',
+        'ZOOM00034787.nxs.h5': 'md5:6a33e5e3ea73fbcb270756e470a18500',
         # Calibration file, Mantid processed NeXus
         '192tubeCalibration_11-02-2019_r5_10lines.nxs': 'md5:ca1e0e3c387903be445d0dfd0a784ed6',  # noqa: E501
         # Direct beam file (efficiency of detectors as a function of wavelength)
@@ -37,7 +37,7 @@ _registry = Registry(
         'tube_1120_bottom.xml': 'md5:fe577bf73c16bf5ac909516fa67360e9',
         'tubes_beg_18_2.xml': 'md5:2debde8d82c383cc3d592ea000552300',
     },
-    version='1',
+    version='2',
 )
 
 
