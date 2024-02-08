@@ -17,9 +17,9 @@ _registry = Registry(
     instrument='zoom',
     files={
         # Sample run (sample and sample holder/can) with applied 192tubeCalibration_11-02-2019_r5_10lines.nxs  # noqa: E501
-        'ZOOM00034786.nxs.h5.zip': 'md5:ec442dd46e9ac787a186abb9f29bdf9e',
+        'ZOOM00034786.nxs.h5.zip': 'md5:e1c53bf826dd87545df1b3629f424762',
         # Empty beam run (no sample and no sample holder/can) - Scipp-hdf5 format
-        'ZOOM00034787.nxs.h5': 'md5:6a33e5e3ea73fbcb270756e470a18500',
+        'ZOOM00034787.nxs.h5': 'md5:27e563d4e57621518658307acbbc3413',
         # Calibration file, Mantid processed NeXus
         '192tubeCalibration_11-02-2019_r5_10lines.nxs': 'md5:ca1e0e3c387903be445d0dfd0a784ed6',  # noqa: E501
         # Direct beam file (efficiency of detectors as a function of wavelength)

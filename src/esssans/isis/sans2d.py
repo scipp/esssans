@@ -20,7 +20,7 @@ _registry = Registry(
         # Background run (no sample, sample holder/can only)
         'SANS2D00063159.nxs.h5': 'md5:8d740b29d8965c8d9ca4f20f1e68ec15',
         # Solid angles of the SANS2D detector pixels computed by Mantid (for tests)
-        'SANS2D00063091.SolidAngle_from_mantid.hdf5': 'md5:d57b82db377cb1aea0beac7202713861',  # noqa: E501
+        'SANS2D00063091.SolidAngle_from_mantid.h5': 'md5:d57b82db377cb1aea0beac7202713861',  # noqa: E501
     },
     version='1',
 )
@@ -31,6 +31,13 @@ def get_path(
 ) -> FilePath[FilenameType]:
     if folder is not None:
         return f'{folder}/{filename}'
+    mapping = {
+        'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.dat': 'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.dat.h5',
+        'SANS2D00063091.nxs': 'SANS2D00063091.nxs.h5',
+        'SANS2D00063114.nxs': 'SANS2D00063114.nxs.h5',
+        'SANS2D00063159.nxs': 'SANS2D00063159.nxs.h5',
+    }
+    filename = mapping.get(filename, filename)
     return _registry.get_path(filename)
 
 
