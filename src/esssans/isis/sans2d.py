@@ -6,6 +6,7 @@ import scipp as sc
 
 from ..data import Registry
 from ..types import LoadedFileContents, MaskedData, RawData, RunType, SampleRun
+from .components import RawDataWithComponentUserOffsets
 from .io import DataFolder, FilenameType, FilePath
 
 _registry = Registry(
@@ -60,7 +61,9 @@ SampleHolderMask = NewType('SampleHolderMask', sc.Variable)
 """Sample holder mask"""
 
 
-def detector_edge_mask(sample: RawData[SampleRun]) -> DetectorEdgeMask:
+def detector_edge_mask(
+    sample: RawDataWithComponentUserOffsets[SampleRun],
+) -> DetectorEdgeMask:
     mask_edges = (
         sc.abs(sample.coords['position'].fields.x) > sc.scalar(0.48, unit='m')
     ) | (sc.abs(sample.coords['position'].fields.y) > sc.scalar(0.45, unit='m'))
@@ -68,10 +71,10 @@ def detector_edge_mask(sample: RawData[SampleRun]) -> DetectorEdgeMask:
 
 
 def sample_holder_mask(
-    sample: RawData[SampleRun],
+    sample: RawDataWithComponentUserOffsets[SampleRun],
     low_counts_threshold: LowCountThreshold,
 ) -> SampleHolderMask:
-    summed = sample.sum('tof')
+    summed = sample.hist()
     holder_mask = (
         (summed.data < low_counts_threshold)
         & (sample.coords['position'].fields.x > sc.scalar(0, unit='m'))
@@ -83,7 +86,7 @@ def sample_holder_mask(
 
 
 def mask_detectors(
-    da: RawData[RunType],
+    da: RawDataWithComponentUserOffsets[RunType],
     edge_mask: Optional[DetectorEdgeMask],
     holder_mask: Optional[SampleHolderMask],
 ) -> MaskedData[RunType]:

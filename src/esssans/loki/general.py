@@ -6,6 +6,7 @@ Default parameters, providers and utility functions for the loki workflow.
 
 
 from ..types import (
+    CalibratedMonitor,
     DetectorPixelShape,
     Incident,
     LabFrameTransform,
@@ -50,6 +51,16 @@ def get_monitor_data(
     return RawMonitor[RunType, MonitorType](out)
 
 
+def calibrate_monitor_position(
+    monitor: RawMonitor[RunType, MonitorType]
+) -> CalibratedMonitor[RunType, MonitorType]:
+    """Dummy provider which currently does nothing to the monitor position.
+    Other instruments (e.g. ISIS instruments) may need to calibrate the monitor
+    position.
+    """
+    return CalibratedMonitor[RunType, MonitorType](monitor)
+
+
 def detector_pixel_shape(
     dg: LoadedFileContents[RunType], detector_name: NeXusDetectorName
 ) -> DetectorPixelShape[RunType]:
@@ -69,6 +80,7 @@ def detector_lab_frame_transform(
 
 
 providers = (
+    calibrate_monitor_position,
     detector_pixel_shape,
     detector_lab_frame_transform,
     get_detector_data,

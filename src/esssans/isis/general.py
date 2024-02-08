@@ -19,7 +19,7 @@ from ..types import (
 )
 
 
-def get_monitor(
+def get_monitor_data(
     dg: LoadedFileContents[RunType], nexus_name: NeXusMonitorName[MonitorType]
 ) -> RawMonitor[RunType, MonitorType]:
     # See https://github.com/scipp/sciline/issues/52 why copy needed
@@ -37,7 +37,7 @@ def run_title(dg: LoadedFileContents[SampleRun]) -> RunTitle:
     return RunTitle(dg['run_title'].value)
 
 
-def sans2d_tube_detector_pixel_shape() -> DetectorPixelShape[RunType]:
+def helium3_tube_detector_pixel_shape() -> DetectorPixelShape[RunType]:
     # Pixel radius and length
     # found here:
     # https://github.com/mantidproject/mantid/blob/main/instrument/SANS2D_Definition_Tubes.xml
@@ -70,9 +70,9 @@ def lab_frame_transform() -> LabFrameTransform[RunType]:
 
 
 providers = (
-    get_monitor,
+    get_monitor_data,
     run_number,
     run_title,
     lab_frame_transform,
-    sans2d_tube_detector_pixel_shape,
+    helium3_tube_detector_pixel_shape,
 )

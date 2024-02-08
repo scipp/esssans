@@ -8,25 +8,20 @@
 #     lab_frame_transform,
 #     sans2d_tube_detector_pixel_shape,
 # )
+from . import components
 from . import general
 from . import io
 from . import sans2d
 from . import zoom
 
 # masking
-from .components import (
-    DetectorBankOffset,
-    SampleOffset,
-    apply_component_user_offsets_to_raw_data,
-)
+from .components import DetectorBankOffset, MonitorOffset, SampleOffset
 from .io import CalibrationFilename, DataFolder, Filename, PixelMaskFilename
 
 # from .masking import PixelMask
 from .visualization import plot_flat_detector_xy
 
-providers = (
-    (apply_component_user_offsets_to_raw_data,) + io.providers + general.providers
-)
+providers = components.providers + io.providers + general.providers
 
 
 __all__ = [
@@ -37,6 +32,7 @@ __all__ = [
     'apply_component_user_offsets_to_raw_data',
     'io',
     # 'masking',
+    'MonitorOffset',
     'PixelMask',
     'PixelMaskFilename',
     'providers',

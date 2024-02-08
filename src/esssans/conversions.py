@@ -11,6 +11,7 @@ from .common import mask_range
 from .types import (
     BeamCenter,
     CalibratedMaskedData,
+    CalibratedMonitor,
     CleanQ,
     CleanWavelength,
     CleanWavelengthMasked,
@@ -20,7 +21,6 @@ from .types import (
     MonitorType,
     Numerator,
     QxyBins,
-    RawMonitor,
     RunType,
     WavelengthMask,
     WavelengthMonitor,
@@ -196,7 +196,7 @@ def sans_monitor() -> MonitorCoordTransformGraph:
 
 
 def monitor_to_wavelength(
-    monitor: RawMonitor[RunType, MonitorType], graph: MonitorCoordTransformGraph
+    monitor: CalibratedMonitor[RunType, MonitorType], graph: MonitorCoordTransformGraph
 ) -> WavelengthMonitor[RunType, MonitorType]:
     return WavelengthMonitor[RunType, MonitorType](
         monitor.transform_coords('wavelength', graph=graph)
