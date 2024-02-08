@@ -232,12 +232,13 @@ def mask_wavelength(
     da: CleanWavelength[RunType, IofQPart], mask: Optional[WavelengthMask]
 ) -> CleanWavelengthMasked[RunType, IofQPart]:
     if mask is not None:
-        # If we have binned data and the wavelength coord is multi-dimensional, we need
-        # to make a single wavelength bin before we can mask the range.
-        if da.bins is not None:
-            dim = mask.dim
-            if (dim in da.bins.coords) and (dim in da.coords):
-                da = da.bin({dim: 1})
+        # # If we have binned data and the wavelength coord is multi-dimensional, we
+        # # remove the wavelength coord, because keeping it would cause new binning in
+        # # wavelength to  before we can mask the range.
+        # if da.bins is not None:
+        #     dim = mask.dim
+        #     if (dim in da.bins.coords) and (dim in da.coords):
+        #         da = da.bin({dim: 1})
         da = mask_range(da, mask=mask)
     return CleanWavelengthMasked[RunType, IofQPart](da)
 

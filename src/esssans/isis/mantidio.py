@@ -95,6 +95,7 @@ def from_data_workspace(
     for dim, shape in det_ids.sizes.items():
         dg['data'] = dg['data'][dim, :shape]
     dg['data'] = dg['data'].squeeze()
+    del dg['data'].coords['tof']
     dg['data'].coords['detector_id'] = det_ids
     dg['data'].coords['gravity'] = sc.vector(value=-up) * g
     return LoadedFileContents[RunType](dg)
