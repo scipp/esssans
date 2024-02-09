@@ -114,9 +114,4 @@ def load_run(filename: FilePath[Filename[RunType]]) -> DataWorkspace[RunType]:
     return DataWorkspace[RunType](data_ws)
 
 
-providers = (
-    from_data_workspace,
-    load_calibration,
-    load_direct_beam,
-    load_run,
-)
+providers = (from_data_workspace, load_calibration, load_direct_beam, load_run)

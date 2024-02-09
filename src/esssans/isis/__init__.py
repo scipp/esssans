@@ -11,17 +11,16 @@
 from . import components
 from . import general
 from . import io
+from . import masking
 from . import sans2d
 from . import zoom
 
-# masking
 from .components import DetectorBankOffset, MonitorOffset, SampleOffset
 from .io import CalibrationFilename, DataFolder, Filename, PixelMaskFilename
-
-# from .masking import PixelMask
+from .masking import PixelMask
 from .visualization import plot_flat_detector_xy
 
-providers = components.providers + io.providers + general.providers
+providers = components.providers + general.providers
 
 
 __all__ = [
@@ -31,7 +30,7 @@ __all__ = [
     'Filename',
     'apply_component_user_offsets_to_raw_data',
     'io',
-    # 'masking',
+    'masking',
     'MonitorOffset',
     'PixelMask',
     'PixelMaskFilename',

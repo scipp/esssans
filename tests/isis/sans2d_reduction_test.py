@@ -7,7 +7,7 @@ import sciline
 import scipp as sc
 
 import esssans as sans
-from esssans.sans2d import default_parameters
+from esssans.isis import Filename, MonitorOffset, SampleOffset
 from esssans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
@@ -17,13 +17,16 @@ from esssans.types import (
     DirectBeamFilename,
     EmptyBeamRun,
     FileList,
+    Incident,
     IofQ,
+    NeXusMonitorName,
     NonBackgroundWavelengthRange,
     QBins,
     RawData,
     ReturnEvents,
     SampleRun,
     SolidAngle,
+    Transmission,
     TransmissionRun,
     UncertaintyBroadcastMode,
     WavelengthBands,
@@ -33,7 +36,7 @@ from esssans.types import (
 
 
 def make_params() -> dict:
-    params = default_parameters.copy()
+    params = {}
     params[WavelengthBins] = sc.linspace(
         'wavelength', start=2.0, stop=16.0, num=141, unit='angstrom'
     )
@@ -45,17 +48,23 @@ def make_params() -> dict:
             )
         },
     )
-    params[sans.sans2d.LowCountThreshold] = sc.scalar(100.0, unit='counts')
+    params[sans.isis.sans2d.LowCountThreshold] = sc.scalar(100.0, unit='counts')
 
     params[QBins] = sc.linspace(
         dim='Q', start=0.01, stop=0.55, num=141, unit='1/angstrom'
     )
-    params[FileList[BackgroundRun]] = ['SANS2D00063159.hdf5']
-    params[FileList[TransmissionRun[BackgroundRun]]] = params[FileList[BackgroundRun]]
-    params[FileList[SampleRun]] = ['SANS2D00063114.hdf5']
-    params[FileList[TransmissionRun[SampleRun]]] = params[FileList[SampleRun]]
-    params[FileList[EmptyBeamRun]] = ['SANS2D00063091.hdf5']
-    params[DirectBeamFilename] = 'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.hdf5'
+    params[DirectBeamFilename] = 'DIRECT_SANS2D_REAR_34327_4m_8mm_16Feb16.dat'
+    params[Filename[SampleRun]] = 'SANS2D00063114.nxs'
+    params[Filename[TransmissionRun[SampleRun]]] = params[Filename[SampleRun]]
+    params[Filename[BackgroundRun]] = 'SANS2D00063159.nxs'
+    params[Filename[TransmissionRun[BackgroundRun]]] = params[Filename[BackgroundRun]]
+    params[Filename[EmptyBeamRun]] = 'SANS2D00063091.nxs'
+
+    params[NeXusMonitorName[Incident]] = 'monitor2'
+    params[NeXusMonitorName[Transmission]] = 'monitor4'
+    params[SampleOffset] = sc.vector([0.0, 0.0, 0.053], unit='m')
+    params[MonitorOffset[Transmission]] = sc.vector([0.0, 0.0, -6.719], unit='m')
+
     params[NonBackgroundWavelengthRange] = sc.array(
         dims=['wavelength'], values=[0.7, 17.1], unit='angstrom'
     )
@@ -66,7 +75,7 @@ def make_params() -> dict:
 
 
 def sans2d_providers():
-    return list(sans.providers + sans.sans2d.providers)
+    return list(sans.providers + sans.isis.providers + sans.isis.sans2d.providers)
 
 
 def test_can_create_pipeline():
@@ -166,7 +175,7 @@ def as_dict(funcs: List[Callable[..., type]]) -> dict:
 def pixel_dependent_direct_beam(
     filename: DirectBeamFilename, shape: RawData[SampleRun]
 ) -> DirectBeam:
-    direct_beam = sans.sans2d.io.pooch_load_direct_beam(filename)
+    direct_beam = sans.isis.io.load_direct_beam(filename)
     sizes = {'spectrum': shape.sizes['spectrum'], **direct_beam.sizes}
     return DirectBeam(direct_beam.broadcast(sizes=sizes).copy())
 
