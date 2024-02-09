@@ -7,7 +7,7 @@ import sciline
 import scipp as sc
 
 import esssans as sans
-from esssans.isis import Filename, MonitorOffset, SampleOffset
+from esssans.isis import Filename, MonitorOffset, SampleOffset, sans2d
 from esssans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
@@ -48,7 +48,7 @@ def make_params() -> dict:
             )
         },
     )
-    params[sans.isis.sans2d.LowCountThreshold] = sc.scalar(100.0, unit='counts')
+    params[sans2d.LowCountThreshold] = sc.scalar(100.0, unit='counts')
 
     params[QBins] = sc.linspace(
         dim='Q', start=0.01, stop=0.55, num=141, unit='1/angstrom'
@@ -75,7 +75,9 @@ def make_params() -> dict:
 
 
 def sans2d_providers():
-    return list(sans.providers + sans.isis.providers + sans.isis.sans2d.providers)
+    return list(
+        sans.providers + sans.isis.providers + sans.isis.io.providers + sans2d.providers
+    )
 
 
 def test_can_create_pipeline():
@@ -175,7 +177,7 @@ def as_dict(funcs: List[Callable[..., type]]) -> dict:
 def pixel_dependent_direct_beam(
     filename: DirectBeamFilename, shape: RawData[SampleRun]
 ) -> DirectBeam:
-    direct_beam = sans.isis.io.load_direct_beam(filename)
+    direct_beam = sans.isis.io.load_direct_beam(sans2d.get_path(filename, folder=None))
     sizes = {'spectrum': shape.sizes['spectrum'], **direct_beam.sizes}
     return DirectBeam(direct_beam.broadcast(sizes=sizes).copy())
 
