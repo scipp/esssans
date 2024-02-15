@@ -13,8 +13,10 @@ from esssans.conversions import ElasticCoordTransformGraph
 from esssans.types import (
     BackgroundSubtractedIofQ,
     BeamCenter,
+    CleanSummedQ,
     CleanWavelengthMasked,
     CorrectForGravity,
+    Denominator,
     DimsToKeep,
     Numerator,
     QBins,
@@ -149,6 +151,42 @@ def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs():
     pipeline = sciline.Pipeline(loki_providers(), params=params)
     result = pipeline.compute(BackgroundSubtractedIofQ)
     assert result.dims == ('Q',)
+
+
+def test_pipeline_IofQ_merging_events_yields_consistent_results():
+    N = 3
+    pipeline_single = sciline.Pipeline(
+        loki_providers(),
+        params=make_params(
+            sample_runs=['60339-2022-02-28_2215.nxs'],
+            background_runs=['60393-2022-02-28_2215.nxs'],
+        ),
+    )
+    pipeline_triple = sciline.Pipeline(
+        loki_providers(),
+        params=make_params(
+            sample_runs=['60339-2022-02-28_2215.nxs'] * N,
+            background_runs=['60393-2022-02-28_2215.nxs'] * N,
+        ),
+    )
+    iofq1 = pipeline_single.compute(BackgroundSubtractedIofQ)
+    iofq3 = pipeline_triple.compute(BackgroundSubtractedIofQ)
+    print(abs(sc.values(iofq1) - sc.values(iofq3)).max())
+    print(abs((sc.values(iofq1) - sc.values(iofq3)) / sc.values(iofq1)).max())
+    assert sc.allclose(
+        sc.values(iofq1), sc.values(iofq3), atol=sc.scalar(1e-6), rtol=sc.scalar(1e-3)
+    )
+    assert all(sc.variances(iofq1) > sc.variances(iofq3))
+    assert sc.allclose(
+        sc.values(pipeline_single.compute(CleanSummedQ[SampleRun, Numerator])) * N,
+        sc.values(pipeline_triple.compute(CleanSummedQ[SampleRun, Numerator])),
+        rtol=sc.scalar(1e-6),
+    )
+    assert sc.allclose(
+        sc.values(pipeline_single.compute(CleanSummedQ[SampleRun, Denominator])) * N,
+        sc.values(pipeline_triple.compute(CleanSummedQ[SampleRun, Denominator])),
+        rtol=sc.scalar(1e-6),
+    )
 
 
 def test_beam_center_from_center_of_mass_is_close_to_verified_result():
