@@ -5,7 +5,6 @@ Masking functions for the loki workflow.
 """
 from typing import NewType, Optional
 
-import numpy as np
 import scipp as sc
 
 from ..types import (
