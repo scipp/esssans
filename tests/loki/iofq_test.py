@@ -194,7 +194,9 @@ def test_beam_center_from_center_of_mass_is_close_to_verified_result():
     params = make_params()
     pipeline = sciline.Pipeline(loki_providers(), params=params)
     center = pipeline.compute(BeamCenter)
-    reference = sc.vector([-0.0309889, -0.0168854, 0], unit='m')
+    # Value obtained from running pipeline after updated masking:
+    # https://github.com/scipp/esssans/pull/91
+    reference = sc.vector([-0.0310485, -0.0167454, 0], unit='m')
     assert sc.allclose(center, reference)
 
 
