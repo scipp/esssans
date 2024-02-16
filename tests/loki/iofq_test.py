@@ -171,21 +171,22 @@ def test_pipeline_IofQ_merging_events_yields_consistent_results():
     )
     iofq1 = pipeline_single.compute(BackgroundSubtractedIofQ)
     iofq3 = pipeline_triple.compute(BackgroundSubtractedIofQ)
-    print(abs(sc.values(iofq1) - sc.values(iofq3)).max())
-    print(abs((sc.values(iofq1) - sc.values(iofq3)) / sc.values(iofq1)).max())
+    assert sc.allclose(sc.values(iofq1.data), sc.values(iofq3.data))
+    assert sc.identical(iofq1.coords['Q'], iofq3.coords['Q'])
+    assert all(sc.variances(iofq1.data) > sc.variances(iofq3.data))
     assert sc.allclose(
-        sc.values(iofq1), sc.values(iofq3), atol=sc.scalar(1e-6), rtol=sc.scalar(1e-3)
+        sc.values(
+            pipeline_single.compute(CleanSummedQ[SampleRun, Numerator]).hist().data
+        )
+        * N,
+        sc.values(
+            pipeline_triple.compute(CleanSummedQ[SampleRun, Numerator]).hist().data
+        ),
     )
-    assert all(sc.variances(iofq1) > sc.variances(iofq3))
     assert sc.allclose(
-        sc.values(pipeline_single.compute(CleanSummedQ[SampleRun, Numerator])) * N,
-        sc.values(pipeline_triple.compute(CleanSummedQ[SampleRun, Numerator])),
-        rtol=sc.scalar(1e-6),
-    )
-    assert sc.allclose(
-        sc.values(pipeline_single.compute(CleanSummedQ[SampleRun, Denominator])) * N,
-        sc.values(pipeline_triple.compute(CleanSummedQ[SampleRun, Denominator])),
-        rtol=sc.scalar(1e-6),
+        sc.values(pipeline_single.compute(CleanSummedQ[SampleRun, Denominator]).data)
+        * N,
+        sc.values(pipeline_triple.compute(CleanSummedQ[SampleRun, Denominator]).data),
     )
 
 
