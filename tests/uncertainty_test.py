@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
+import numpy as np
 import scipp as sc
 from scipp.testing import assert_identical
 
@@ -36,3 +37,89 @@ def test_broadcast_scales_variances_by_new_subspace_volume():
         broadcast_with_upper_bound_variances(var, {'y': 3, 'z': 2}),
         expected.transpose(['y', 'z', 'x']),
     )
+
+
+def test_broadcast_new_subspace_volume_with_masks():
+    # Data: A A A A A  Template: X
+    #                            X
+    #                            B
+    #                            B
+    #                            B
+    #                            B
+    x = np.linspace(0.0, 1.0, 5)
+    a = sc.array(dims=['x'], values=x, variances=x)
+    b = sc.DataArray(
+        data=sc.ones(sizes={'y': 6}),
+        masks={
+            'm': sc.array(dims=['y'], values=[True, True, False, False, False, False])
+        },
+    )
+    expected = sc.values(b.data) * sc.values(a)
+    expected.variances = (
+        np.broadcast_to(x, expected.shape) * 4
+    )  # 4 non-masked elements in b
+    assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)
+
+
+def test_broadcast_with_masks_and_a_common_dimension():
+    # Data: A A A A A  Template: B B B B B
+    #                            X X X X X
+    #                            B B B B B
+    #                            B B B B B
+    #                            X X X X X
+    #                            B B B B B
+    x = np.linspace(0.0, 1.0, 5)
+    a = sc.array(dims=['x'], values=x, variances=x)
+    b = sc.DataArray(
+        data=sc.ones(sizes={'y': 6, 'x': 5}),
+        masks={
+            'm': sc.array(dims=['y'], values=[False, True, False, False, True, False])
+        },
+    )
+    expected = sc.values(b.data) * sc.values(a)
+    expected.variances = np.broadcast_to(x, expected.shape) * 4
+    assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)
+
+
+def test_broadcast_with_masks_and_two_common_dimensions():
+    x = np.linspace(0.0, 5.0, 10).reshape(5, 2)
+    a = sc.array(dims=['x', 'z'], values=x, variances=x)
+    b = sc.DataArray(
+        data=sc.ones(sizes={'y': 6, 'x': 5, 'z': 2}),
+        masks={
+            'm': sc.array(dims=['y'], values=[False, True, True, False, True, False])
+        },
+    )
+    expected = sc.values(b.data) * sc.values(a)
+    expected.variances = np.broadcast_to(x, expected.shape) * 3
+    assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)
+
+
+def test_broadcast_with_2d_mask():
+    # Data: A A A A A  Template: B X X B B
+    #                            B B B B B
+    #                            X X X X X
+    #                            X X X X X
+    #                            B B B B B
+    #                            B B B B X
+    x = np.linspace(0.0, 1.0, 5)
+    a = sc.array(dims=['x'], values=x, variances=x)
+    b = sc.DataArray(
+        data=sc.ones(sizes={'y': 6, 'x': 5}),
+        masks={
+            'm': sc.array(
+                dims=['y', 'x'],
+                values=[
+                    [False, True, True, False, False],
+                    [False, False, False, False, False],
+                    [True, True, True, True, True],
+                    [True, True, True, True, True],
+                    [False, False, False, False, False],
+                    [False, False, False, False, True],
+                ],
+            )
+        },
+    )
+    expected = sc.values(b.data) * sc.values(a)
+    expected.variances = np.broadcast_to(x, expected.shape) * 12 / 5
+    assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)

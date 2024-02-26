@@ -223,7 +223,12 @@ def iofq_norm_wavelength_term(
         dims.append('wavelength')
         direct_beam = direct_beam.transpose(dims)
         broadcast = _broadcasters[uncertainties]
-        out = direct_beam * broadcast(out, sizes=direct_beam.sizes)
+        out = direct_beam * broadcast(
+            out,
+            template=direct_beam,
+            # multiplier=count_non_masked_elements(direct_beam, out.dims),
+            # sizes=direct_beam.sizes,
+        )
     # Convert wavelength coordinate to midpoints for future histogramming
     out.coords['wavelength'] = sc.midpoints(out.coords['wavelength'])
     return NormWavelengthTerm[ScatteringRunType](out)
@@ -298,7 +303,12 @@ def iofq_denominator(
         The denominator for the SANS I(Q) normalization.
     """  # noqa: E501
     broadcast = _broadcasters[uncertainties]
-    denominator = solid_angle * broadcast(wavelength_term, sizes=solid_angle.sizes)
+    denominator = solid_angle * broadcast(
+        wavelength_term,
+        template=solid_angle,
+        # multiplier=mu_non_masked_elements(solid_angle, wavelength_term.dims),
+        # sizes=solid_angle.sizes,
+    )
     return CleanWavelength[ScatteringRunType, Denominator](denominator)
 
 
