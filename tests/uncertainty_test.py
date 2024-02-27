@@ -10,13 +10,34 @@ from esssans.uncertainty import broadcast_with_upper_bound_variances
 
 def test_broadcast_returns_original_if_no_new_dims():
     var = sc.ones(dims=['x', 'y'], shape=[2, 3], with_variances=True)
-    assert broadcast_with_upper_bound_variances(var, {'x': 2}) is var
-    assert broadcast_with_upper_bound_variances(var, {'y': 3}) is var
+    assert (
+        broadcast_with_upper_bound_variances(var, template=sc.empty(sizes={'x': 2}))
+        is var
+    )
+    assert (
+        broadcast_with_upper_bound_variances(var, template=sc.empty(sizes={'y': 3}))
+        is var
+    )
+    assert (
+        broadcast_with_upper_bound_variances(
+            var, template=sc.empty(sizes={'y': 3, 'x': 2})
+        )
+        is var
+    )
+    assert (
+        broadcast_with_upper_bound_variances(
+            var, template=sc.empty(sizes={'x': 2, 'y': 3})
+        )
+        is var
+    )
 
 
 def test_broadcast_returns_original_if_no_variances():
     var = sc.ones(dims=['x'], shape=[2], with_variances=False)
-    assert broadcast_with_upper_bound_variances(var, {'y': 3}) is var
+    assert (
+        broadcast_with_upper_bound_variances(var, template=sc.empty(sizes={'y': 3}))
+        is var
+    )
 
 
 def test_broadcast_scales_variances_by_new_subspace_volume():
@@ -27,14 +48,22 @@ def test_broadcast_scales_variances_by_new_subspace_volume():
     var.variances = var.values
     expected = sc.ones(dims=['z'], shape=[1]) * values
     expected.variances = 1 * expected.values
-    assert_identical(broadcast_with_upper_bound_variances(var, {'z': 1}), expected)
-    expected = sc.ones(dims=['z'], shape=[2]) * values
-    expected.variances = 2 * expected.values
-    assert_identical(broadcast_with_upper_bound_variances(var, {'z': 2}), expected)
+    assert_identical(
+        broadcast_with_upper_bound_variances(var, template=sc.empty(sizes={'z': 1})),
+        expected,
+    )
     expected = sc.ones(dims=['z'], shape=[2]) * values
     expected.variances = 2 * expected.values
     assert_identical(
-        broadcast_with_upper_bound_variances(var, {'y': 3, 'z': 2}),
+        broadcast_with_upper_bound_variances(var, template=sc.empty(sizes={'z': 2})),
+        expected,
+    )
+    expected = sc.ones(dims=['z'], shape=[2]) * values
+    expected.variances = 2 * expected.values
+    assert_identical(
+        broadcast_with_upper_bound_variances(
+            var, template=sc.empty(sizes={'y': 3, 'z': 2})
+        ),
         expected.transpose(['y', 'z', 'x']),
     )
 
