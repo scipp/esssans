@@ -102,7 +102,13 @@ def test_broadcast_with_2d_mask():
     #                            X X X X X
     #                            B B B B B
     #                            B B B B X
-    x = np.linspace(0.0, 1.0, 5)
+
+    # TODO: It is not so clear what to do here. This would be, for example, a case where
+    # the direct beam depends on wavelength and layer, while the solid angle depends on
+    # layer and straw, and the mask on the solid angle depends on both layer and straw.
+    # Do we just count the number of non-masked elements in the template?
+
+    x = np.linspace(0.0, 60.0, 5)
     a = sc.array(dims=['x'], values=x, variances=x)
     b = sc.DataArray(
         data=sc.ones(sizes={'y': 6, 'x': 5}),
@@ -121,5 +127,37 @@ def test_broadcast_with_2d_mask():
         },
     )
     expected = sc.values(b.data) * sc.values(a)
-    expected.variances = np.broadcast_to(x, expected.shape) * 12 / 5
+    expected.variances = np.broadcast_to(x, expected.shape) * 17 / 5
+    assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)
+
+
+def test_broadcast_with_2d_mask_with_extra_dimension_on_input():
+    # Data: A A A A A  Template: B X X B B
+    #      A A A A A             B B B B B
+    #                            X X X X X
+    #                            X X X X X
+    #                            B B B B B
+    #                            B B B B X
+
+    x = np.linspace(0.0, 60.0, 10).reshape(5, 2)
+    a = sc.array(dims=['x', 'z'], values=x, variances=x)
+    b = sc.DataArray(
+        data=sc.ones(sizes={'y': 6, 'x': 5}),
+        masks={
+            'm': sc.array(
+                dims=['y', 'x'],
+                values=[
+                    [False, True, True, False, False],
+                    [False, False, False, False, False],
+                    [True, True, True, True, True],
+                    [True, True, True, True, True],
+                    [False, False, False, False, False],
+                    [False, False, False, False, True],
+                ],
+            )
+        },
+    )
+    expected = sc.values(b.data) * sc.values(a)
+    # Only divide by dimension sizes of a that are also found in b
+    expected.variances = np.broadcast_to(x, expected.shape) * 17 / 5
     assert_identical(broadcast_with_upper_bound_variances(a, template=b), expected)
