@@ -88,7 +88,7 @@ def preprocess_monitor_data(
             monitor -= sc.values(background)
         elif uncertainties == UncertaintyBroadcastMode.upper_bound:
             monitor -= broadcast_with_upper_bound_variances(
-                background, sizes=monitor.sizes
+                background, template=monitor
             )
         else:
             monitor -= background

@@ -168,7 +168,7 @@ def transmission_fraction(
 _broadcasters = {
     UncertaintyBroadcastMode.drop: drop_variances_if_broadcast,
     UncertaintyBroadcastMode.upper_bound: broadcast_with_upper_bound_variances,
-    UncertaintyBroadcastMode.fail: lambda x, sizes: x,
+    UncertaintyBroadcastMode.fail: lambda x, template: x,
 }
 
 
