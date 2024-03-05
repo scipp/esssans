@@ -20,7 +20,24 @@ from . import (
     normalization,
 )
 from .direct_beam import direct_beam
-from .types import BackgroundSubtractedIofQ, IofQ, ReturnEvents, SampleRun
+from .types import (
+    BackgroundRun,
+    BackgroundSubtractedIofQ,
+    CorrectForGravity,
+    DirectBeamFilename,
+    EmptyBeamRun,
+    Filename,
+    Incident,
+    IofQ,
+    NeXusMonitorName,
+    OutFilename,
+    QBins,
+    ReturnEvents,
+    SampleRun,
+    Transmission,
+    UncertaintyBroadcastMode,
+    WavelengthBins,
+)
 
 providers = (
     *conversions.providers,
@@ -42,10 +59,22 @@ to setup a complete workflow.
 del importlib
 
 __all__ = [
+    'BackgroundRun',
     'BackgroundSubtractedIofQ',
+    'CorrectForGravity',
+    'DirectBeamFilename',
+    'EmptyBeamRun',
+    'Filename',
+    'Incident',
     'IofQ',
-    'SampleRun',
+    'NeXusMonitorName',
+    'OutFilename',
+    'QBins',
     'ReturnEvents',
+    'SampleRun',
+    'Transmission',
+    'UncertaintyBroadcastMode',
+    'WavelengthBins',
     'beam_center_finder',
     'common',
     'conversions',

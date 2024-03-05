@@ -3,9 +3,13 @@
 """
 Providers for the ISIS instruments.
 """
+from typing import NewType, Optional
+
 import scipp as sc
 
+from ..common import mask_range
 from ..types import (
+    CleanMonitor,
     DetectorPixelShape,
     LabFrameTransform,
     MonitorType,
@@ -17,8 +21,15 @@ from ..types import (
     RunType,
     SampleRun,
     ScatteringRunType,
+    UncertaintyBroadcastMode,
+    WavelengthBins,
+    WavelengthMonitor,
 )
+from ..uncertainty import broadcast_with_upper_bound_variances
 from .data import LoadedFileContents
+
+NonBackgroundWavelengthRange = NewType('NonBackgroundWavelengthRange', sc.Variable)
+"""Range of wavelengths that are not considered background in the monitor"""
 
 
 def get_detector_data(
@@ -77,11 +88,72 @@ def lab_frame_transform() -> LabFrameTransform[ScatteringRunType]:
     return sc.spatial.rotation(value=[0, 0, 1 / 2**0.5, 1 / 2**0.5])
 
 
+def preprocess_monitor_data(
+    monitor: WavelengthMonitor[RunType, MonitorType],
+    wavelength_bins: WavelengthBins,
+    non_background_range: Optional[NonBackgroundWavelengthRange],
+    uncertainties: UncertaintyBroadcastMode,
+) -> CleanMonitor[RunType, MonitorType]:
+    """
+    Prepare monitor data for computing the transmission fraction.
+    The input data are first converted to wavelength (if needed).
+    If a ``non_background_range`` is provided, it defines the region where data is
+    considered not to be background, and regions outside are background. A mean
+    background level will be computed from the background and will be subtracted from
+    the non-background counts.
+    Finally, if wavelength bins are provided, the data is rebinned to match the
+    requested binning.
+
+    Parameters
+    ----------
+    monitor:
+        The monitor to be pre-processed.
+    wavelength_bins:
+        The binning in wavelength to use for the rebinning.
+    non_background_range:
+        The range of wavelengths that defines the data which does not constitute
+        background. Everything outside this range is treated as background counts.
+    uncertainties:
+        The mode for broadcasting uncertainties. See
+        :py:class:`UncertaintyBroadcastMode` for details.
+
+    Returns
+    -------
+    :
+        The input monitors converted to wavelength, cleaned of background counts, and
+        rebinned to the requested wavelength binning.
+    """
+    background = None
+    if non_background_range is not None:
+        mask = sc.DataArray(
+            data=sc.array(dims=[non_background_range.dim], values=[True]),
+            coords={non_background_range.dim: non_background_range},
+        )
+        background = mask_range(monitor, mask=mask).mean()
+
+    if monitor.bins is not None:
+        monitor = monitor.hist(wavelength=wavelength_bins)
+    else:
+        monitor = monitor.rebin(wavelength=wavelength_bins)
+
+    if background is not None:
+        if uncertainties == UncertaintyBroadcastMode.drop:
+            monitor -= sc.values(background)
+        elif uncertainties == UncertaintyBroadcastMode.upper_bound:
+            monitor -= broadcast_with_upper_bound_variances(
+                background, sizes=monitor.sizes
+            )
+        else:
+            monitor -= background
+    return CleanMonitor(monitor)
+
+
 providers = (
     get_detector_data,
     get_monitor_data,
+    helium3_tube_detector_pixel_shape,
+    lab_frame_transform,
+    preprocess_monitor_data,
     run_number,
     run_title,
-    lab_frame_transform,
-    helium3_tube_detector_pixel_shape,
 )

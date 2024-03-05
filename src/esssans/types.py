@@ -126,9 +126,6 @@ QBins = NewType('QBins', sc.Variable)
 QxyBins = NewType('QxyBins', dict[str, sc.Variable])
 """Binning for 'Qx' and 'Qy'. If set this overrides QBins."""
 
-NonBackgroundWavelengthRange = NewType('NonBackgroundWavelengthRange', sc.Variable)
-"""Range of wavelengths that are not considered background in the monitor"""
-
 DirectBeamFilename = NewType('DirectBeamFilename', str)
 """Filename of direct beam correction"""
 

@@ -5,7 +5,9 @@ from typing import Optional
 
 import scipp as sc
 from scipp.core import concepts
+from scipp.scipy.interpolate import interp1d
 
+from .logging import get_logger
 from .types import (
     CalibratedMaskedData,
     CleanDirectBeam,
@@ -14,6 +16,7 @@ from .types import (
     CleanWavelength,
     Denominator,
     DetectorPixelShape,
+    DirectBeam,
     EmptyBeamRun,
     Incident,
     IofQ,
@@ -163,6 +166,43 @@ def transmission_fraction(
         direct_incident_monitor / sample_incident_monitor
     )
     return TransmissionFraction[ScatteringRunType](frac)
+
+
+def resample_direct_beam(
+    direct_beam: DirectBeam, wavelength_bins: WavelengthBins
+) -> CleanDirectBeam:
+    """
+    If the wavelength binning of the direct beam function does not match the requested
+    ``wavelength_bins``, perform a 1d interpolation of the function onto the bins.
+
+    Parameters
+    ----------
+    direct_beam:
+        The DataArray containing the direct beam function (it should have a dimension
+        of wavelength).
+    wavelength_bins:
+        The binning in wavelength that the direct beam function should be resampled to.
+
+    Returns
+    -------
+    :
+        The direct beam function resampled to the requested resolution.
+    """
+    if sc.identical(direct_beam.coords['wavelength'], wavelength_bins):
+        return direct_beam
+    if direct_beam.variances is not None:
+        logger = get_logger('sans')
+        logger.warning(
+            'An interpolation is being performed on the direct_beam function. '
+            'The variances in the direct_beam function will be dropped.'
+        )
+    func = interp1d(
+        sc.values(direct_beam),
+        'wavelength',
+        fill_value="extrapolate",
+        bounds_error=False,
+    )
+    return CleanDirectBeam(func(wavelength_bins, midpoints=True))
 
 
 _broadcasters = {

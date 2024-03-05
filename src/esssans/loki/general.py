@@ -7,6 +7,7 @@ Default parameters, providers and utility functions for the loki workflow.
 
 from ..types import (
     CalibratedMonitor,
+    CleanMonitor,
     DetectorPixelShape,
     Incident,
     LabFrameTransform,
@@ -21,6 +22,8 @@ from ..types import (
     ScatteringRunType,
     TransformationPath,
     Transmission,
+    WavelengthBins,
+    WavelengthMonitor,
 )
 
 NEXUS_INSTRUMENT_PATH = 'instrument'
@@ -64,9 +67,33 @@ def detector_lab_frame_transform(
     return LabFrameTransform[ScatteringRunType](detector[transform_path])
 
 
+def histogram_monitor_data(
+    monitor: WavelengthMonitor[RunType, MonitorType],
+    wavelength_bins: WavelengthBins,
+) -> CleanMonitor[RunType, MonitorType]:
+    """
+    Histogram monitor data. If the monitor contains events, the data is simply
+    histogrammed to the requested binning.
+    If the monitor has already contains histogrammed data, it is rebinned.
+
+    Parameters
+    ----------
+    monitor:
+        The monitor to be pre-processed.
+    wavelength_bins:
+        The binning in wavelength to use for the rebinning.
+    """
+    if monitor.bins is not None:
+        out = monitor.hist(wavelength=wavelength_bins)
+    else:
+        out = monitor.rebin(wavelength=wavelength_bins)
+    return CleanMonitor(out)
+
+
 providers = (
     detector_pixel_shape,
     detector_lab_frame_transform,
     get_detector_data,
     get_monitor_data,
+    histogram_monitor_data,
 )
