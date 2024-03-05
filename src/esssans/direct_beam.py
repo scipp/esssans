@@ -7,7 +7,7 @@ import numpy as np
 import scipp as sc
 from sciline import Pipeline
 
-from .i_of_q import resample_direct_beam
+from .normalization import resample_direct_beam
 from .types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
