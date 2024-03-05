@@ -48,12 +48,23 @@ def broadcast_with_upper_bound_variances(
     if _no_variance_broadcast(data, template.sizes):
         return data
     data = data.copy()
-    ones = sc.DataArray(data=sc.ones(sizes=template.sizes))
+    broadcast_sizes = {
+        dim: size for dim, size in template.sizes.items() if dim not in data.dims
+    }
+    ones = sc.DataArray(data=sc.ones(sizes=broadcast_sizes))
     if isinstance(template, sc.DataArray):
-        ones.masks.update(template.masks)
-    mult = ones.sum()
-    div = np.prod([data.sizes[dim] for dim in data.dims if dim in template.dims])
-    data.variances *= (mult / div).value
+        broadcast_dims = set(broadcast_sizes)
+        ones.masks.update(
+            {
+                key: mask
+                for key, mask in template.masks.items()
+                if set(mask.dims).issubset(broadcast_dims)
+            }
+        )
+    # mult = ones.sum()
+    # div = np.prod([data.sizes[dim] for dim in data.dims if dim in template.dims])
+    # data.variances *= (mult / div).value
+    data.variances *= ones.sum().value
     return data.broadcast(sizes={**template.sizes, **data.sizes}).copy()
 
 
