@@ -3,24 +3,14 @@
 """
 Masking functions for the loki workflow.
 """
-from typing import Optional
-
 import numpy as np
-import sciline
 import scipp as sc
 
-from .types import (
-    MaskedData,
-    MaskedDetectorIDs,
-    PixelMaskFilename,
-    ScatteringRunType,
-    TofData,
-)
+from .types import MaskedData, MaskedDetectorIDs, ScatteringRunType, TofData
 
 
 def apply_pixel_masks(
-    data: TofData[ScatteringRunType],
-    masked_ids: Optional[sciline.Series[PixelMaskFilename, MaskedDetectorIDs]],
+    data: TofData[ScatteringRunType], masked_ids: MaskedDetectorIDs
 ) -> MaskedData[ScatteringRunType]:
     """Apply pixel-specific masks to raw data.
     The masks are based on detector IDs stored in XML files.
