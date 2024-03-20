@@ -168,7 +168,7 @@ class Filename(sciline.Scope[RunType, str], str):
     """Filename of a run"""
 
 
-MaskedDetectorIDs = NewType('MaskedDetectorIDs', sc.Variable)
+MaskedDetectorIDs = NewType('MaskedDetectorIDs', dict[str, sc.Variable])
 """1-D variable listing all masked detector IDs."""
 
 

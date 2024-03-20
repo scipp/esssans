@@ -59,9 +59,8 @@ def read_xml_detector_masking(
                 else:
                     masked_detids.append(int(detid))
 
-    return MaskedDetectorIDs(
-        sc.array(dims=['detector_id'], values=masked_detids, unit=None, dtype='int32')
-    )
+    ids = sc.array(dims=['detector_id'], values=masked_detids, unit=None, dtype='int32')
+    return MaskedDetectorIDs({filename: ids})
 
 
 providers = (read_xml_detector_masking, to_path)
