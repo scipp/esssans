@@ -10,7 +10,14 @@ import scipp as sc
 import scippneutron as scn
 from scipp.constants import g
 
-from ..sans.types import DirectBeam, DirectBeamFilename, Filename, RunType, SampleRun, Period
+from ..sans.types import (
+    DirectBeam,
+    DirectBeamFilename,
+    Filename,
+    Period,
+    RunType,
+    SampleRun,
+)
 from .data import LoadedFileContents
 from .io import CalibrationFilename, FilePath
 
@@ -96,7 +103,9 @@ def from_data_workspace(
     return LoadedFileContents[RunType](dg)
 
 
-def load_run(filename: FilePath[Filename[RunType]], period: Period) -> DataWorkspace[RunType]:
+def load_run(
+    filename: FilePath[Filename[RunType]], period: Optional[Period]
+) -> DataWorkspace[RunType]:
     loaded = _mantid_simpleapi.Load(
         Filename=str(filename), LoadMonitors=True, StoreInADS=False
     )
@@ -107,6 +116,8 @@ def load_run(filename: FilePath[Filename[RunType]], period: Period) -> DataWorks
         # Separate data and monitor workspaces
         data_ws = loaded.OutputWorkspace
         if isinstance(data_ws, _mantid_api.WorkspaceGroup):
+            if period is None:
+                raise ValueError('Needs period to know what section to load')
             data_ws = data_ws.getItem(period)
             data_ws.setMonitorWorkspace(loaded.MonitorWorkspace.getItem(period))
         else:
