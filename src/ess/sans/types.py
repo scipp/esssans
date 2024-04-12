@@ -352,3 +352,6 @@ RunTitle = NewType('RunTitle', str)
 
 RunNumber = NewType('RunNumber', int)
 """Run number."""
+
+Period = NewType('Period', int)
+"""Period number."""
