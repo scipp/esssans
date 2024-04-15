@@ -10,16 +10,10 @@ import scipp as sc
 import scippneutron as scn
 from scipp.constants import g
 
-from ..sans.types import (
-    DirectBeam,
-    DirectBeamFilename,
-    Filename,
-    Period,
-    RunType,
-    SampleRun,
-)
+from ..sans.types import DirectBeam, DirectBeamFilename, Filename, RunType, SampleRun
 from .data import LoadedFileContents
 from .io import CalibrationFilename, FilePath
+from .types import Period
 
 try:
     import mantid.api as _mantid_api
@@ -117,7 +111,10 @@ def load_run(
         data_ws = loaded.OutputWorkspace
         if isinstance(data_ws, _mantid_api.WorkspaceGroup):
             if period is None:
-                raise ValueError('Needs period to know what section to load')
+                raise ValueError(
+                    f'Needs {Period} to be set to know what '
+                    'section of the event data to load'
+                )
             data_ws = data_ws.getItem(period)
             data_ws.setMonitorWorkspace(loaded.MonitorWorkspace.getItem(period))
         else:
