@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 """Tools for handling statistical uncertainties."""
 
-from typing import Dict, TypeVar, Union, overload
+from typing import TypeVar, Union, overload
 
 import scipp as sc
 
@@ -11,20 +11,20 @@ T = TypeVar("T", bound=Union[sc.Variable, sc.DataArray])
 
 @overload
 def broadcast_with_upper_bound_variances(
-    data: sc.Variable, sizes: Dict[str, int]
+    data: sc.Variable, sizes: dict[str, int]
 ) -> sc.Variable:
     pass
 
 
 @overload
 def broadcast_with_upper_bound_variances(
-    data: sc.DataArray, sizes: Dict[str, int]
+    data: sc.DataArray, sizes: dict[str, int]
 ) -> sc.DataArray:
     pass
 
 
 def broadcast_with_upper_bound_variances(
-    data: Union[sc.Variable, sc.DataArray], sizes: Dict[str, int]
+    data: Union[sc.Variable, sc.DataArray], sizes: dict[str, int]
 ) -> Union[sc.Variable, sc.DataArray]:
     if _no_variance_broadcast(data, sizes):
         return data
@@ -38,7 +38,7 @@ def broadcast_with_upper_bound_variances(
 
 
 def drop_variances_if_broadcast(
-    data: Union[sc.Variable, sc.DataArray], sizes: Dict[str, int]
+    data: Union[sc.Variable, sc.DataArray], sizes: dict[str, int]
 ) -> Union[sc.Variable, sc.DataArray]:
     if _no_variance_broadcast(data, sizes):
         return data
@@ -46,7 +46,7 @@ def drop_variances_if_broadcast(
 
 
 def _no_variance_broadcast(
-    data: Union[sc.Variable, sc.DataArray], sizes: Dict[str, int]
+    data: Union[sc.Variable, sc.DataArray], sizes: dict[str, int]
 ) -> bool:
     return (data.variances is None) or all(
         data.sizes.get(dim) == size for dim, size in sizes.items()

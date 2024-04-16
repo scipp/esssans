@@ -54,7 +54,7 @@ select = ["B", "C4", "DTZ", "E",  "F", "FA",
           "PT", "PYI", "RUF", "UP", "W"]
 ignore = [
     "E111", "E114", "E117", "D206", "D300",  # conflict with ruff format
-    "UP006", "UP035", "UP007"] # FIXME: this breaks the tests
+    "UP007"] # FIXME: PEP 604 breaks esssans test suite
 pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]

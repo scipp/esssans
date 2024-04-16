@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from typing import Callable, List
+from collections.abc import Callable
 
 import scipp as sc
 from ess import loki, sans
@@ -50,7 +50,7 @@ def make_params(qxy: bool = False) -> dict:
     return params
 
 
-def loki_providers_no_beam_center_finder() -> List[Callable]:
+def loki_providers_no_beam_center_finder() -> list[Callable]:
     from ess.isissans.io import read_xml_detector_masking
 
     return list(
@@ -64,7 +64,7 @@ def loki_providers_no_beam_center_finder() -> List[Callable]:
     )
 
 
-def loki_providers() -> List[Callable]:
+def loki_providers() -> list[Callable]:
     return [
         *loki_providers_no_beam_center_finder(),
         sans.beam_center_finder.beam_center_from_center_of_mass,

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from typing import Callable, List
+from collections.abc import Callable
 
 import pytest
 import sciline
@@ -174,7 +174,7 @@ def test_pipeline_can_compute_intermediate_results():
 
 
 # TODO See scipp/sciline#57 for plans on a builtin way to do this
-def as_dict(funcs: List[Callable[..., type]]) -> dict:
+def as_dict(funcs: list[Callable[..., type]]) -> dict:
     from typing import get_type_hints
 
     return dict(

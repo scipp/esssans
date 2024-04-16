@@ -19,9 +19,10 @@ import functools
 import inspect
 import logging
 import logging.config
+from collections.abc import Callable, Sequence
 from copy import copy
 from os import PathLike
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 import scipp as sc
 import scippneutron as scn
@@ -112,7 +113,7 @@ class Formatter(logging.Formatter):
         return super().format(record)
 
 
-def default_loggers_to_configure() -> List[logging.Logger]:
+def default_loggers_to_configure() -> list[logging.Logger]:
     """
     Return a list of all loggers that get configured by ess by default.
     """
@@ -323,7 +324,7 @@ def _make_handlers(
     widget_level: Union[str, int],
     show_thread: bool,
     show_process: bool,
-) -> List[logging.Handler]:
+) -> list[logging.Handler]:
     handlers = [_make_stream_handler(stream_level, show_thread, show_process)]
     if filename is not None:
         handlers.append(
@@ -335,7 +336,7 @@ def _make_handlers(
 
 
 def _configure_logger(
-    logger: logging.Logger, handlers: List[logging.Handler], level: Union[str, int]
+    logger: logging.Logger, handlers: list[logging.Handler], level: Union[str, int]
 ):
     for handler in handlers:
         logger.addHandler(handler)
@@ -351,7 +352,7 @@ def _configure_mantid_logging(level: str):
         pass
 
 
-def _base_level(levels: List[Union[str, int]]) -> int:
+def _base_level(levels: list[Union[str, int]]) -> int:
     return min(
         logging.getLevelName(level) if isinstance(level, str) else level
         for level in levels

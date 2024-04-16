@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
 import uuid
-from typing import Dict, List, NewType, Optional, Union
+from typing import NewType, Optional, Union
 
 import numpy as np
 import sciline
@@ -111,7 +111,7 @@ def beam_center_from_center_of_mass(
     return _offsets_to_vector(data=summed, xy=xy, graph=graph)
 
 
-def _offsets_to_vector(data: sc.DataArray, xy: List[float], graph: dict) -> sc.Variable:
+def _offsets_to_vector(data: sc.DataArray, xy: list[float], graph: dict) -> sc.Variable:
     """
     Convert x,y offsets inside the plane normal to the beam to a vector in absolute
     coordinates.
@@ -127,7 +127,7 @@ def _offsets_to_vector(data: sc.DataArray, xy: List[float], graph: dict) -> sc.V
 
 
 def _iofq_in_quadrants(
-    xy: List[float],
+    xy: list[float],
     data: sc.DataArray,
     norm: sc.DataArray,
     graph: dict,
@@ -135,7 +135,7 @@ def _iofq_in_quadrants(
     wavelength_bins: sc.Variable,
     transform: sc.Variable,
     pixel_shape: sc.DataGroup,
-) -> Dict[str, sc.DataArray]:
+) -> dict[str, sc.DataArray]:
     """
     Compute the intensity as a function of Q inside 4 quadrants in Phi.
 
@@ -216,7 +216,7 @@ def _iofq_in_quadrants(
     return out
 
 
-def _cost(xy: List[float], *args) -> float:
+def _cost(xy: list[float], *args) -> float:
     """
     Cost function for determining how close the :math:`I(Q)` curves are in all four
     quadrants. The cost is defined as

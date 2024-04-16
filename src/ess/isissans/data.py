@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
 
 from dataclasses import dataclass
-from typing import Dict
 
 import sciline
 import scipp as sc
@@ -24,7 +23,7 @@ from ..sans.types import (
 @dataclass
 class IsisRegistry:
     registry: Registry
-    mapping: Dict[str, str]
+    mapping: dict[str, str]
 
 
 _sans2d_registry = IsisRegistry(
