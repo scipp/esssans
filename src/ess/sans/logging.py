@@ -49,7 +49,10 @@ def get_logger(subname: Optional[str] = None) -> logging.Logger:
 
 
 def log_call(
-    *, instrument: str, message: str = None, level: Union[int, str] = logging.INFO
+    *,
+    instrument: str,
+    message: str | None = None,
+    level: Union[int, str] = logging.INFO,
 ):
     """
     Decorator that logs a message every time the function is called.
@@ -350,10 +353,8 @@ def _configure_mantid_logging(level: str):
 
 def _base_level(levels: List[Union[str, int]]) -> int:
     return min(
-        (
-            logging.getLevelName(level) if isinstance(level, str) else level
-            for level in levels
-        )
+        logging.getLevelName(level) if isinstance(level, str) else level
+        for level in levels
     )
 
 

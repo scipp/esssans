@@ -199,7 +199,7 @@ def bin_in_q(
 
         # Make dims to flatten contiguous, keep wavelength as the last dim
         data_dims = list(stripped.dims)
-        for dim in to_flatten + ['wavelength']:
+        for dim in [*to_flatten, 'wavelength']:
             data_dims.remove(dim)
             data_dims.append(dim)
         stripped = stripped.transpose(data_dims)
@@ -228,13 +228,13 @@ def bin_in_q(
 
 
 def no_bank_merge(
-    data: CleanSummedQ[ScatteringRunType, IofQPart]
+    data: CleanSummedQ[ScatteringRunType, IofQPart],
 ) -> CleanSummedQMergedBanks[ScatteringRunType, IofQPart]:
     return CleanSummedQMergedBanks[ScatteringRunType, IofQPart](data)
 
 
 def no_run_merge(
-    data: CleanSummedQMergedBanks[ScatteringRunType, IofQPart]
+    data: CleanSummedQMergedBanks[ScatteringRunType, IofQPart],
 ) -> FinalSummedQ[ScatteringRunType, IofQPart]:
     return FinalSummedQ[ScatteringRunType, IofQPart](data)
 
@@ -247,7 +247,7 @@ def _merge_contributions(data: list[sc.DataArray]) -> sc.DataArray:
 
 
 def merge_banks(
-    banks: sciline.Series[NeXusDetectorName, CleanSummedQ[ScatteringRunType, IofQPart]]
+    banks: sciline.Series[NeXusDetectorName, CleanSummedQ[ScatteringRunType, IofQPart]],
 ) -> CleanSummedQMergedBanks[ScatteringRunType, IofQPart]:
     """
     Merge the events or counts from multiple detector banks into a single numerator or

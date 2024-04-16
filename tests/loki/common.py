@@ -3,7 +3,6 @@
 from typing import Callable, List
 
 import scipp as sc
-
 from ess import loki, sans
 from ess.sans.types import (
     BackgroundRun,
@@ -66,6 +65,7 @@ def loki_providers_no_beam_center_finder() -> List[Callable]:
 
 
 def loki_providers() -> List[Callable]:
-    return loki_providers_no_beam_center_finder() + [
-        sans.beam_center_finder.beam_center_from_center_of_mass
+    return [
+        *loki_providers_no_beam_center_finder(),
+        sans.beam_center_finder.beam_center_from_center_of_mass,
     ]

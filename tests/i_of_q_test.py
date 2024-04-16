@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 import pytest
 import scipp as sc
-
 from ess import sans
 
 

@@ -3,6 +3,7 @@
 """
 File loading functions for ISIS data using Mantid.
 """
+
 from typing import NewType, NoReturn, Optional
 
 import sciline

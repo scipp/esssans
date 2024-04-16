@@ -3,6 +3,7 @@
 """
 Default parameters, providers and utility functions for the loki workflow.
 """
+
 from typing import Optional
 
 import scipp as sc
@@ -45,7 +46,7 @@ default_parameters = {
 
 DETECTOR_BANK_RESHAPING = {
     'larmor_detector': lambda x: x.fold(
-        dim='detector_number', sizes=dict(layer=4, tube=32, straw=7, pixel=512)
+        dim='detector_number', sizes={'layer': 4, 'tube': 32, 'straw': 7, 'pixel': 512}
     )
 }
 

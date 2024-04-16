@@ -16,10 +16,7 @@ def save_background_subtracted_iofq(
     run_title: RunTitle,
 ) -> None:
     """Save background-subtracted I(Q) histogram as an NXcanSAS file."""
-    if iofq.bins is None:
-        da = iofq.copy(deep=False)
-    else:
-        da = iofq.hist()
+    da = iofq.copy(deep=False) if iofq.bins is None else iofq.hist()
     if da.coords.is_edges('Q'):
         da.coords['Q'] = sc.midpoints(da.coords['Q'])
     with snx.File(out_filename, 'w') as f:

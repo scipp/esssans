@@ -3,6 +3,7 @@
 """
 Providers for the ISIS instruments.
 """
+
 import scipp as sc
 
 from ..sans.types import (
@@ -48,7 +49,7 @@ def data_to_tof(
 
 
 def monitor_to_tof(
-    da: ConfiguredReducibleMonitor[RunType, MonitorType]
+    da: ConfiguredReducibleMonitor[RunType, MonitorType],
 ) -> TofMonitor[RunType, MonitorType]:
     """Dummy conversion of monitor data to time-of-flight data.
     The monitor data already has a time-of-flight coordinate."""

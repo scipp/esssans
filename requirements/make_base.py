@@ -24,10 +24,7 @@ def write_dependencies(dependency_name: str, dependencies: List[str]) -> None:
     path = Path(f"{dependency_name}.in")
     if path.exists():
         sections = path.read_text().split(CUSTOM_AUTO_SEPARATOR)
-        if len(sections) > 1:
-            custom = sections[0]
-        else:
-            custom = ""
+        custom = sections[0] if len(sections) > 1 else ""
     else:
         custom = ""
     with path.open("w") as f:

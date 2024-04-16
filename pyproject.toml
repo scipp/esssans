@@ -1,9 +1,9 @@
 [build-system]
+build-backend = "setuptools.build_meta"
 requires = [
   "setuptools>=68",
-  "setuptools_scm[toml]>=8.0",
+  "setuptools_scm[toml]>=8",
 ]
-build-backend = "setuptools.build_meta"
 
 [project]
 name = "esssans"
@@ -12,17 +12,14 @@ authors = [{ name = "Scipp contributors" }]
 license = { file = "LICENSE" }
 readme = "README.md"
 classifiers = [
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering",
-    "Typing :: Typed",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Scientific/Engineering",
+  "Typing :: Typed",
 ]
 requires-python = ">=3.10"
 
@@ -31,24 +28,45 @@ requires-python = ">=3.10"
 # Make sure to list one dependency per line.
 dependencies = [
   "dask",
-  "graphviz",
   "essreduce",
+  "graphviz",
   "plopp",
   "pythreejs",
   "sciline>=24.4.1",
-  "scipp>=23.8.0",
-  "scippneutron>=23.9.0",
-  "scippnexus>=23.12.1",  # 23.12.0 and below deadlock in threaded use
+  "scipp>=23.8",
+  "scippneutron>=23.9",
+  "scippnexus>=23.12.1", # 23.12.0 and below deadlock in threaded use
 ]
 
-dynamic = ["version"]
+dynamic = [
+  "version",
+]
 
 [project.urls]
 "Bug Tracker" = "https://github.com/scipp/esssans/issues"
 "Documentation" = "https://scipp.github.io/esssans"
 "Source" = "https://github.com/scipp/esssans"
-
 [tool.setuptools_scm]
+
+[tool.ruff.lint]
+select = ["B", "C4", "DTZ", "E",  "F", "FA",
+          "G", "I", "S", "T20", "PERF", "PGH",
+          "PT", "PYI", "RUF", "UP", "W"]
+ignore = [
+    "E111", "E114", "E117", "D206", "D300",  # conflict with ruff format
+    "UP006", "UP035", "UP007"] # FIXME: this breaks the tests
+pydocstyle.convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["I"]
+# Assert in tests are fine
+"tests/*" = ["S101"]
+# Blocked by https://github.com/scipp/esssans/issues/95
+"*.ipynb" = ["F403", "F405"]
+"docs/*" = ["T201"]  # printing is ok for demonstration purposes
+
+[tool.ruff.format]
+quote-style = "preserve"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -64,18 +82,6 @@ filterwarnings = [
   "error",
   'ignore:\n            Sentinel is not a public part of the traitlets API:DeprecationWarning',
 ]
-
-[tool.bandit]
-# Excluding tests because bandit doesn't like `assert`.
-exclude_dirs = ["docs/conf.py", "tests"]
-
-[tool.black]
-skip-string-normalization = true
-
-[tool.isort]
-skip_gitignore = true
-profile = "black"
-known_first_party = ["esssans"]
 
 [tool.mypy]
 strict = true

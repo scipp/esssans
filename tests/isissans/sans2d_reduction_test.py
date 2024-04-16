@@ -5,7 +5,6 @@ from typing import Callable, List
 import pytest
 import sciline
 import scipp as sc
-
 from ess import isissans as isis
 from ess import sans
 from ess.isissans import MonitorOffset, SampleOffset, sans2d
@@ -178,7 +177,9 @@ def test_pipeline_can_compute_intermediate_results():
 def as_dict(funcs: List[Callable[..., type]]) -> dict:
     from typing import get_type_hints
 
-    return dict(zip([get_type_hints(func)['return'] for func in funcs], funcs))
+    return dict(
+        zip([get_type_hints(func)['return'] for func in funcs], funcs, strict=False)
+    )
 
 
 def pixel_dependent_direct_beam(

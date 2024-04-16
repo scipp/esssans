@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 import sciline
 import scipp as sc
-
 from ess import sans
 from ess.sans.conversions import ElasticCoordTransformGraph
 from ess.sans.types import (
@@ -36,7 +35,7 @@ from ess.sans.types import (
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import (  # noqa: E402
+from common import (
     loki_providers,
     loki_providers_no_beam_center_finder,
     make_params,

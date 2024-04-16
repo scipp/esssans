@@ -5,14 +5,13 @@ from pathlib import Path
 
 import sciline
 import scipp as sc
-from scipp.scipy.interpolate import interp1d
-
 from ess import sans
 from ess.loki.data import get_path
 from ess.sans.types import DimsToKeep, QBins, WavelengthBands, WavelengthBins
+from scipp.scipy.interpolate import interp1d
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import loki_providers, make_params  # noqa: E402
+from common import loki_providers, make_params
 
 
 def _get_I0(qbins: sc.Variable) -> sc.Variable:

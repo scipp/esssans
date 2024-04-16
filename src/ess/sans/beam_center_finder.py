@@ -76,10 +76,7 @@ def beam_center_from_center_of_mass(
     """
 
     dims_to_sum = set(data.dims) - set(data.coords['position'].dims)
-    if dims_to_sum:
-        summed = data.sum(dims_to_sum)
-    else:
-        summed = data.bins.sum()
+    summed = data.sum(dims_to_sum) if dims_to_sum else data.bins.sum()
     if summed.ndim > 1:
         summed = summed.flatten(to=uuid.uuid4().hex)
 
@@ -283,7 +280,7 @@ def _cost(xy: List[float], *args) -> float:
             'try restricting your Q range, or increasing the size of your Q bins to '
             'improve statistics in the denominator.'
         )
-    logger.info(f'Beam center finder: x={xy[0]}, y={xy[1]}, cost={out}')
+    logger.info('Beam center finder: x=%s, y=%s, cost=%s', xy[0], xy[1], out)
     return out
 
 
@@ -404,17 +401,17 @@ def beam_center_from_iofq(
     the results for finding the beam center.
 
     This is what is now implemented in this version of the algorithm.
-    """  # noqa: E501
+    """
     from scipy.optimize import minimize
 
     logger = get_logger('sans')
 
-    logger.info(f'Requested minimizer: {minimizer}')
-    logger.info(f'Requested tolerance: {tolerance}')
+    logger.info('Requested minimizer: %s', minimizer)
+    logger.info('Requested tolerance: %s', tolerance)
     minimizer = minimizer or 'Nelder-Mead'
     tolerance = tolerance or 0.1
-    logger.info(f'Using minimizer: {minimizer}')
-    logger.info(f'Using tolerance: {tolerance}')
+    logger.info('Using minimizer: %s', minimizer)
+    logger.info('Using tolerance: %s', tolerance)
 
     # Flatten positions dim which is required during the iterations for slicing with a
     # boolean mask
@@ -427,7 +424,7 @@ def beam_center_from_iofq(
 
     # Use center of mass to get initial guess for beam center
     com_shift = beam_center_from_center_of_mass(data, graph)
-    logger.info(f'Initial guess for beam center: {com_shift}')
+    logger.info('Initial guess for beam center: %s', com_shift)
 
     coords = data.transform_coords(
         ['cylindrical_x', 'cylindrical_y'], graph=graph
@@ -448,6 +445,6 @@ def beam_center_from_iofq(
     )
 
     center = _offsets_to_vector(data=data, xy=res.x, graph=graph)
-    logger.info(f'Final beam center value: {center}')
-    logger.info(f'Beam center finder minimizer info: {res}')
+    logger.info('Final beam center value: %s', center)
+    logger.info('Beam center finder minimizer info: %s', res)
     return center

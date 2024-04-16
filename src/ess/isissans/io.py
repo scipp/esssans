@@ -3,6 +3,7 @@
 """
 File loading functions for ISIS data, NOT using Mantid.
 """
+
 from typing import NewType
 
 import scipp as sc
@@ -43,9 +44,9 @@ def read_xml_detector_masking(
     filename:
         Path to the XML file.
     """
-    import xml.etree.ElementTree as ET  # nosec
+    import xml.etree.ElementTree as ET
 
-    tree = ET.parse(filename)  # nosec
+    tree = ET.parse(filename)  # noqa: S314
     root = tree.getroot()
 
     masked_detids = []
