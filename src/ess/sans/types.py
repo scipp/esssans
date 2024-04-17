@@ -154,7 +154,21 @@ class NeXusMonitorName(sciline.Scope[MonitorType, str], str):
 
 PixelMaskFilename = NewType('PixelMaskFilename', str)
 
-FilenameType = TypeVar('FilenameType', bound=str)
+
+class Filename(sciline.Scope[RunType, str], str):
+    """Filename of a run"""
+
+
+FilenameType = TypeVar(
+    'FilenameType',
+    Filename[BackgroundRun],
+    Filename[EmptyBeamRun],
+    Filename[SampleRun],
+    Filename[TransmissionRun[SampleRun]],
+    Filename[TransmissionRun[BackgroundRun]],
+    DirectBeamFilename,
+    PixelMaskFilename,
+)
 
 
 DataFolder = NewType('DataFolder', str)
@@ -162,10 +176,6 @@ DataFolder = NewType('DataFolder', str)
 
 class FilePath(sciline.Scope[FilenameType, str], str):
     """Path to a file"""
-
-
-class Filename(sciline.Scope[RunType, str], str):
-    """Filename of a run"""
 
 
 MaskedDetectorIDs = NewType('MaskedDetectorIDs', sc.Variable)
