@@ -11,8 +11,8 @@ from .i_of_q import resample_direct_beam
 from .types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
+    CleanSummedQ,
     Denominator,
-    FinalSummedQ,
     Numerator,
     ProcessedWavelengthBands,
     SampleRun,
@@ -104,16 +104,16 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
 
     wavelength_bins = pipeline.compute(WavelengthBins)
     parts = (
-        FinalSummedQ[SampleRun, Numerator],
-        FinalSummedQ[SampleRun, Denominator],
-        FinalSummedQ[BackgroundRun, Numerator],
-        FinalSummedQ[BackgroundRun, Denominator],
+        CleanSummedQ[SampleRun, Numerator],
+        CleanSummedQ[SampleRun, Denominator],
+        CleanSummedQ[BackgroundRun, Numerator],
+        CleanSummedQ[BackgroundRun, Denominator],
     )
     parts = pipeline.compute(parts)
     # Convert events to histograms to make normalization (in every iteration) cheap
     for key in [
-        FinalSummedQ[SampleRun, Numerator],
-        FinalSummedQ[BackgroundRun, Numerator],
+        CleanSummedQ[SampleRun, Numerator],
+        CleanSummedQ[BackgroundRun, Numerator],
     ]:
         parts[key] = parts[key].hist(wavelength=wavelength_bins)
 
@@ -122,8 +122,8 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
     parts = {key: sc.values(result) for key, result in parts.items()}
     for key, part in parts.items():
         pipeline[key] = part
-    sample0 = parts[FinalSummedQ[SampleRun, Denominator]]
-    background0 = parts[FinalSummedQ[BackgroundRun, Denominator]]
+    sample0 = parts[CleanSummedQ[SampleRun, Denominator]]
+    background0 = parts[CleanSummedQ[BackgroundRun, Denominator]]
 
     results = []
 
@@ -161,8 +161,8 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         db.coords['wavelength'] = sc.midpoints(
             db.coords['wavelength'], dim='wavelength'
         )
-        pipeline[FinalSummedQ[SampleRun, Denominator]] = sample0 * db
-        pipeline[FinalSummedQ[BackgroundRun, Denominator]] = background0 * db
+        pipeline[CleanSummedQ[SampleRun, Denominator]] = sample0 * db
+        pipeline[CleanSummedQ[BackgroundRun, Denominator]] = background0 * db
 
         results.append(
             {
