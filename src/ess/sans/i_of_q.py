@@ -222,33 +222,6 @@ def bin_in_q(
     return CleanSummedQ[ScatteringRunType, IofQPart](out.squeeze())
 
 
-def _merge_contributions(data: list[sc.DataArray]) -> sc.DataArray:
-    if len(data) == 1:
-        return data[0]
-    reducer = sc.reduce(data)
-    return reducer.bins.concat() if data[0].bins is not None else reducer.sum()
-
-
-def merge_banks(
-    *banks: CleanSummedQ[ScatteringRunType, IofQPart]
-) -> CleanSummedQ[ScatteringRunType, IofQPart]:
-    """
-    Merge the events or counts from multiple detector banks into a single numerator or
-    denominator, before the normalization step.
-    """
-    return CleanSummedQ[ScatteringRunType, IofQPart](_merge_contributions(banks))
-
-
-def merge_runs(
-    *runs: CleanSummedQ[ScatteringRunType, IofQPart],
-) -> CleanSummedQ[ScatteringRunType, IofQPart]:
-    """
-    Merge the events or counts from multiple runs into a single numerator or
-    denominator, before the normalization step.
-    """
-    return CleanSummedQ[ScatteringRunType, IofQPart](_merge_contributions(runs))
-
-
 def subtract_background(
     sample: IofQ[SampleRun],
     background: IofQ[BackgroundRun],
