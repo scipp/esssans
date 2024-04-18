@@ -11,11 +11,11 @@ from . import (
     io,
     masking,
     normalization,
+    workflow,
 )
 from .beam_center_finder import beam_center_from_center_of_mass
 from .direct_beam import direct_beam
 from .types import BackgroundSubtractedIofQ, IofQ, ReturnEvents, SampleRun
-from .workflow import make_workflow
 
 try:
     __version__ = importlib.metadata.version(__package__ or __name__)
@@ -54,5 +54,5 @@ __all__ = [
     'masking',
     'normalization',
     'providers',
-    'make_workflow',
+    'workflow',
 ]

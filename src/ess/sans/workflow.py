@@ -55,26 +55,30 @@ def set_banks(pipeline: sciline.Pipeline, banks: Iterable[str]) -> sciline.Pipel
 def set_sample_runs(
     pipeline: sciline.Pipeline, sample_runs: Iterable[str]
 ) -> sciline.Pipeline:
-    by_sample_run = pipeline.map(
-        pd.DataFrame({Filename[SampleRun]: sample_runs}).rename_axis('sample_run')
+    out = pipeline.copy()
+    sample_runs = pd.DataFrame({Filename[SampleRun]: sample_runs}).rename_axis(
+        'sample_run'
     )
     for part in (Numerator, Denominator):
-        pipeline[CleanSummedQ[SampleRun, part]] = by_sample_run[
-            CleanSummedQ[SampleRun, part]
-        ].reduce(index='sample_run', func=_merge_contributions)
-    return pipeline
+        out[CleanSummedQ[SampleRun, part]] = (
+            pipeline[CleanSummedQ[SampleRun, part]]
+            .map(sample_runs)
+            .reduce(index='sample_run', func=_merge_contributions)
+        )
+    return out
 
 
 def set_background_runs(
-    pipeline: sciline.Pipeline, sample_runs: Iterable[str]
+    pipeline: sciline.Pipeline, background_runs: Iterable[str]
 ) -> sciline.Pipeline:
-    by_sample_run = pipeline.map(
-        pd.DataFrame({Filename[BackgroundRun]: sample_runs}).rename_axis(
-            'background_run'
-        )
-    )
+    out = pipeline.copy()
+    background_runs = pd.DataFrame(
+        {Filename[BackgroundRun]: background_runs}
+    ).rename_axis('background_run')
     for part in (Numerator, Denominator):
-        pipeline[CleanSummedQ[BackgroundRun, part]] = by_sample_run[
-            CleanSummedQ[BackgroundRun, part]
-        ].reduce(index='background_run', func=_merge_contributions)
-    return pipeline
+        out[CleanSummedQ[BackgroundRun, part]] = (
+            pipeline[CleanSummedQ[BackgroundRun, part]]
+            .map(background_runs)
+            .reduce(index='background_run', func=_merge_contributions)
+        )
+    return out

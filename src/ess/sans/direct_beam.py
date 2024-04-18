@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import scipp as sc
@@ -132,9 +132,9 @@ def direct_beam(pipeline: Pipeline, I0: sc.Variable, niter: int = 5) -> List[dic
         # parameters, nor given by any providers, so it will be considered flat.
         # TODO: Should we have a check that DirectBeam cannot be computed from the
         # pipeline?
-        pipeline[WavelengthBands] = full_wavelength_range
+        pipeline[Optional[WavelengthBands]] = full_wavelength_range
         iofq_full = pipeline.compute(BackgroundSubtractedIofQ)
-        pipeline[WavelengthBands] = bands
+        pipeline[Optional[WavelengthBands]] = bands
         iofq_bands = pipeline.compute(BackgroundSubtractedIofQ)
 
         if direct_beam_function is None:
