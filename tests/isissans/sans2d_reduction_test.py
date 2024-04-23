@@ -8,12 +8,16 @@ import scipp as sc
 
 from ess import isissans as isis
 from ess import sans
-from ess.isissans import MonitorOffset, SampleOffset, sans2d
+from ess.isissans import DetectorBankOffset, MonitorOffset, SampleOffset, sans2d
 from ess.sans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
     BeamCenter,
+    BeamCenterFinderMinimizer,
+    BeamCenterFinderQBins,
+    BeamCenterFinderTolerance,
     CorrectForGravity,
+    DimsToKeep,
     DirectBeam,
     DirectBeamFilename,
     EmptyBeamRun,
@@ -24,6 +28,7 @@ from ess.sans.types import (
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
     QBins,
+    QxyBins,
     RawData,
     ReturnEvents,
     SampleRun,
@@ -63,6 +68,7 @@ def make_params() -> dict:
     params[NeXusMonitorName[Transmission]] = 'monitor4'
     params[SampleOffset] = sc.vector([0.0, 0.0, 0.053], unit='m')
     params[MonitorOffset[Transmission]] = sc.vector([0.0, 0.0, -6.719], unit='m')
+    params[MonitorOffset[Incident]] = None
 
     params[NonBackgroundWavelengthRange] = sc.array(
         dims=['wavelength'], values=[0.7, 17.1], unit='angstrom'
@@ -70,6 +76,15 @@ def make_params() -> dict:
     params[CorrectForGravity] = True
     params[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.upper_bound
     params[ReturnEvents] = False
+
+    params[WavelengthBands] = None
+    params[DimsToKeep] = None
+    params[QxyBins] = None
+    params[DetectorBankOffset] = None
+    params[Transmission] = None
+    params[BeamCenterFinderMinimizer] = None
+    params[BeamCenterFinderTolerance] = None
+
     return params
 
 
@@ -114,12 +129,10 @@ def test_pipeline_can_compute_background_subtracted_IofQ_in_wavelength_bands():
     assert result.sizes['band'] == 10
 
 
-def test_pipeline_wavelength_bands_is_optional():
+def test_pipeline_wavelength_bands():
     params = make_params()
     pipeline = sciline.Pipeline(sans2d_providers(), params=params)
     noband = pipeline.compute(BackgroundSubtractedIofQ)
-    with pytest.raises(sciline.UnsatisfiedRequirement):
-        pipeline.compute(WavelengthBands)
     band = sc.linspace('wavelength', 2.0, 16.0, num=2, unit='angstrom')
     pipeline[WavelengthBands] = band
     assert sc.identical(band, pipeline.compute(WavelengthBands))
@@ -141,7 +154,9 @@ def test_workflow_is_deterministic():
 
 def test_pipeline_raisesVariancesError_if_normalization_errors_not_dropped():
     params = make_params()
-    del params[NonBackgroundWavelengthRange]  # Make sure we raise in iofq_denominator
+    params[
+        NonBackgroundWavelengthRange
+    ] = None  # Make sure we raise in iofq_denominator
     params[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.fail
     pipeline = sciline.Pipeline(sans2d_providers(), params=params)
     with pytest.raises(sc.VariancesError):
@@ -219,9 +234,7 @@ def test_beam_center_from_center_of_mass_is_close_to_verified_result():
 
 def test_beam_center_finder_without_direct_beam_reproduces_verified_result():
     params = make_params()
-    params[sans.beam_center_finder.BeamCenterFinderQBins] = sc.linspace(
-        'Q', 0.02, 0.3, 71, unit='1/angstrom'
-    )
+    params[BeamCenterFinderQBins] = sc.linspace('Q', 0.02, 0.3, 71, unit='1/angstrom')
     del params[DirectBeamFilename]
     providers = sans2d_providers()
     providers.remove(sans.beam_center_finder.beam_center_from_center_of_mass)
@@ -240,9 +253,8 @@ def test_beam_center_can_get_closer_to_verified_result_with_low_counts_mask():
 
     params = make_params()
     params[sans2d.LowCountThreshold] = sc.scalar(80.0, unit='counts')
-    params[sans.beam_center_finder.BeamCenterFinderQBins] = sc.linspace(
-        'Q', 0.02, 0.3, 71, unit='1/angstrom'
-    )
+    params[BeamCenterFinderQBins] = sc.linspace('Q', 0.02, 0.3, 71, unit='1/angstrom')
+    # params[DirectBeamFilename] = None
     del params[DirectBeamFilename]
     providers = sans2d_providers()
     providers.remove(sans2d.sample_holder_mask)
@@ -256,9 +268,13 @@ def test_beam_center_can_get_closer_to_verified_result_with_low_counts_mask():
 
 def test_beam_center_finder_works_with_direct_beam():
     params = make_params()
-    params[sans.beam_center_finder.BeamCenterFinderQBins] = sc.linspace(
-        'Q', 0.02, 0.3, 71, unit='1/angstrom'
-    )
+    params[BeamCenterFinderQBins] = sc.linspace('Q', 0.02, 0.3, 71, unit='1/angstrom')
+    # params[BeamCenterFinderTolerance] = None
+    # params[WavelengthBands] = None
+    # params[QxyBins] = None
+    # params[DimsToKeep] = None
+    # params[WavelengthBands] = None
+
     providers = sans2d_providers()
     providers.remove(sans.beam_center_finder.beam_center_from_center_of_mass)
     providers.append(sans.beam_center_finder.beam_center_from_iofq)
@@ -271,9 +287,7 @@ def test_beam_center_finder_works_with_direct_beam():
 
 def test_beam_center_finder_works_with_pixel_dependent_direct_beam():
     params = make_params()
-    params[sans.beam_center_finder.BeamCenterFinderQBins] = sc.linspace(
-        'Q', 0.02, 0.3, 71, unit='1/angstrom'
-    )
+    params[BeamCenterFinderQBins] = sc.linspace('Q', 0.02, 0.3, 71, unit='1/angstrom')
     providers = sans2d_providers()
     providers.remove(sans.beam_center_finder.beam_center_from_center_of_mass)
     providers.append(sans.beam_center_finder.beam_center_from_iofq)

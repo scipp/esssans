@@ -7,6 +7,7 @@ from ess import isissans as isis
 from ess import sans
 from ess.sans.types import (
     CorrectForGravity,
+    DimsToKeep,
     Filename,
     Incident,
     IofQ,
@@ -18,7 +19,9 @@ from ess.sans.types import (
     SampleRun,
     Transmission,
     UncertaintyBroadcastMode,
+    WavelengthBands,
     WavelengthBins,
+    WavelengthMask,
 )
 
 
@@ -49,6 +52,14 @@ def make_params() -> dict:
     params[CorrectForGravity] = True
     params[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.upper_bound
     params[sans.ReturnEvents] = False
+    params[WavelengthBands] = None
+    params[DimsToKeep] = None
+    params[QxyBins] = None
+    params[WavelengthMask] = None
+    params[isis.MonitorOffset[Transmission]] = None
+    params[isis.MonitorOffset[Incident]] = None
+    params[Transmission] = None
+
     return params
 
 

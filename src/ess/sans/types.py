@@ -352,3 +352,13 @@ RunTitle = NewType('RunTitle', str)
 
 RunNumber = NewType('RunNumber', int)
 """Run number."""
+
+
+BeamCenterFinderQBins = NewType('BeamCenterFinderQBins', sc.Variable)
+"""Q binning used for the beam center finder"""
+
+BeamCenterFinderTolerance = NewType('BeamCenterFinderTolerance', float)
+"""Tolerance used for the beam center finder"""
+
+BeamCenterFinderMinimizer = NewType('BeamCenterFinderMinimizer', str)
+"""Minimizer used for the beam center finder"""

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from typing import NewType, Optional
+from typing import NewType
 
 import scipp as sc
 from scipp.constants import h, m_n
@@ -144,7 +144,7 @@ ElasticCoordTransformGraph = NewType('ElasticCoordTransformGraph', dict)
 MonitorCoordTransformGraph = NewType('MonitorCoordTransformGraph', dict)
 
 
-def sans_elastic(gravity: Optional[CorrectForGravity]) -> ElasticCoordTransformGraph:
+def sans_elastic(gravity: CorrectForGravity) -> ElasticCoordTransformGraph:
     """
     Generate a coordinate transformation graph for SANS elastic scattering.
 
@@ -234,7 +234,7 @@ def detector_to_wavelength(
 
 
 def mask_wavelength(
-    da: CleanWavelength[ScatteringRunType, IofQPart], mask: Optional[WavelengthMask]
+    da: CleanWavelength[ScatteringRunType, IofQPart], mask: WavelengthMask
 ) -> CleanWavelengthMasked[ScatteringRunType, IofQPart]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -244,7 +244,7 @@ def mask_wavelength(
 def compute_Q(
     data: CleanWavelengthMasked[ScatteringRunType, IofQPart],
     graph: ElasticCoordTransformGraph,
-    compute_Qxy: Optional[QxyBins],
+    compute_Qxy: QxyBins,
 ) -> CleanQ[ScatteringRunType, IofQPart]:
     """
     Convert a data array from wavelength to Q.

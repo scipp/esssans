@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
-from typing import NewType, Optional
+from typing import NewType
 
 import sciline
 import scipp as sc
@@ -26,8 +26,8 @@ DetectorBankOffset = NewType('DetectorBankOffset', sc.Variable)
 
 def apply_component_user_offsets_to_raw_data(
     data: RawData[ScatteringRunType],
-    sample_offset: Optional[SampleOffset],
-    detector_bank_offset: Optional[DetectorBankOffset],
+    sample_offset: SampleOffset,
+    detector_bank_offset: DetectorBankOffset,
 ) -> ConfiguredReducibleDataData[ScatteringRunType]:
     """Apply user offsets to raw data.
 
@@ -56,7 +56,7 @@ def apply_component_user_offsets_to_raw_data(
 
 def apply_component_user_offsets_to_raw_monitor(
     monitor_data: RawMonitor[RunType, MonitorType],
-    monitor_offset: Optional[MonitorOffset[MonitorType]],
+    monitor_offset: MonitorOffset[MonitorType],
 ) -> ConfiguredReducibleMonitor[RunType, MonitorType]:
     """Apply user offsets to raw monitor.
     Parameters

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
 import uuid
-from typing import Optional
 
 import sciline
 import scipp as sc
@@ -43,7 +42,7 @@ from .uncertainty import broadcast_with_upper_bound_variances
 def preprocess_monitor_data(
     monitor: WavelengthMonitor[RunType, MonitorType],
     wavelength_bins: WavelengthBins,
-    non_background_range: Optional[NonBackgroundWavelengthRange],
+    non_background_range: NonBackgroundWavelengthRange,
     uncertainties: UncertaintyBroadcastMode,
 ) -> CleanMonitor[RunType, MonitorType]:
     """
@@ -139,9 +138,9 @@ def resample_direct_beam(
 
 def bin_in_q(
     data: CleanQ[ScatteringRunType, IofQPart],
-    q_bins: Optional[QBins],
-    qxy_bins: Optional[QxyBins],
-    dims_to_keep: Optional[DimsToKeep],
+    q_bins: QBins,
+    qxy_bins: QxyBins,
+    dims_to_keep: DimsToKeep,
 ) -> CleanSummedQ[ScatteringRunType, IofQPart]:
     """
     Merges data from all pixels into a single I(Q) spectrum:

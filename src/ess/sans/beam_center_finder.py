@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 
 import uuid
-from typing import Dict, List, NewType, Optional, Union
+from typing import Dict, List
 
 import numpy as np
 import sciline
@@ -26,6 +26,9 @@ from .normalization import (
 )
 from .types import (
     BeamCenter,
+    BeamCenterFinderMinimizer,
+    BeamCenterFinderQBins,
+    BeamCenterFinderTolerance,
     CalibratedMaskedData,
     DetectorPixelShape,
     IofQ,
@@ -134,7 +137,7 @@ def _iofq_in_quadrants(
     data: sc.DataArray,
     norm: sc.DataArray,
     graph: dict,
-    q_bins: Union[int, sc.Variable],
+    q_bins: int | sc.Variable,
     wavelength_bins: sc.Variable,
     transform: sc.Variable,
     pixel_shape: sc.DataGroup,
@@ -287,16 +290,6 @@ def _cost(xy: List[float], *args) -> float:
     return out
 
 
-BeamCenterFinderQBins = NewType('BeamCenterFinderQBins', sc.Variable)
-"""Q binning used for the beam center finder"""
-
-BeamCenterFinderTolerance = NewType('BeamCenterFinderTolerance', float)
-"""Tolerance used for the beam center finder"""
-
-BeamCenterFinderMinimizer = NewType('BeamCenterFinderMinimizer', str)
-"""Minimizer used for the beam center finder"""
-
-
 def beam_center_from_iofq(
     data: MaskedData[SampleRun],
     graph: ElasticCoordTransformGraph,
@@ -305,8 +298,8 @@ def beam_center_from_iofq(
     q_bins: BeamCenterFinderQBins,
     transform: LabFrameTransform[SampleRun],
     pixel_shape: DetectorPixelShape[SampleRun],
-    minimizer: Optional[BeamCenterFinderMinimizer],
-    tolerance: Optional[BeamCenterFinderTolerance],
+    minimizer: BeamCenterFinderMinimizer,
+    tolerance: BeamCenterFinderTolerance,
 ) -> BeamCenter:
     """
     Find the beam center of a SANS scattering pattern using an I(Q) calculation.
