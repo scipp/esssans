@@ -1,0 +1,6 @@
+ess.sans.uncertainty.broadcast\_to\_events\_with\_upper\_bound\_variances
+=========================================================================
+
+.. currentmodule:: ess.sans.uncertainty
+
+.. autofunction:: broadcast_to_events_with_upper_bound_variances
