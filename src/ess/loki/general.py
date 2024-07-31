@@ -7,6 +7,13 @@ Default parameters, providers and utility functions for the loki workflow.
 import sciline
 import scipp as sc
 from ess.reduce import nexus
+from ess.reduce.parameter import (
+    BooleanParameter,
+    StringParameter,
+    ParamWithOptions,
+    FilenameParameter,
+    BinEdgesParameter,
+)
 from ess.sans import providers as sans_providers
 
 from ..sans.common import gravity_vector
@@ -39,6 +46,11 @@ from ..sans.types import (
     Transmission,
     WavelengthBands,
     WavelengthMask,
+    ReturnEvents,
+    UncertaintyBroadcastMode,
+    Filename,
+    SampleRun,
+    WavelengthBins,
 )
 from .io import dummy_load_sample
 
@@ -55,6 +67,71 @@ def default_parameters() -> dict:
         WavelengthMask: None,
         WavelengthBands: None,
     }
+
+
+# problem:
+# redundant or missing validation if param does validation but not init of provider input?
+
+
+# class BinEdges(sc.Variable):
+#    def __init__(self, var: sc.Variable, dim: str, unit: str):
+#        # check if var has correct dim and unit
+#        pass
+#
+#
+# class WavelengthBins(sc.Variable):
+#    def __init__(self, var: sc.Variable):
+#        super().__init__(var, dim='wavelength', unit='angstrom')
+
+
+param_mapping_registry = {
+    CorrectForGravity: BooleanParameter.from_type(
+        CorrectForGravity, default=default_parameters()[CorrectForGravity]
+    ),
+    TransformationPath: StringParameter.from_type(
+        TransformationPath, default=default_parameters()[TransformationPath]
+    ),
+    # [more default params]
+    # NoDefault makes no sense for boolean params!
+    # Should this be ReductionMode (EventMode/HistogramMode)?
+    ReturnEvents: BooleanParameter.from_type(ReturnEvents, default=False),
+    UncertaintyBroadcastMode: ParamWithOptions.from_enum(
+        UncertaintyBroadcastMode,
+        default=UncertaintyBroadcastMode.upper_bound,
+    ),
+    Filename[SampleRun]: FilenameParameter.from_type(Filename[SampleRun]),
+    WavelengthBins: BinEdgesParameter(
+        WavelengthBins, dim='wavelength', unit='angstrom'
+    ),
+}
+
+# 1. combo box to select workflow (could have default)
+# 2. checkbox + (combo box + list widget) to select desired outputs (defines workflow subgraph) (can have defaults) --> select subset of nodes
+# 3. define parameters  (use intersection of param mapping with nodes in graph)
+# 4. run workflow, plot, ...
+
+
+# Open questions:
+# - How to return outputs to the user?
+# - Want to be able to re-run without re-running the notebook cell that creates the widget (since otherwise params are lost)
+# - Soon users will ask for a workspace-list widget, holding outputs from various workflow runs. How to interact with this? See Mantid ADS and WorkspaceProperty.
+# - interaction between outputs we want to compute and visibility/mandatory/optional params, what comes first?
+#   => selecting outputs is second step of selecting workflow, this then determines which parameters apply
+
+# def LokiIofQWidget():
+#     return ess.reduce.make_widget(LokiWorkflow, targets=[IofQ[SampleRun]])
+
+
+# not like this:
+# value = input()
+# value = ess.reduce.make_widget(LokiWorkflow)
+
+# Do methods call compute and detector when re-compute is needed?
+# widget = ess.reduce.make_widget(LokiWorkflow)
+# widget.get()  # dict of outputs
+
+# out = {}
+# widget = ess.reduce.make_widget(LokiWorkflow, out=out)
 
 
 def LokiAtLarmorWorkflow() -> sciline.Pipeline:
@@ -81,6 +158,9 @@ def LokiAtLarmorWorkflow() -> sciline.Pipeline:
     workflow.insert(read_xml_detector_masking)
     # No sample information in the Loki@Larmor files, so we use a dummy sample provider
     workflow.insert(dummy_load_sample)
+
+    workflow.parameters = {}
+
     return workflow
 
 
