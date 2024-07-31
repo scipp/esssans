@@ -44,6 +44,7 @@ from ..sans.types import (
     NeXusDetectorName,
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
+    PixelMaskFilename,
     PixelShapePath,
     QBins,
     RawData,
@@ -114,6 +115,7 @@ param_mapping_registry = {
     TransformationPath: StringParameter.from_type(
         TransformationPath, default=default_parameters()[TransformationPath]
     ),
+    PixelMaskFilename: FilenameParameter.from_type(PixelMaskFilename),
     PixelShapePath: StringParameter.from_type(
         PixelShapePath, default=default_parameters()[PixelShapePath]
     ),
