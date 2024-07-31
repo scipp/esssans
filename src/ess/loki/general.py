@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
+# Copyright (c) 202 Scipp contributors (https://github.com/scipp)
 """
 Default parameters, providers and utility functions for the loki workflow.
 """
@@ -8,25 +8,31 @@ import sciline
 import scipp as sc
 from ess.reduce import nexus
 from ess.reduce.parameter import (
-    BooleanParameter,
-    StringParameter,
-    ParamWithOptions,
-    FilenameParameter,
     BinEdgesParameter,
+    BooleanParameter,
+    FilenameParameter,
+    Parameter,
+    ParamWithOptions,
+    StringParameter,
 )
 from ess.sans import providers as sans_providers
+from sciline.typing import Key
 
 from ..sans.common import gravity_vector
 from ..sans.types import (
+    BackgroundRun,
     ConfiguredReducibleData,
     ConfiguredReducibleMonitor,
     CorrectForGravity,
     DetectorPixelShape,
     DimsToKeep,
+    Filename,
     Incident,
+    IofQ,
     LabFrameTransform,
     LoadedNeXusDetector,
     LoadedNeXusMonitor,
+    MaskedData,
     MonitorType,
     NeXusDetectorName,
     NeXusMonitorName,
@@ -36,21 +42,20 @@ from ..sans.types import (
     RawMonitor,
     RawSample,
     RawSource,
+    ReturnEvents,
     RunType,
     SamplePosition,
+    SampleRun,
     ScatteringRunType,
     SourcePosition,
     TofData,
     TofMonitor,
     TransformationPath,
     Transmission,
-    WavelengthBands,
-    WavelengthMask,
-    ReturnEvents,
     UncertaintyBroadcastMode,
-    Filename,
-    SampleRun,
+    WavelengthBands,
     WavelengthBins,
+    WavelengthMask,
 )
 from .io import dummy_load_sample
 
@@ -88,8 +93,19 @@ param_mapping_registry = {
     CorrectForGravity: BooleanParameter.from_type(
         CorrectForGravity, default=default_parameters()[CorrectForGravity]
     ),
+    NeXusMonitorName[Incident]: StringParameter.from_type(
+        NeXusMonitorName[Incident],
+        default=default_parameters()[NeXusMonitorName[Incident]],
+    ),
+    NeXusMonitorName[Transmission]: StringParameter.from_type(
+        NeXusMonitorName[Transmission],
+        default=default_parameters()[NeXusMonitorName[Transmission]],
+    ),
     TransformationPath: StringParameter.from_type(
         TransformationPath, default=default_parameters()[TransformationPath]
+    ),
+    PixelShapePath: StringParameter.from_type(
+        PixelShapePath, default=default_parameters()[PixelShapePath]
     ),
     # [more default params]
     # NoDefault makes no sense for boolean params!
@@ -100,10 +116,12 @@ param_mapping_registry = {
         default=UncertaintyBroadcastMode.upper_bound,
     ),
     Filename[SampleRun]: FilenameParameter.from_type(Filename[SampleRun]),
+    Filename[BackgroundRun]: FilenameParameter.from_type(Filename[BackgroundRun]),
     WavelengthBins: BinEdgesParameter(
         WavelengthBins, dim='wavelength', unit='angstrom'
     ),
 }
+
 
 # 1. combo box to select workflow (could have default)
 # 2. checkbox + (combo box + list widget) to select desired outputs (defines workflow subgraph) (can have defaults) --> select subset of nodes
@@ -134,7 +152,7 @@ param_mapping_registry = {
 # widget = ess.reduce.make_widget(LokiWorkflow, out=out)
 
 
-def LokiAtLarmorWorkflow() -> sciline.Pipeline:
+class LokiAtLarmorWorkflow(sciline.Pipeline):
     """
     Workflow with default parameters for Loki test at Larmor.
 
@@ -148,20 +166,44 @@ def LokiAtLarmorWorkflow() -> sciline.Pipeline:
     :
         Loki workflow as a sciline.Pipeline
     """
-    from ess.isissans.io import read_xml_detector_masking
 
-    from . import providers as loki_providers
+    def __init__(self):
+        from ess.isissans.io import read_xml_detector_masking
 
-    params = default_parameters()
-    loki_providers = sans_providers + loki_providers
-    workflow = sciline.Pipeline(providers=loki_providers, params=params)
-    workflow.insert(read_xml_detector_masking)
-    # No sample information in the Loki@Larmor files, so we use a dummy sample provider
-    workflow.insert(dummy_load_sample)
+        from . import providers as loki_providers
 
-    workflow.parameters = {}
+        params = default_parameters()
+        loki_providers = sans_providers + loki_providers
 
-    return workflow
+        super().__init__(providers=loki_providers, params=params)
+
+        self.insert(read_xml_detector_masking)
+        # No sample information in the Loki@Larmor files, so we use a dummy sample provider
+        self.insert(dummy_load_sample)
+
+    @property
+    def typical_outputs(self) -> tuple[Key, ...]:
+        """Return a tuple of outputs that are used regularly."""
+        return IofQ[SampleRun], MaskedData[SampleRun]
+
+    @property
+    def possible_outputs(self) -> tuple[Key, ...]:
+        """All possible outputs."""
+        return tuple(self.underlying_graph.nodes)
+
+    def parameters(self, outputs: tuple[Key, ...]) -> dict[Key, Parameter]:
+        """Return a dictionary of parameters for the workflow."""
+        import networkx as nx
+
+        subgraph = set(outputs)
+        graph = self.underlying_graph
+        for key in outputs:
+            subgraph.update(nx.ancestors(graph, key))
+        return {
+            key: param
+            for key, param in param_mapping_registry.items()
+            if key in subgraph
+        }
 
 
 DETECTOR_BANK_RESHAPING = {
