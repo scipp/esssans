@@ -4,6 +4,10 @@
 Default parameters, providers and utility functions for the loki workflow.
 """
 
+from __future__ import annotations
+
+from collections.abc import Iterable
+
 import sciline
 import scipp as sc
 from ess.reduce import nexus
@@ -15,9 +19,11 @@ from ess.reduce.parameter import (
     ParamWithOptions,
     StringParameter,
 )
+from ess.reduce.workflow import Workflow
 from ess.sans import providers as sans_providers
 from sciline.typing import Key
 
+from ..sans import with_pixel_mask_filenames
 from ..sans.common import gravity_vector
 from ..sans.types import (
     BackgroundRun,
@@ -26,6 +32,7 @@ from ..sans.types import (
     CorrectForGravity,
     DetectorPixelShape,
     DimsToKeep,
+    EmptyBeamRun,
     Filename,
     Incident,
     IofQ,
@@ -38,6 +45,7 @@ from ..sans.types import (
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
     PixelShapePath,
+    QBins,
     RawData,
     RawMonitor,
     RawSample,
@@ -52,6 +60,7 @@ from ..sans.types import (
     TofMonitor,
     TransformationPath,
     Transmission,
+    TransmissionRun,
     UncertaintyBroadcastMode,
     WavelengthBands,
     WavelengthBins,
@@ -93,6 +102,7 @@ param_mapping_registry = {
     CorrectForGravity: BooleanParameter.from_type(
         CorrectForGravity, default=default_parameters()[CorrectForGravity]
     ),
+    NeXusDetectorName: StringParameter.from_type(NeXusDetectorName),
     NeXusMonitorName[Incident]: StringParameter.from_type(
         NeXusMonitorName[Incident],
         default=default_parameters()[NeXusMonitorName[Incident]],
@@ -117,9 +127,17 @@ param_mapping_registry = {
     ),
     Filename[SampleRun]: FilenameParameter.from_type(Filename[SampleRun]),
     Filename[BackgroundRun]: FilenameParameter.from_type(Filename[BackgroundRun]),
+    Filename[TransmissionRun[SampleRun]]: FilenameParameter.from_type(
+        Filename[TransmissionRun[SampleRun]]
+    ),
+    Filename[TransmissionRun[BackgroundRun]]: FilenameParameter.from_type(
+        Filename[TransmissionRun[BackgroundRun]]
+    ),
+    Filename[EmptyBeamRun]: FilenameParameter.from_type(Filename[EmptyBeamRun]),
     WavelengthBins: BinEdgesParameter(
         WavelengthBins, dim='wavelength', unit='angstrom'
     ),
+    QBins: BinEdgesParameter(QBins, dim='Q', unit='1/angstrom'),
 }
 
 
@@ -152,7 +170,7 @@ param_mapping_registry = {
 # widget = ess.reduce.make_widget(LokiWorkflow, out=out)
 
 
-class LokiAtLarmorWorkflow(sciline.Pipeline):
+class LokiAtLarmorWorkflow(Workflow):
     """
     Workflow with default parameters for Loki test at Larmor.
 
@@ -175,35 +193,23 @@ class LokiAtLarmorWorkflow(sciline.Pipeline):
         params = default_parameters()
         loki_providers = sans_providers + loki_providers
 
-        super().__init__(providers=loki_providers, params=params)
-
-        self.insert(read_xml_detector_masking)
+        pipeline = sciline.Pipeline(providers=loki_providers, params=params)
+        pipeline.insert(read_xml_detector_masking)
         # No sample information in the Loki@Larmor files, so we use a dummy sample provider
-        self.insert(dummy_load_sample)
+        pipeline.insert(dummy_load_sample)
+        super().__init__(pipeline)
 
     @property
     def typical_outputs(self) -> tuple[Key, ...]:
         """Return a tuple of outputs that are used regularly."""
         return IofQ[SampleRun], MaskedData[SampleRun]
 
-    @property
-    def possible_outputs(self) -> tuple[Key, ...]:
-        """All possible outputs."""
-        return tuple(self.underlying_graph.nodes)
-
-    def parameters(self, outputs: tuple[Key, ...]) -> dict[Key, Parameter]:
+    def _parameters(self, outputs: tuple[Key, ...]) -> dict[Key, Parameter]:
         """Return a dictionary of parameters for the workflow."""
-        import networkx as nx
+        return param_mapping_registry
 
-        subgraph = set(outputs)
-        graph = self.underlying_graph
-        for key in outputs:
-            subgraph.update(nx.ancestors(graph, key))
-        return {
-            key: param
-            for key, param in param_mapping_registry.items()
-            if key in subgraph
-        }
+    def set_pixel_mask_filenames(self, masks: Iterable[str]) -> None:
+        self.pipeline = with_pixel_mask_filenames(self.pipeline, masks)
 
 
 DETECTOR_BANK_RESHAPING = {
