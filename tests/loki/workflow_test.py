@@ -7,6 +7,7 @@ from pathlib import Path
 import scipp as sc
 from ess import loki, sans
 from ess.loki import LokiAtLarmorWorkflow
+from ess.reduce import workflow
 from ess.sans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
@@ -19,7 +20,6 @@ from ess.sans.types import (
     SampleRun,
     UncertaintyBroadcastMode,
 )
-from ess.reduce import workflow
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import make_params

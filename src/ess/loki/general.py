@@ -11,9 +11,9 @@ from typing import Any
 import sciline
 import scipp as sc
 from ess.reduce import nexus
+from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
 from ess.sans.workflow import SANSWorkflow
-from ess.reduce.workflow import register_workflow
 
 from ..sans.common import gravity_vector
 from ..sans.types import (

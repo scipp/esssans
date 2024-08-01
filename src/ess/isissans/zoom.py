@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
 import sciline
+from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
 from ess.sans.workflow import SANSWorkflow
-from ess.reduce.workflow import register_workflow
 
 from .data import load_tutorial_direct_beam, load_tutorial_run
 from .general import default_parameters
