@@ -35,6 +35,8 @@ from ..sans.types import (
     PixelMaskFilename,
     PixelShapePath,
     QBins,
+    QxBins,
+    QyBins,
     ReturnEvents,
     SampleRun,
     TransformationPath,
@@ -88,6 +90,8 @@ def make_parameter_mapping(*, defaults: dict[Key, Any]) -> dict[Key, Parameter]:
             WavelengthBins, dim='wavelength', unit='angstrom'
         ),
         QBins: BinEdgesParameter(QBins, dim='Q', unit='1/angstrom'),
+        QxBins: BinEdgesParameter(QxBins, dim='Qx', unit='1/angstrom'),
+        QyBins: BinEdgesParameter(QyBins, dim='Qy', unit='1/angstrom'),
         DirectBeam: StringParameter.from_type(
             DirectBeam, switchable=True, optional=True, default=None
         ),
