@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import scipp as sc
 from ess.reduce.parameter import (
     BinEdgesParameter,
     BooleanParameter,
@@ -21,7 +22,10 @@ from sciline.typing import Key
 
 from ..sans.types import (
     BackgroundRun,
+    BeamCenter,
     CorrectForGravity,
+    DirectBeam,
+    DirectBeamFilename,
     EmptyBeamRun,
     Filename,
     Incident,
@@ -64,7 +68,6 @@ def make_parameter_mapping(*, defaults: dict[Key, Any]) -> dict[Key, Parameter]:
             PixelShapePath, default=defaults[PixelShapePath]
         ),
         # [more default params]
-        # NoDefault makes no sense for boolean params!
         # Should this be ReductionMode (EventMode/HistogramMode)?
         ReturnEvents: BooleanParameter.from_type(ReturnEvents, default=False),
         UncertaintyBroadcastMode: ParamWithOptions.from_enum(
@@ -83,4 +86,13 @@ def make_parameter_mapping(*, defaults: dict[Key, Any]) -> dict[Key, Parameter]:
             WavelengthBins, dim='wavelength', unit='angstrom'
         ),
         QBins: BinEdgesParameter(QBins, dim='Q', unit='1/angstrom'),
+        DirectBeam: StringParameter.from_type(
+            DirectBeam, switchable=True, optional=True, default=None
+        ),
+        DirectBeamFilename: FilenameParameter.from_type(
+            DirectBeamFilename, switchable=True
+        ),
+        BeamCenter: StringParameter.from_type(
+            BeamCenter, default=sc.vector([0, 0, 0], unit='m')
+        ),
     }
