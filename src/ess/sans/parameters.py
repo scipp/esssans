@@ -17,6 +17,7 @@ from ess.reduce.parameter import (
     Parameter,
     ParamWithOptions,
     StringParameter,
+    VectorParameter,
 )
 from sciline.typing import Key
 
@@ -92,7 +93,7 @@ def make_parameter_mapping(*, defaults: dict[Key, Any]) -> dict[Key, Parameter]:
         DirectBeamFilename: FilenameParameter.from_type(
             DirectBeamFilename, switchable=True
         ),
-        BeamCenter: StringParameter.from_type(
+        BeamCenter: VectorParameter.from_type(
             BeamCenter, default=sc.vector([0, 0, 0], unit='m')
         ),
     }
