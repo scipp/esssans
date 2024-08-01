@@ -55,18 +55,19 @@ def make_parameter_mapping(*, defaults: dict[Key, Any]) -> dict[Key, Parameter]:
         ),
         NeXusDetectorName: StringParameter.from_type(NeXusDetectorName),
         NeXusMonitorName[Incident]: StringParameter.from_type(
-            NeXusMonitorName[Incident], default=defaults[NeXusMonitorName[Incident]]
+            NeXusMonitorName[Incident],
+            default=defaults.get(NeXusMonitorName[Incident], ''),
         ),
         NeXusMonitorName[Transmission]: StringParameter.from_type(
             NeXusMonitorName[Transmission],
-            default=defaults[NeXusMonitorName[Transmission]],
+            default=defaults.get(NeXusMonitorName[Transmission], ''),
         ),
         TransformationPath: StringParameter.from_type(
-            TransformationPath, default=defaults[TransformationPath]
+            TransformationPath, default=defaults.get(TransformationPath, '')
         ),
         PixelMaskFilename: MultiFilenameParameter.from_type(PixelMaskFilename),
         PixelShapePath: StringParameter.from_type(
-            PixelShapePath, default=defaults[PixelShapePath]
+            PixelShapePath, default=defaults.get(PixelShapePath, '')
         ),
         # [more default params]
         # Should this be ReductionMode (EventMode/HistogramMode)?

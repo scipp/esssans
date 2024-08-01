@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
+from typing import Any
+
 import sciline
 from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
@@ -35,6 +37,9 @@ class ZoomWorkflow(SANSWorkflow):
         pipeline = sciline.Pipeline(providers=zoom_providers, params=params)
         pipeline.insert(read_xml_detector_masking)
         super().__init__(pipeline)
+
+    def _default_param_values(self) -> dict[sciline.typing.Key, Any]:
+        return default_parameters()
 
 
 @register_workflow
