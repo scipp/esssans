@@ -6,67 +6,43 @@ Default parameters, providers and utility functions for the loki workflow.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Callable
 from typing import Any
 
 import sciline
 import scipp as sc
 from ess.reduce import nexus
-from ess.reduce.parameter import (
-    BinEdgesParameter,
-    BooleanParameter,
-    FilenameParameter,
-    MultiFilenameParameter,
-    Parameter,
-    ParamWithOptions,
-    StringParameter,
-)
-from ess.reduce.workflow import Workflow
 from ess.sans import providers as sans_providers
-from sciline.typing import Key
+from ess.sans.workflow import SANSWorkflow
 
-from ..sans import with_pixel_mask_filenames
 from ..sans.common import gravity_vector
 from ..sans.types import (
-    BackgroundRun,
     ConfiguredReducibleData,
     ConfiguredReducibleMonitor,
     CorrectForGravity,
     DetectorPixelShape,
     DimsToKeep,
-    EmptyBeamRun,
-    Filename,
     Incident,
-    IofQ,
     LabFrameTransform,
     LoadedNeXusDetector,
     LoadedNeXusMonitor,
-    MaskedData,
     MonitorType,
     NeXusDetectorName,
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
-    PixelMaskFilename,
     PixelShapePath,
-    QBins,
     RawData,
     RawMonitor,
     RawSample,
     RawSource,
-    ReturnEvents,
     RunType,
     SamplePosition,
-    SampleRun,
     ScatteringRunType,
     SourcePosition,
     TofData,
     TofMonitor,
     TransformationPath,
     Transmission,
-    TransmissionRun,
-    UncertaintyBroadcastMode,
     WavelengthBands,
-    WavelengthBins,
     WavelengthMask,
 )
 from .io import dummy_load_sample
@@ -101,51 +77,6 @@ def default_parameters() -> dict:
 #        super().__init__(var, dim='wavelength', unit='angstrom')
 
 
-param_mapping_registry = {
-    CorrectForGravity: BooleanParameter.from_type(
-        CorrectForGravity, default=default_parameters()[CorrectForGravity]
-    ),
-    NeXusDetectorName: StringParameter.from_type(NeXusDetectorName),
-    NeXusMonitorName[Incident]: StringParameter.from_type(
-        NeXusMonitorName[Incident],
-        default=default_parameters()[NeXusMonitorName[Incident]],
-    ),
-    NeXusMonitorName[Transmission]: StringParameter.from_type(
-        NeXusMonitorName[Transmission],
-        default=default_parameters()[NeXusMonitorName[Transmission]],
-    ),
-    TransformationPath: StringParameter.from_type(
-        TransformationPath, default=default_parameters()[TransformationPath]
-    ),
-    PixelMaskFilename: MultiFilenameParameter.from_type(PixelMaskFilename),
-    PixelShapePath: StringParameter.from_type(
-        PixelShapePath, default=default_parameters()[PixelShapePath]
-    ),
-    # [more default params]
-    # NoDefault makes no sense for boolean params!
-    # Should this be ReductionMode (EventMode/HistogramMode)?
-    ReturnEvents: BooleanParameter.from_type(ReturnEvents, default=False),
-    UncertaintyBroadcastMode: ParamWithOptions.from_enum(
-        UncertaintyBroadcastMode,
-        default=UncertaintyBroadcastMode.upper_bound,
-    ),
-    Filename[SampleRun]: FilenameParameter.from_type(Filename[SampleRun]),
-    Filename[BackgroundRun]: FilenameParameter.from_type(Filename[BackgroundRun]),
-    Filename[TransmissionRun[SampleRun]]: FilenameParameter.from_type(
-        Filename[TransmissionRun[SampleRun]]
-    ),
-    Filename[TransmissionRun[BackgroundRun]]: FilenameParameter.from_type(
-        Filename[TransmissionRun[BackgroundRun]]
-    ),
-    Filename[EmptyBeamRun]: FilenameParameter.from_type(Filename[EmptyBeamRun]),
-    WavelengthBins: BinEdgesParameter(
-        WavelengthBins, dim='wavelength', unit='angstrom'
-    ),
-    QBins: BinEdgesParameter(QBins, dim='Q', unit='1/angstrom'),
-}
-
-multi_param_setters = {PixelMaskFilename: with_pixel_mask_filenames}
-
 # 1. combo box to select workflow (could have default)
 # 2. checkbox + (combo box + list widget) to select desired outputs (defines workflow subgraph) (can have defaults) --> select subset of nodes
 # 3. define parameters  (use intersection of param mapping with nodes in graph)
@@ -175,7 +106,7 @@ multi_param_setters = {PixelMaskFilename: with_pixel_mask_filenames}
 # widget = ess.reduce.make_widget(LokiWorkflow, out=out)
 
 
-class LokiAtLarmorWorkflow(Workflow):
+class LokiAtLarmorWorkflow(SANSWorkflow):
     """
     Workflow with default parameters for Loki test at Larmor.
 
@@ -200,27 +131,12 @@ class LokiAtLarmorWorkflow(Workflow):
 
         pipeline = sciline.Pipeline(providers=loki_providers, params=params)
         pipeline.insert(read_xml_detector_masking)
-        # No sample information in the Loki@Larmor files, so we use a dummy sample provider
+        # No sample information in the Loki@Larmor files, use a dummy sample provider
         pipeline.insert(dummy_load_sample)
         super().__init__(pipeline)
 
-    @property
-    def typical_outputs(self) -> tuple[Key, ...]:
-        """Return a tuple of outputs that are used regularly."""
-        return IofQ[SampleRun], MaskedData[SampleRun]
-
-    def _parameters(self) -> dict[Key, Parameter]:
-        """Return a dictionary of parameters for the workflow."""
-        return param_mapping_registry
-
-    @property
-    def _param_value_setters(
-        self,
-    ) -> dict[type, Callable[[sciline.Pipeline, Any], sciline.Pipeline]]:
-        return multi_param_setters
-
-    def set_pixel_mask_filenames(self, masks: Iterable[str]) -> None:
-        self.pipeline = with_pixel_mask_filenames(self.pipeline, masks)
+    def _default_param_values(self) -> dict[sciline.typing.Key, Any]:
+        return default_parameters()
 
 
 DETECTOR_BANK_RESHAPING = {

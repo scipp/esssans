@@ -1,22 +1,48 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from collections.abc import Hashable, Iterable
+from collections.abc import Callable, Hashable, Iterable
+from typing import Any
 
 import pandas as pd
 import sciline
 import scipp as sc
+from ess.reduce.parameter import Parameter
+from ess.reduce.workflow import Workflow
+from sciline.typing import Key
 
+from . import parameters
 from .types import (
     BackgroundRun,
     CleanSummedQ,
     Denominator,
     DetectorMasks,
     Filename,
+    IofQ,
+    MaskedData,
     NeXusDetectorName,
     Numerator,
     PixelMaskFilename,
     SampleRun,
 )
+
+
+class SANSWorkflow(Workflow):
+    """Base class for SANS workflows, not intended for direct use."""
+
+    @property
+    def typical_outputs(self) -> tuple[Key, ...]:
+        """Return a tuple of outputs that are used regularly."""
+        return IofQ[SampleRun], MaskedData[SampleRun]
+
+    def _parameters(self) -> dict[Key, Parameter]:
+        """Return a dictionary of parameters for the workflow."""
+        return parameters.make_parameter_mapping(defaults=self._default_param_values())
+
+    @property
+    def _param_value_setters(
+        self,
+    ) -> dict[type, Callable[[sciline.Pipeline, Any], sciline.Pipeline]]:
+        return {PixelMaskFilename: with_pixel_mask_filenames}
 
 
 def _merge(*dicts: dict) -> dict:
