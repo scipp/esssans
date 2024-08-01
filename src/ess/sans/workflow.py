@@ -13,16 +13,22 @@ from sciline.typing import Key
 from . import parameters
 from .types import (
     BackgroundRun,
+    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIofQxy,
     CleanSummedQ,
     Denominator,
     DetectorMasks,
     Filename,
+    Incident,
     IofQ,
+    IofQxy,
     MaskedData,
     NeXusDetectorName,
     Numerator,
     PixelMaskFilename,
     SampleRun,
+    Transmission,
+    WavelengthMonitor,
 )
 
 
@@ -41,7 +47,21 @@ class SANSWorkflow(Workflow):
     @property
     def typical_outputs(self) -> tuple[Key, ...]:
         """Return a tuple of outputs that are used regularly."""
-        return IofQ[SampleRun], MaskedData[SampleRun]
+
+        return (
+            BackgroundSubtractedIofQ,
+            BackgroundSubtractedIofQxy,
+            IofQ[SampleRun],
+            IofQxy[SampleRun],
+            IofQ[BackgroundRun],
+            IofQxy[BackgroundRun],
+            MaskedData[BackgroundRun],
+            MaskedData[SampleRun],
+            WavelengthMonitor[SampleRun, Incident],
+            WavelengthMonitor[SampleRun, Transmission],
+            WavelengthMonitor[BackgroundRun, Incident],
+            WavelengthMonitor[BackgroundRun, Transmission],
+        )
 
     def _default_param_values(self) -> dict[Key, Any]:
         """Return a dictionary of default parameter values."""
