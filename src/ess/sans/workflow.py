@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from abc import ABC, abstractmethod
 from collections.abc import Callable, Hashable, Iterable
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 import sciline
@@ -27,18 +26,26 @@ from .types import (
 )
 
 
-class SANSWorkflow(Workflow, ABC):
+class SANSWorkflow(Workflow):
+    _workflows: ClassVar = []
     """Base class for SANS workflows, not intended for direct use."""
+
+    def __init_subclass__(cls) -> None:
+        return SANSWorkflow._workflows.append(cls)
+
+    @classmethod
+    def available_workflows(cls) -> tuple[type, ...]:
+        """Return all SANS workflows."""
+        return tuple(cls._workflows)
 
     @property
     def typical_outputs(self) -> tuple[Key, ...]:
         """Return a tuple of outputs that are used regularly."""
         return IofQ[SampleRun], MaskedData[SampleRun]
 
-    @abstractmethod
     def _default_param_values(self) -> dict[Key, Any]:
         """Return a dictionary of default parameter values."""
-        raise NotImplementedError
+        return {}
 
     def _parameters(self) -> dict[Key, Parameter]:
         """Return a dictionary of parameters for the workflow."""
