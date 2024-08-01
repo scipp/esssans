@@ -19,6 +19,7 @@ from ess.sans.types import (
     SampleRun,
     UncertaintyBroadcastMode,
 )
+from ess.reduce import workflow
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import make_params
@@ -26,13 +27,14 @@ from common import make_params
 
 def test_sans_workflow_registers_subclasses():
     # Because it was imported
-    assert LokiAtLarmorWorkflow in sans.workflow.SANSWorkflow.available_workflows()
-    count = len(sans.workflow.SANSWorkflow.available_workflows())
+    assert LokiAtLarmorWorkflow in workflow.workflow_registry
+    count = len(workflow.workflow_registry)
 
+    @workflow.register_workflow
     class MyWorkflow(sans.workflow.SANSWorkflow): ...
 
-    assert MyWorkflow in sans.workflow.SANSWorkflow.available_workflows()
-    assert len(sans.workflow.SANSWorkflow.available_workflows()) == count + 1
+    assert MyWorkflow in workflow.workflow_registry
+    assert len(workflow.workflow_registry) == count + 1
 
 
 def test_loki_workflow_parameters_returns_filtered_params():

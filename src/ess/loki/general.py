@@ -13,6 +13,7 @@ import scipp as sc
 from ess.reduce import nexus
 from ess.sans import providers as sans_providers
 from ess.sans.workflow import SANSWorkflow
+from ess.reduce.workflow import register_workflow
 
 from ..sans.common import gravity_vector
 from ..sans.types import (
@@ -106,6 +107,7 @@ def default_parameters() -> dict:
 # widget = ess.reduce.make_widget(LokiWorkflow, out=out)
 
 
+@register_workflow
 class LokiAtLarmorWorkflow(SANSWorkflow):
     """
     Workflow with default parameters for Loki test at Larmor.

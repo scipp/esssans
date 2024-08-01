@@ -2,6 +2,8 @@
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
 import sciline
 from ess.sans import providers as sans_providers
+from ess.sans.workflow import SANSWorkflow
+from ess.reduce.workflow import register_workflow
 
 from .data import load_tutorial_direct_beam, load_tutorial_run
 from .general import default_parameters
@@ -19,27 +21,32 @@ def set_mantid_log_level(level: int = 3):
         pass
 
 
-def ZoomWorkflow() -> sciline.Pipeline:
+@register_workflow
+class ZoomWorkflow(SANSWorkflow):
     """Create Zoom workflow with default parameters."""
-    from . import providers as isis_providers
 
-    set_mantid_log_level()
+    def __init__(self):
+        from . import providers as isis_providers
 
-    params = default_parameters()
-    zoom_providers = sans_providers + isis_providers + mantid_providers
-    workflow = sciline.Pipeline(providers=zoom_providers, params=params)
-    workflow.insert(read_xml_detector_masking)
-    return workflow
+        set_mantid_log_level()
+
+        params = default_parameters()
+        zoom_providers = sans_providers + isis_providers + mantid_providers
+        pipeline = sciline.Pipeline(providers=zoom_providers, params=params)
+        pipeline.insert(read_xml_detector_masking)
+        super().__init__(pipeline)
 
 
-def ZoomTutorialWorkflow() -> sciline.Pipeline:
+@register_workflow
+class ZoomTutorialWorkflow(ZoomWorkflow):
     """
     Create Zoom tutorial workflow.
 
     Equivalent to :func:`ZoomWorkflow`, but with loaders for tutorial data instead
     of Mantid-based loaders.
     """
-    workflow = ZoomWorkflow()
-    workflow.insert(load_tutorial_run)
-    workflow.insert(load_tutorial_direct_beam)
-    return workflow
+
+    def __init__(self):
+        super().__init__()
+        self.pipeline.insert(load_tutorial_run)
+        self.pipeline.insert(load_tutorial_direct_beam)
