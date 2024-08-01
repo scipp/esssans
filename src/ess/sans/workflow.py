@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
 from collections.abc import Callable, Hashable, Iterable
-from typing import Any, ClassVar
+from typing import Any
 
 import pandas as pd
 import sciline
@@ -33,16 +33,7 @@ from .types import (
 
 
 class SANSWorkflow(Workflow):
-    _workflows: ClassVar = []
     """Base class for SANS workflows, not intended for direct use."""
-
-    def __init_subclass__(cls) -> None:
-        return SANSWorkflow._workflows.append(cls)
-
-    @classmethod
-    def available_workflows(cls) -> tuple[type, ...]:
-        """Return all SANS workflows."""
-        return tuple(cls._workflows)
 
     @property
     def typical_outputs(self) -> tuple[Key, ...]:
