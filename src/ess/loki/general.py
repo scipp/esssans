@@ -6,7 +6,8 @@ Default parameters, providers and utility functions for the loki workflow.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Callable
+from typing import Any
 
 import sciline
 import scipp as sc
@@ -15,6 +16,7 @@ from ess.reduce.parameter import (
     BinEdgesParameter,
     BooleanParameter,
     FilenameParameter,
+    MultiFilenameParameter,
     Parameter,
     ParamWithOptions,
     StringParameter,
@@ -115,7 +117,7 @@ param_mapping_registry = {
     TransformationPath: StringParameter.from_type(
         TransformationPath, default=default_parameters()[TransformationPath]
     ),
-    PixelMaskFilename: FilenameParameter.from_type(PixelMaskFilename),
+    PixelMaskFilename: MultiFilenameParameter.from_type(PixelMaskFilename),
     PixelShapePath: StringParameter.from_type(
         PixelShapePath, default=default_parameters()[PixelShapePath]
     ),
@@ -142,6 +144,7 @@ param_mapping_registry = {
     QBins: BinEdgesParameter(QBins, dim='Q', unit='1/angstrom'),
 }
 
+multi_param_setters = {PixelMaskFilename: with_pixel_mask_filenames}
 
 # 1. combo box to select workflow (could have default)
 # 2. checkbox + (combo box + list widget) to select desired outputs (defines workflow subgraph) (can have defaults) --> select subset of nodes
@@ -206,9 +209,15 @@ class LokiAtLarmorWorkflow(Workflow):
         """Return a tuple of outputs that are used regularly."""
         return IofQ[SampleRun], MaskedData[SampleRun]
 
-    def _parameters(self, outputs: tuple[Key, ...]) -> dict[Key, Parameter]:
+    def _parameters(self) -> dict[Key, Parameter]:
         """Return a dictionary of parameters for the workflow."""
         return param_mapping_registry
+
+    @property
+    def _param_value_setters(
+        self,
+    ) -> dict[type, Callable[[sciline.Pipeline, Any], sciline.Pipeline]]:
+        return multi_param_setters
 
     def set_pixel_mask_filenames(self, masks: Iterable[str]) -> None:
         self.pipeline = with_pixel_mask_filenames(self.pipeline, masks)
