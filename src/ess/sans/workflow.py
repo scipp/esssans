@@ -6,11 +6,9 @@ from typing import Any
 import pandas as pd
 import sciline
 import scipp as sc
-from ess.reduce.parameter import Parameter
 from ess.reduce.workflow import Workflow
 from sciline.typing import Key
 
-from . import parameters
 from .types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
@@ -47,11 +45,6 @@ from .types import (
 # - auto-gen widgets for parameters not listed by workflow (based on type)
 
 
-def _get_defaults_from_workflow(workflow: sciline.Pipeline) -> dict[Key, Any]:
-    nodes = workflow.underlying_graph.nodes
-    return {key: values['value'] for key, values in nodes.items() if 'value' in values}
-
-
 class SANSWorkflow(Workflow):
     """Base class for SANS workflows, not intended for direct use."""
 
@@ -72,12 +65,6 @@ class SANSWorkflow(Workflow):
             WavelengthMonitor[SampleRun, Transmission],
             WavelengthMonitor[BackgroundRun, Incident],
             WavelengthMonitor[BackgroundRun, Transmission],
-        )
-
-    def _parameters(self) -> dict[Key, Parameter]:
-        """Return a dictionary of parameters for the workflow."""
-        return parameters.make_parameter_mapping(
-            defaults=_get_defaults_from_workflow(self.pipeline)
         )
 
     @property
