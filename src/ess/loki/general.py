@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import sciline
 import scipp as sc
+from ess import sans
 from ess.reduce import nexus
 from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
@@ -44,6 +45,7 @@ from ..sans.types import (
     WavelengthBands,
     WavelengthMask,
 )
+from . import data
 from .io import dummy_load_sample
 
 
@@ -130,10 +132,38 @@ def LokiAtLarmorWorkflow() -> sciline.Pipeline:
 
     pipeline = sciline.Pipeline(providers=loki_providers, params=params)
     pipeline.insert(read_xml_detector_masking)
+    pipeline[sans.types.NeXusDetectorName] = 'larmor_detector'
     # No sample information in the Loki@Larmor files, use a dummy sample provider
     pipeline.insert(dummy_load_sample)
     pipeline.typical_outputs = typical_outputs
     return pipeline
+
+
+@register_workflow
+def LokiAtLarmorTutorialWorkflow() -> sciline.Pipeline:
+    workflow = LokiAtLarmorWorkflow()
+    workflow[sans.types.Filename[sans.types.SampleRun]] = (
+        data.loki_tutorial_sample_run_60339()
+    )
+    # TODO This does not work with multiple
+    workflow[sans.types.PixelMaskFilename] = data.loki_tutorial_mask_filenames()[0]
+
+    workflow[sans.types.Filename[sans.types.SampleRun]] = (
+        data.loki_tutorial_sample_run_60339()
+    )
+    workflow[sans.types.Filename[sans.types.BackgroundRun]] = (
+        data.loki_tutorial_background_run_60393()
+    )
+    workflow[sans.types.Filename[sans.types.TransmissionRun[sans.types.SampleRun]]] = (
+        data.loki_tutorial_sample_transmission_run()
+    )
+    workflow[
+        sans.types.Filename[sans.types.TransmissionRun[sans.types.BackgroundRun]]
+    ] = data.loki_tutorial_run_60392()
+    workflow[sans.types.Filename[sans.types.EmptyBeamRun]] = (
+        data.loki_tutorial_run_60392()
+    )
+    return workflow
 
 
 DETECTOR_BANK_RESHAPING = {
