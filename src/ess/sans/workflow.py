@@ -31,6 +31,26 @@ from .types import (
     WavelengthMonitor,
 )
 
+# Plan:
+# - Rename to SANSWorkflowInterface, not meant to be inherited from
+# - Take pipeline *instance* as argument to __init__
+# - Widget workflow selector create workflow, then passes it to interface
+# - Workflow selector can be bypassed, if user has created their own pipeline
+
+# What do we actually need:
+# - defaults, but could use what was set already on workflow?
+#   in fact the widget should do this, no need for double bookkeeping?
+# - list of typical outputs; could be stored as attr on workflow?
+# - special setters performing map-reduce, store in parameter?
+
+# Other to-dos:
+# - auto-gen widgets for parameters not listed by workflow (based on type)
+
+
+def _get_defaults_from_workflow(workflow: sciline.Pipeline) -> dict[Key, Any]:
+    nodes = workflow.underlying_graph.nodes
+    return {key: values['value'] for key, values in nodes.items() if 'value' in values}
+
 
 class SANSWorkflow(Workflow):
     """Base class for SANS workflows, not intended for direct use."""
@@ -54,13 +74,11 @@ class SANSWorkflow(Workflow):
             WavelengthMonitor[BackgroundRun, Transmission],
         )
 
-    def _default_param_values(self) -> dict[Key, Any]:
-        """Return a dictionary of default parameter values."""
-        return {}
-
     def _parameters(self) -> dict[Key, Parameter]:
         """Return a dictionary of parameters for the workflow."""
-        return parameters.make_parameter_mapping(defaults=self._default_param_values())
+        return parameters.make_parameter_mapping(
+            defaults=_get_defaults_from_workflow(self.pipeline)
+        )
 
     @property
     def _param_value_setters(

@@ -6,8 +6,6 @@ Default parameters, providers and utility functions for the loki workflow.
 
 from __future__ import annotations
 
-from typing import Any
-
 import sciline
 import scipp as sc
 from ess.reduce import nexus
@@ -108,7 +106,7 @@ def default_parameters() -> dict:
 
 
 @register_workflow
-class LokiAtLarmorWorkflow(SANSWorkflow):
+def LokiAtLarmorWorkflow() -> sciline.Pipeline:
     """
     Workflow with default parameters for Loki test at Larmor.
 
@@ -123,22 +121,18 @@ class LokiAtLarmorWorkflow(SANSWorkflow):
         Loki workflow as a sciline.Pipeline
     """
 
-    def __init__(self):
-        from ess.isissans.io import read_xml_detector_masking
+    from ess.isissans.io import read_xml_detector_masking
 
-        from . import providers as loki_providers
+    from . import providers as loki_providers
 
-        params = default_parameters()
-        loki_providers = sans_providers + loki_providers
+    params = default_parameters()
+    loki_providers = sans_providers + loki_providers
 
-        pipeline = sciline.Pipeline(providers=loki_providers, params=params)
-        pipeline.insert(read_xml_detector_masking)
-        # No sample information in the Loki@Larmor files, use a dummy sample provider
-        pipeline.insert(dummy_load_sample)
-        super().__init__(pipeline)
-
-    def _default_param_values(self) -> dict[sciline.typing.Key, Any]:
-        return default_parameters()
+    pipeline = sciline.Pipeline(providers=loki_providers, params=params)
+    pipeline.insert(read_xml_detector_masking)
+    # No sample information in the Loki@Larmor files, use a dummy sample provider
+    pipeline.insert(dummy_load_sample)
+    return SANSWorkflow(pipeline)
 
 
 DETECTOR_BANK_RESHAPING = {
