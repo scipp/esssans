@@ -11,7 +11,7 @@ import scipp as sc
 from ess.reduce import nexus
 from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
-from ess.sans.workflow import SANSWorkflow
+from ess.sans.parameters import typical_outputs
 
 from ..sans.common import gravity_vector
 from ..sans.types import (
@@ -132,7 +132,8 @@ def LokiAtLarmorWorkflow() -> sciline.Pipeline:
     pipeline.insert(read_xml_detector_masking)
     # No sample information in the Loki@Larmor files, use a dummy sample provider
     pipeline.insert(dummy_load_sample)
-    return SANSWorkflow(pipeline)
+    pipeline.typical_outputs = typical_outputs
+    return pipeline
 
 
 DETECTOR_BANK_RESHAPING = {

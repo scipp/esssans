@@ -20,6 +20,8 @@ from ess.reduce.parameter import (
 
 from ..sans.types import (
     BackgroundRun,
+    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIofQxy,
     BeamCenter,
     CorrectForGravity,
     DirectBeam,
@@ -27,6 +29,9 @@ from ..sans.types import (
     EmptyBeamRun,
     Filename,
     Incident,
+    IofQ,
+    IofQxy,
+    MaskedData,
     NeXusDetectorName,
     NeXusMonitorName,
     PixelMaskFilename,
@@ -41,6 +46,7 @@ from ..sans.types import (
     TransmissionRun,
     UncertaintyBroadcastMode,
     WavelengthBins,
+    WavelengthMonitor,
 )
 
 parameter_registry[CorrectForGravity] = BooleanParameter.from_type(
@@ -98,4 +104,19 @@ parameter_registry[DirectBeamFilename] = FilenameParameter.from_type(
 )
 parameter_registry[BeamCenter] = VectorParameter.from_type(
     BeamCenter, default=sc.vector([0, 0, 0], unit='m')
+)
+
+typical_outputs = (
+    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIofQxy,
+    IofQ[SampleRun],
+    IofQxy[SampleRun],
+    IofQ[BackgroundRun],
+    IofQxy[BackgroundRun],
+    MaskedData[BackgroundRun],
+    MaskedData[SampleRun],
+    WavelengthMonitor[SampleRun, Incident],
+    WavelengthMonitor[SampleRun, Transmission],
+    WavelengthMonitor[BackgroundRun, Incident],
+    WavelengthMonitor[BackgroundRun, Transmission],
 )

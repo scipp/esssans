@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import scipp as sc
-from ess import loki, sans
+from ess import loki
 from ess.loki import LokiAtLarmorWorkflow
 from ess.reduce import workflow
 from ess.sans.types import (
@@ -31,42 +31,42 @@ def test_sans_workflow_registers_subclasses():
     count = len(workflow.workflow_registry)
 
     @workflow.register_workflow
-    class MyWorkflow(sans.workflow.SANSWorkflow): ...
+    class MyWorkflow: ...
 
     assert MyWorkflow in workflow.workflow_registry
     assert len(workflow.workflow_registry) == count + 1
 
 
 def test_loki_workflow_parameters_returns_filtered_params():
-    workflow = LokiAtLarmorWorkflow()
-    parameters = workflow.parameters((IofQ[SampleRun],))
+    wf = LokiAtLarmorWorkflow()
+    parameters = workflow.Workflow(wf).parameters((IofQ[SampleRun],))
     assert Filename[SampleRun] in parameters
     assert Filename[BackgroundRun] not in parameters
 
 
 def test_loki_workflow_parameters_returns_no_params_for_no_outputs():
-    workflow = LokiAtLarmorWorkflow()
-    parameters = workflow.parameters(())
+    wf = LokiAtLarmorWorkflow()
+    parameters = workflow.Workflow(wf).parameters(())
     assert not parameters
 
 
 def test_loki_workflow_parameters_with_param_returns_param():
-    workflow = LokiAtLarmorWorkflow()
-    parameters = workflow.parameters((ReturnEvents,))
+    wf = LokiAtLarmorWorkflow()
+    parameters = workflow.Workflow(wf).parameters((ReturnEvents,))
     assert parameters.keys() == {ReturnEvents}
 
 
 def test_loki_workflow_compute_with_single_pixel_mask():
     params = make_params(no_masks=False)
     params[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.drop
-    workflow = LokiAtLarmorWorkflow()
+    wf = LokiAtLarmorWorkflow()
     for key, val in params.items():
-        workflow[key] = val
-    workflow[PixelMaskFilename] = loki.data.loki_tutorial_mask_filenames()[0]
+        wf[key] = val
+    wf[PixelMaskFilename] = loki.data.loki_tutorial_mask_filenames()[0]
     # For simplicity, insert a fake beam center instead of computing it.
-    workflow[BeamCenter] = sc.vector([0.0, 0.0, 0.0], unit='m')
+    wf[BeamCenter] = sc.vector([0.0, 0.0, 0.0], unit='m')
 
-    result = workflow.compute(BackgroundSubtractedIofQ)
+    result = wf.compute(BackgroundSubtractedIofQ)
     assert result.dims == ('Q',)
     assert sc.identical(result.coords['Q'], params[QBins])
     assert result.sizes['Q'] == 100

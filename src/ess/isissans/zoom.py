@@ -3,7 +3,7 @@
 import sciline
 from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
-from ess.sans.workflow import SANSWorkflow
+from ess.sans.parameters import typical_outputs
 
 from .data import load_tutorial_direct_beam, load_tutorial_run
 from .general import default_parameters
@@ -32,7 +32,8 @@ def ZoomWorkflow() -> sciline.Pipeline:
     zoom_providers = sans_providers + isis_providers + mantid_providers
     workflow = sciline.Pipeline(providers=zoom_providers, params=params)
     workflow.insert(read_xml_detector_masking)
-    return SANSWorkflow(workflow)
+    workflow.typical_outputs = typical_outputs
+    return workflow
 
 
 @register_workflow
@@ -46,4 +47,5 @@ def ZoomTutorialWorkflow() -> sciline.Pipeline:
     workflow = ZoomWorkflow()
     workflow.insert(load_tutorial_run)
     workflow.insert(load_tutorial_direct_beam)
-    return SANSWorkflow(workflow)
+    workflow.typical_outputs = typical_outputs
+    return workflow

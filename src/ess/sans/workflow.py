@@ -1,77 +1,22 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
-from collections.abc import Callable, Hashable, Iterable
-from typing import Any
+from collections.abc import Hashable, Iterable
 
 import pandas as pd
 import sciline
 import scipp as sc
-from ess.reduce.workflow import Workflow
-from sciline.typing import Key
 
 from .types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
     CleanSummedQ,
     Denominator,
     DetectorMasks,
     Filename,
-    Incident,
-    IofQ,
-    IofQxy,
-    MaskedData,
     NeXusDetectorName,
     Numerator,
     PixelMaskFilename,
     SampleRun,
-    Transmission,
-    WavelengthMonitor,
 )
-
-# Plan:
-# - Rename to SANSWorkflowInterface, not meant to be inherited from
-# - Take pipeline *instance* as argument to __init__
-# - Widget workflow selector create workflow, then passes it to interface
-# - Workflow selector can be bypassed, if user has created their own pipeline
-
-# What do we actually need:
-# - defaults, but could use what was set already on workflow?
-#   in fact the widget should do this, no need for double bookkeeping?
-# - list of typical outputs; could be stored as attr on workflow?
-# - special setters performing map-reduce, store in parameter?
-
-# Other to-dos:
-# - auto-gen widgets for parameters not listed by workflow (based on type)
-
-
-class SANSWorkflow(Workflow):
-    """Base class for SANS workflows, not intended for direct use."""
-
-    @property
-    def typical_outputs(self) -> tuple[Key, ...]:
-        """Return a tuple of outputs that are used regularly."""
-
-        return (
-            BackgroundSubtractedIofQ,
-            BackgroundSubtractedIofQxy,
-            IofQ[SampleRun],
-            IofQxy[SampleRun],
-            IofQ[BackgroundRun],
-            IofQxy[BackgroundRun],
-            MaskedData[BackgroundRun],
-            MaskedData[SampleRun],
-            WavelengthMonitor[SampleRun, Incident],
-            WavelengthMonitor[SampleRun, Transmission],
-            WavelengthMonitor[BackgroundRun, Incident],
-            WavelengthMonitor[BackgroundRun, Transmission],
-        )
-
-    @property
-    def _param_value_setters(
-        self,
-    ) -> dict[type, Callable[[sciline.Pipeline, Any], sciline.Pipeline]]:
-        return {PixelMaskFilename: with_pixel_mask_filenames}
 
 
 def _merge(*dicts: dict) -> dict:
