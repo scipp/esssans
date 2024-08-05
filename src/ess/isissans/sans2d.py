@@ -4,7 +4,9 @@ from typing import NewType
 
 import sciline
 import scipp as sc
+from ess.reduce.workflow import register_workflow
 from ess.sans import providers as sans_providers
+from ess.sans.parameters import typical_outputs
 from ess.sans.types import MaskedData, SampleRun, ScatteringRunType, TofData
 
 from .data import load_tutorial_direct_beam, load_tutorial_run
@@ -70,15 +72,19 @@ def mask_detectors(
 providers = (detector_edge_mask, sample_holder_mask, mask_detectors)
 
 
+@register_workflow
 def Sans2dWorkflow() -> sciline.Pipeline:
     """Create Sans2d workflow with default parameters."""
     from . import providers as isis_providers
 
     params = default_parameters()
     sans2d_providers = sans_providers + isis_providers + mantid_providers + providers
-    return sciline.Pipeline(providers=sans2d_providers, params=params)
+    workflow = sciline.Pipeline(providers=sans2d_providers, params=params)
+    workflow.typical_outputs = typical_outputs
+    return workflow
 
 
+@register_workflow
 def Sans2dTutorialWorkflow() -> sciline.Pipeline:
     """
     Create Sans2d tutorial workflow.
@@ -89,4 +95,5 @@ def Sans2dTutorialWorkflow() -> sciline.Pipeline:
     workflow = Sans2dWorkflow()
     workflow.insert(load_tutorial_run)
     workflow.insert(load_tutorial_direct_beam)
+    workflow.typical_outputs = typical_outputs
     return workflow
