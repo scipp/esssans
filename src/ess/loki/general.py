@@ -163,6 +163,9 @@ def LokiAtLarmorTutorialWorkflow() -> sciline.Pipeline:
     workflow[sans.types.Filename[sans.types.EmptyBeamRun]] = (
         data.loki_tutorial_run_60392()
     )
+    workflow[sans.types.BeamCenter] = sc.vector(
+        value=[-0.02914868, -0.01816138, 0.0], unit='m'
+    )
     return workflow
 
 
