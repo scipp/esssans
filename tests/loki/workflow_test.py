@@ -39,20 +39,20 @@ def test_sans_workflow_registers_subclasses():
 
 def test_loki_workflow_parameters_returns_filtered_params():
     wf = LokiAtLarmorWorkflow()
-    parameters = workflow.Workflow(wf).parameters((IofQ[SampleRun],))
+    parameters = workflow.get_parameters(wf, (IofQ[SampleRun],))
     assert Filename[SampleRun] in parameters
     assert Filename[BackgroundRun] not in parameters
 
 
 def test_loki_workflow_parameters_returns_no_params_for_no_outputs():
     wf = LokiAtLarmorWorkflow()
-    parameters = workflow.Workflow(wf).parameters(())
+    parameters = workflow.get_parameters(wf, ())
     assert not parameters
 
 
 def test_loki_workflow_parameters_with_param_returns_param():
     wf = LokiAtLarmorWorkflow()
-    parameters = workflow.Workflow(wf).parameters((ReturnEvents,))
+    parameters = workflow.get_parameters(wf, (ReturnEvents,))
     assert parameters.keys() == {ReturnEvents}
 
 
