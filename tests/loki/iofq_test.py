@@ -13,6 +13,7 @@ import ess.loki.data  # noqa: F401
 from ess import loki, sans
 from ess.sans.conversions import ElasticCoordTransformGraph
 from ess.sans.types import (
+    BackgroundRun,
     BackgroundSubtractedIofQ,
     BackgroundSubtractedIofQxy,
     BeamCenter,
@@ -21,15 +22,20 @@ from ess.sans.types import (
     CorrectForGravity,
     Denominator,
     DimsToKeep,
+    Incident,
     IofQ,
     IofQxy,
     MaskedData,
+    MaskedSolidAngle,
     Numerator,
     QBins,
     QxBins,
     QyBins,
     ReturnEvents,
     SampleRun,
+    TofMonitor,
+    Transmission,
+    TransmissionRun,
     UncertaintyBroadcastMode,
     WavelengthBands,
     WavelengthBins,
@@ -85,6 +91,23 @@ def test_pipeline_can_compute_IofQ(uncertainties, qxy: bool):
         assert_identical(result, reference)
 
 
+@pytest.fixture(scope='module')
+def workflow_with_data():
+    pipeline = make_workflow()
+    pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
+    for run in (SampleRun, BackgroundRun):
+        keys = (
+            MaskedData[run],
+            MaskedSolidAngle[run],
+            TofMonitor[run, Incident],
+            TofMonitor[TransmissionRun[run], Incident],
+            TofMonitor[TransmissionRun[run], Transmission],
+        )
+        for key, value in pipeline.compute(keys).items():
+            pipeline[key] = value
+    return pipeline
+
+
 @pytest.mark.parametrize(
     'uncertainties',
     [UncertaintyBroadcastMode.drop, UncertaintyBroadcastMode.upper_bound],
@@ -98,10 +121,11 @@ def test_pipeline_can_compute_IofQ(uncertainties, qxy: bool):
         BackgroundSubtractedIofQxy,
     ],
 )
-def test_pipeline_can_compute_IofQ_in_event_mode(uncertainties, target):
-    pipeline = make_workflow()
+def test_pipeline_can_compute_IofQ_in_event_mode(
+    uncertainties, target, workflow_with_data
+):
+    pipeline = workflow_with_data.copy()
     pipeline[UncertaintyBroadcastMode] = uncertainties
-    pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
     reference = pipeline.compute(target)
     pipeline[ReturnEvents] = True
     result = pipeline.compute(target)
