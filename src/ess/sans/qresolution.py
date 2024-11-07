@@ -8,14 +8,15 @@ import scipp as sc
 from scipp.constants import pi
 
 from .common import mask_range
+from .normalization import _reduce
 from .types import (
     CleanQ,
     Denominator,
     DimsToKeep,
+    ProcessedWavelengthBands,
     QBins,
     SampleRun,
     WavelengthMask,
-    WavelengthScaledQ,
 )
 
 DeltaR = NewType("DeltaR", sc.Variable)
@@ -75,6 +76,8 @@ def groupby_q_max(
     q_bins: QBins,
     dims_to_keep: DimsToKeep,
 ) -> QResolutionPixelTermGroupedQ:
+    # TODO Handle multi dim and dims_to_keep!
+    # Can we use common helper function from bin_in_q?
     out = data.groupby('Q', bins=q_bins).max('detector_number')
     return QResolutionPixelTermGroupedQ(out)
 
@@ -102,14 +105,10 @@ def mask_and_compute_resolution_q(
 
 
 def reduce_resolution_q(
-    data: QResolutionByWavelength,
-    bands: ProcessedWavelengthBands,
+    data: QResolutionByWavelength, bands: ProcessedWavelengthBands
 ) -> QResolution:
-    # TODO
-    # We do not want to use reduce_q, but use a max again!
-    # but reduce_q is quite complex, can we reuse it but use binned data
-    # so it does not sum? or call the underlying helper function!
-    pass
+    # TODO Add op argument to allow injection of different reduction functions
+    return QResolution(_reduce(data, bands, op=sc.max))
 
 
 providers = (
