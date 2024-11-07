@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
 """Q-resolution calculation for SANS data."""
 
+import uuid
 from typing import NewType
 
 import scipp as sc
@@ -72,14 +73,16 @@ def pixel_term(
 # TODO What is the point of naming the input CleanQ and output
 # CleanSummedQ? It is not sharing functions, so use a different name
 def groupby_q_max(
-    data: QResolutionPixelTerm,
-    q_bins: QBins,
-    dims_to_keep: DimsToKeep,
+    data: QResolutionPixelTerm, q_bins: QBins, dims_to_keep: DimsToKeep
 ) -> QResolutionPixelTermGroupedQ:
-    # TODO Handle multi dim and dims_to_keep!
-    # Can we use common helper function from bin_in_q?
-    out = data.groupby('Q', bins=q_bins).max('detector_number')
-    return QResolutionPixelTermGroupedQ(out)
+    dims_to_flatten = [dim for dim in data.dims if dim not in dims_to_keep]
+    dim = uuid.uuid4().hex()
+    return QResolutionPixelTermGroupedQ(
+        data.transpose((*dims_to_flatten, *dims_to_keep))
+        .flatten(dims_to_flatten, to=dim)
+        .groupby('Q', bins=q_bins)
+        .max(dim)
+    )
 
 
 def mask_and_compute_resolution_q(
