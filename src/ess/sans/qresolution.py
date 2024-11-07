@@ -5,8 +5,18 @@
 from typing import NewType
 
 import scipp as sc
+from scipp.constants import pi
 
-from .types import CleanQ, Denominator, Resolution, SampleRun
+from .common import mask_range
+from .types import (
+    CleanQ,
+    Denominator,
+    DimsToKeep,
+    QBins,
+    SampleRun,
+    WavelengthMask,
+    WavelengthScaledQ,
+)
 
 DeltaR = NewType("DeltaR", sc.Variable)
 """Virtual ring width on the detector."""
@@ -19,11 +29,14 @@ SigmaModerator = NewType("SigmaModerator", sc.DataArray)
 """Moderator time spread as a function of wavelength."""
 CollimationLength = NewType("CollimationLength", sc.Variable)
 """Collimation length."""
-
 ModeratorTimeSpread = NewType("ModeratorTimeSpread", sc.DataArray)
 """Moderator time-spread as a function of wavelength."""
 
-QResolutionDetectorTerm = NewType("QResolutionDetectorTerm", sc.DataArray)
+
+QResolutionPixelTerm = NewType("QResolutionPixelTerm", sc.DataArray)
+QResolutionPixelTermGroupedQ = NewType("QResolutionPixelTermGroupedQ", sc.DataArray)
+QResolutionByWavelength = NewType("QResolutionByWavelength", sc.DataArray)
+QResolution = NewType("QResolution", sc.DataArray)
 
 
 def pixel_term(
@@ -32,7 +45,7 @@ def pixel_term(
     sample_aperture: SampleApertureRadius,
     source_aperture: SourceApertureRadius,
     collimation_length: CollimationLength,
-) -> CleanQ[SampleRun, Resolution]:
+) -> QResolutionPixelTerm:
     """
     Calculate the pixel term for Q-resolution.
 
@@ -45,10 +58,63 @@ def pixel_term(
     """
     L2 = detector.coords["L2"]
     L3 = sc.reciprocal(sc.reciprocal(collimation_length) + sc.reciprocal(L2))
-    #
     result = detector.copy(deep=False)
     result.data = (
         3 * ((source_aperture / collimation_length) ** 2 + (sample_aperture / L3) ** 2)
         + (delta_r / L2) ** 2
     )
-    return CleanQ[SampleRun, Resolution](result)
+    # TODO
+    # Give different name, as we do not actually feed into bin_in_q
+    return QResolutionPixelTerm(result)
+
+
+# TODO What is the point of naming the input CleanQ and output
+# CleanSummedQ? It is not sharing functions, so use a different name
+def groupby_q_max(
+    data: QResolutionPixelTerm,
+    q_bins: QBins,
+    dims_to_keep: DimsToKeep,
+) -> QResolutionPixelTermGroupedQ:
+    out = data.groupby('Q', bins=q_bins).max('detector_number')
+    return QResolutionPixelTermGroupedQ(out)
+
+
+def mask_and_compute_resolution_q(
+    pixel_term: QResolutionPixelTermGroupedQ,
+    mask: WavelengthMask,
+    moderator_time_spread: ModeratorTimeSpread,
+) -> QResolutionByWavelength:
+    """
+    Compute the masked Q-resolution in (Q, lambda) space.
+
+    CleanSummedQ has been summed over pixels but not over wavelengths. This is exactly
+    what is required for performing the remaining scaling and addition of the moderator
+    term to obtain the Q-resolution. The result is still in (Q, lambda) space.
+    """
+    if mask is not None:
+        pixel_term = mask_range(pixel_term, mask=mask)
+    lambda2 = pixel_term.coords['wavelength'] ** 2
+    Q2 = pixel_term.coords['Q'] ** 2
+    resolution = (
+        pi**2 / (3 * lambda2**2) * pixel_term + Q2 * moderator_time_spread**2 / lambda2
+    )
+    return QResolutionByWavelength(resolution)
+
+
+def reduce_resolution_q(
+    data: QResolutionByWavelength,
+    bands: ProcessedWavelengthBands,
+) -> QResolution:
+    # TODO
+    # We do not want to use reduce_q, but use a max again!
+    # but reduce_q is quite complex, can we reuse it but use binned data
+    # so it does not sum? or call the underlying helper function!
+    pass
+
+
+providers = (
+    pixel_term,
+    groupby_q_max,
+    mask_and_compute_resolution_q,
+    reduce_resolution_q,
+)

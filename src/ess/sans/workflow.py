@@ -151,7 +151,7 @@ providers = (
     *masking.providers,
     *normalization.providers,
     common.beam_center_to_detector_position_offset,
-    qresolution.pixel_term,
+    *qresolution.providers,
 )
 """
 List of providers for setting up a Sciline pipeline.
