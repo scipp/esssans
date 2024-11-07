@@ -40,11 +40,13 @@ NeXusDetectorName = reduce_t.NeXusDetectorName
 UncertaintyBroadcastMode = _UncertaintyBroadcastMode
 
 # 1.3  Numerator and denominator of IofQ
-Numerator = NewType('Numerator', sc.DataArray)
+Numerator = NewType('Numerator', int)
 """Numerator of IofQ"""
-Denominator = NewType('Denominator', sc.DataArray)
+Denominator = NewType('Denominator', int)
 """Denominator of IofQ"""
-IofQPart = TypeVar('IofQPart', Numerator, Denominator)
+Resolution = NewType('Resolution', int)
+"""Q-Resolution"""
+IofQPart = TypeVar('IofQPart', Numerator, Denominator, Resolution)
 """TypeVar used for specifying Numerator or Denominator of IofQ"""
 
 # 1.4  Entry paths in NeXus files

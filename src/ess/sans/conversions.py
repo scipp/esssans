@@ -3,6 +3,7 @@
 from typing import NewType
 
 import scipp as sc
+from scipp.constants import pi
 from scippneutron.conversion.beamline import (
     beam_aligned_unit_vectors,
     scattering_angles_with_gravity,
@@ -25,6 +26,7 @@ from .types import (
     MonitorTerm,
     MonitorType,
     Numerator,
+    Resolution,
     RunType,
     ScatteringRunType,
     TofMonitor,
@@ -171,12 +173,38 @@ def detector_to_wavelength(
     )
 
 
+ModeratorTimeSpread = NewType("ModeratorTimeSpread", sc.DataArray)
+"""Moderator time-spread as a function of wavelength."""
+
+
 def mask_wavelength_q(
     da: CleanSummedQ[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQ[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
     return WavelengthScaledQ[ScatteringRunType, Numerator](da)
+
+
+def mask_and_compute_resolution_q(
+    pixel_term: CleanSummedQ[ScatteringRunType, Resolution],
+    mask: WavelengthMask,
+    moderator_time_spread: ModeratorTimeSpread,
+) -> WavelengthScaledQ[ScatteringRunType, Resolution]:
+    """
+    Compute the masked Q-resolution in (Q, lambda) space.
+
+    CleanSummedQ has been summed over pixels but not over wavelengths. This is exactly
+    what is required for performing the remaining scaling and addition of the moderator
+    term to obtain the Q-resolution. The result is still in (Q, lambda) space.
+    """
+    if mask is not None:
+        pixel_term = mask_range(pixel_term, mask=mask)
+    lambda2 = pixel_term.coords['wavelength'] ** 2
+    Q2 = pixel_term.coords['Q'] ** 2
+    resolution = (
+        pi**2 / (3 * lambda2**2) * pixel_term + Q2 * moderator_time_spread**2 / lambda2
+    )
+    return WavelengthScaledQ[ScatteringRunType, Resolution](resolution)
 
 
 def mask_wavelength_qxy(
@@ -256,6 +284,7 @@ providers = (
     detector_to_wavelength,
     mask_wavelength_q,
     mask_wavelength_qxy,
+    mask_and_compute_resolution_q,
     mask_and_scale_wavelength_q,
     mask_and_scale_wavelength_qxy,
     compute_Q,
