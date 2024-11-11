@@ -2,13 +2,13 @@
 # Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
 """Q-resolution calculation for SANS data."""
 
-import uuid
 from typing import NewType
 
 import scipp as sc
 from scipp.constants import pi
 
 from .common import mask_range
+from .conversions import ElasticCoordTransformGraph
 from .normalization import _reduce
 from .types import (
     CleanQ,
@@ -35,21 +35,23 @@ ModeratorTimeSpread = NewType("ModeratorTimeSpread", sc.DataArray)
 """Moderator time-spread as a function of wavelength."""
 
 
-QResolutionPixelTerm = NewType("QResolutionPixelTerm", sc.DataArray)
-QResolutionPixelTermGroupedQ = NewType("QResolutionPixelTermGroupedQ", sc.DataArray)
+QResolutionByPixel = NewType("QResolutionByPixel", sc.DataArray)
+QResolutionByQ = NewType("QResolutionPixelTermGroupedQ", sc.DataArray)
 QResolutionByWavelength = NewType("QResolutionByWavelength", sc.DataArray)
 QResolution = NewType("QResolution", sc.DataArray)
 
 
-def pixel_term(
+def q_resolution_by_pixel(
     detector: CleanQ[SampleRun, Denominator],
     delta_r: DeltaR,
     sample_aperture: SampleApertureRadius,
     source_aperture: SourceApertureRadius,
     collimation_length: CollimationLength,
-) -> QResolutionPixelTerm:
+    moderator_time_spread: ModeratorTimeSpread,
+    graph: ElasticCoordTransformGraph,
+) -> QResolutionByPixel:
     """
-    Calculate the pixel term for Q-resolution.
+    Calculate the Q-resolution per pixel.
 
     We compute this based on CleanQ[SampleRun, Denominator]. This ensures that
 
@@ -58,37 +60,31 @@ def pixel_term(
     3. We do not depend on neutron data, by using the denominator instead of the
        numerator.
     """
+    detector = detector.transform_coords("L2", graph=graph, keep_inputs=False)
     L2 = detector.coords["L2"]
     L3 = sc.reciprocal(sc.reciprocal(collimation_length) + sc.reciprocal(L2))
     result = detector.copy(deep=False)
-    result.data = (
+    pixel_term = (
         3 * ((source_aperture / collimation_length) ** 2 + (sample_aperture / L3) ** 2)
         + (delta_r / L2) ** 2
     )
-    # TODO
-    # Give different name, as we do not actually feed into bin_in_q
-    return QResolutionPixelTerm(result)
-
-
-# TODO What is the point of naming the input CleanQ and output
-# CleanSummedQ? It is not sharing functions, so use a different name
-def groupby_q_max(
-    data: QResolutionPixelTerm, q_bins: QBins, dims_to_keep: DimsToKeep
-) -> QResolutionPixelTermGroupedQ:
-    dims_to_flatten = [dim for dim in data.dims if dim not in dims_to_keep]
-    dim = uuid.uuid4().hex()
-    return QResolutionPixelTermGroupedQ(
-        data.transpose((*dims_to_flatten, *dims_to_keep))
-        .flatten(dims_to_flatten, to=dim)
-        .groupby('Q', bins=q_bins)
-        .max(dim)
+    inv_lambda2 = sc.reciprocal(detector.coords['wavelength'] ** 2)
+    Q2 = detector.coords['Q'] ** 2
+    result.data = (pi**2 / 3) * inv_lambda2 * pixel_term + Q2 * (
+        moderator_time_spread**2 * inv_lambda2
     )
+    return QResolutionByPixel(result)
 
 
-def mask_and_compute_resolution_q(
-    pixel_term: QResolutionPixelTermGroupedQ,
-    mask: WavelengthMask,
-    moderator_time_spread: ModeratorTimeSpread,
+def q_resolution_by_q(
+    data: QResolutionByPixel, q_bins: QBins, dims_to_keep: DimsToKeep
+) -> QResolutionByQ:
+    dims = [dim for dim in data.dims if dim not in (*dims_to_keep, 'wavelength')]
+    return QResolutionByQ(data.bin(Q=q_bins, dim=dims))
+
+
+def mask_qresolution_in_wavelength(
+    resolution: QResolutionByQ, mask: WavelengthMask
 ) -> QResolutionByWavelength:
     """
     Compute the masked Q-resolution in (Q, lambda) space.
@@ -98,25 +94,19 @@ def mask_and_compute_resolution_q(
     term to obtain the Q-resolution. The result is still in (Q, lambda) space.
     """
     if mask is not None:
-        pixel_term = mask_range(pixel_term, mask=mask)
-    lambda2 = pixel_term.coords['wavelength'] ** 2
-    Q2 = pixel_term.coords['Q'] ** 2
-    resolution = (
-        pi**2 / (3 * lambda2**2) * pixel_term + Q2 * moderator_time_spread**2 / lambda2
-    )
+        resolution = mask_range(resolution, mask=mask)
     return QResolutionByWavelength(resolution)
 
 
 def reduce_resolution_q(
     data: QResolutionByWavelength, bands: ProcessedWavelengthBands
 ) -> QResolution:
-    # TODO Add op argument to allow injection of different reduction functions
-    return QResolution(_reduce(data, bands, op=sc.max))
+    return QResolution(_reduce(data, bands=bands))
 
 
 providers = (
-    pixel_term,
-    groupby_q_max,
-    mask_and_compute_resolution_q,
+    q_resolution_by_pixel,
+    q_resolution_by_q,
+    mask_qresolution_in_wavelength,
     reduce_resolution_q,
 )
