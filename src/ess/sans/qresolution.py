@@ -14,8 +14,7 @@ from .i_of_q import resample_direct_beam
 from .normalization import _reduce
 from .types import (
     CalibratedBeamline,
-    CleanQ,
-    Denominator,
+    DetectorMasks,
     DimsToKeep,
     ProcessedWavelengthBands,
     QBins,
@@ -90,57 +89,95 @@ def moderator_time_spread_to_wavelength_spread(
     beamline: CalibratedBeamline[SampleRun],
     graph: ElasticCoordTransformGraph,
     wavelength_bins: WavelengthBins,
+    masks: DetectorMasks,
 ) -> SigmaModerator:
     """
-    Convert the moderator time spread to a wavelength spread.
+    Convert the moderator time spread to a wavelength spread and mask pixels.
+
+    This resamples the raw moderator time spread to the wavelength bins used in the data
+    reduction. The result is a DataArray with the time spread as a function of pixel and
+    wavelength.
+
+    Parameters
+    ----------
+    moderator_time_spread:
+        Moderator time spread.
+    beamline:
+        Beamline geometry information required for converting time spread to wavelength
+        spread. The latter depends on the pixel position via sample-detector distance
+        L2.
+    graph:
+        Coordinate transformation graph for elastic scattering for computing wavelength.
+    wavelength_bins:
+        Binning in wavelength.
+    masks:
+        Detector masks.
+
+    Returns
+    -------
+    :
+        Wavelength spread of the moderator.
     """
     dtof = resample_direct_beam(moderator_time_spread, wavelength_bins=wavelength_bins)
     # We would like to "transform" the *data*, but we only have transform_coords, so
     # there is some back and forth between data and coords here.
     dummy = beamline.broadcast(sizes={**beamline.sizes, **dtof.sizes})
     dummy.data = sc.empty(sizes=dummy.sizes)
-    da = dummy.assign_coords(tof=dtof.data).transform_coords(
-        'wavelength', graph=graph, keep_inputs=False
+    da = (
+        dummy.assign_coords(tof=dtof.data)
+        .assign_masks(masks)
+        .transform_coords('wavelength', graph=graph, keep_inputs=False)
     )
     da.data = da.coords.pop('wavelength')
     return SigmaModerator(da.assign_coords(wavelength=wavelength_bins))
 
 
 def q_resolution_by_pixel(
-    detector: CleanQ[SampleRun, Denominator],
-    delta_r: DeltaR,
-    sample_aperture: SampleApertureRadius,
-    source_aperture: SourceApertureRadius,
-    collimation_length: CollimationLength,
     sigma_moderator: SigmaModerator,
+    source_aperture: SourceApertureRadius,
+    sample_aperture: SampleApertureRadius,
+    collimation_length: CollimationLength,
+    delta_r: DeltaR,
     graph: ElasticCoordTransformGraph,
-    wavelength_bins: WavelengthBins,
 ) -> QResolutionByPixel:
     """
-    Calculate the Q-resolution per pixel.
+    Calculate the Q-resolution per pixel and wavelength.
 
-    We compute this based on CleanQ[SampleRun, Denominator]. This ensures that
+    Parameters
+    ----------
+    sigma_moderator:
+        Moderator wavelength spread as a function of pixel and wavelength.
+    source_aperture:
+        Source aperture radius, R1.
+    sample_aperture:
+        Sample aperture radius, R2.
+    collimation_length:
+        Collimation length.
+    delta_r:
+        Virtual ring width on the detector.
+    graph:
+        Coordinate transformation graph for elastic scattering.
 
-    1. We get the correct Q-value, based on wavelength binning used elsewhere.
-    2. Masks are included.
-    3. We do not depend on neutron data, by using the denominator instead of the
-       numerator.
+    Returns
+    -------
+    :
+        Q-resolution per pixel and wavelength.
     """
-    detector = detector.transform_coords(('L1', 'L2'), graph=graph, keep_inputs=False)
-    L2 = detector.coords["L2"]
+    wavelength_bins = sigma_moderator.coords['wavelength']
+    delta_lambda = wavelength_bins[1:] - wavelength_bins[:-1]
+    result = sigma_moderator.assign_coords(
+        wavelength=sc.midpoints(wavelength_bins)
+    ).transform_coords('Q', graph=graph, keep_inputs=True)
+    L2 = result.coords["L2"]
     L3 = sc.reciprocal(sc.reciprocal(collimation_length) + sc.reciprocal(L2))
-    result = detector.copy(deep=False)
     pixel_term = (
         3 * ((source_aperture / collimation_length) ** 2 + (sample_aperture / L3) ** 2)
         + (delta_r / L2) ** 2
     )
-    inv_lambda2 = sc.reciprocal(detector.coords['wavelength'] ** 2)
-    Q2 = detector.coords['Q'] ** 2
-    result.data = (pi**2 / 3) * inv_lambda2 * pixel_term
-    delta_lambda = wavelength_bins[1:] - wavelength_bins[:-1]
-    sigma_lambda2 = delta_lambda**2 / 12 + sigma_moderator**2
-    result += Q2 * (sigma_lambda2 * inv_lambda2)
-    return QResolutionByPixel(sc.sqrt(result))
+    sigma_lambda2 = result.data**2 + delta_lambda**2 / 12
+    result.data = (pi**2 / 3) * pixel_term + result.coords['Q'] ** 2 * sigma_lambda2
+    inv_lambda = sc.reciprocal(result.coords['wavelength'])
+    return QResolutionByPixel(sc.sqrt(result) * inv_lambda)
 
 
 def q_resolution_by_wavelength(
@@ -152,9 +189,21 @@ def q_resolution_by_wavelength(
     """
     Compute the masked Q-resolution in (Q, lambda) space.
 
-    CleanSummedQ has been summed over pixels but not over wavelengths. This is exactly
-    what is required for performing the remaining scaling and addition of the moderator
-    term to obtain the Q-resolution. The result is still in (Q, lambda) space.
+    Parameters
+    ----------
+    data:
+        Q-resolution per pixel and wavelength.
+    q_bins:
+        Binning in Q.
+    dims_to_keep:
+        Detector dimensions that should not be reduced.
+    mask:
+        Wavelength mask.
+
+    Returns
+    -------
+    :
+        Q-resolution in (Q, lambda) space.
     """
     dims = [dim for dim in data.dims if dim not in (*dims_to_keep, 'wavelength')]
     resolution = data.bin(Q=q_bins, dim=dims)
@@ -166,6 +215,27 @@ def q_resolution_by_wavelength(
 def reduce_resolution_q(
     data: QResolutionByWavelength, bands: ProcessedWavelengthBands
 ) -> QResolution:
+    """
+    Q-resolution reduced over wavelength dimension.
+
+    The result depends only Q, or (Q, wavelength_band) if wavelength bands are used.
+
+    Note that the result is *binned data*, with each bin entry representing a specific
+    input pixel and wavelength. The final solution can be obtained, e.g., by computing
+    `resolution.bins.max()`, assuming `resolution is the output of this function.
+
+    Parameters
+    ----------
+    data:
+        Q-resolution in (Q, lambda) space.
+    bands:
+        Wavelength bands.
+
+    Returns
+    -------
+    :
+        Reduced Q-resolution.
+    """
     return QResolution(_reduce(data, bands=bands))
 
 
