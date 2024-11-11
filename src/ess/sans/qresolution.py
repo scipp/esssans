@@ -174,8 +174,12 @@ def q_resolution_by_pixel(
         3 * ((source_aperture / collimation_length) ** 2 + (sample_aperture / L3) ** 2)
         + (delta_r / L2) ** 2
     )
-    sigma_lambda2 = result.data**2 + delta_lambda**2 / 12
-    result.data = (pi**2 / 3) * pixel_term + result.coords['Q'] ** 2 * sigma_lambda2
+    # Written in multiple steps to avoid allocation of intermediate arrays. This is
+    # makes this step about twice as fast (but computing Q above dominates anyway).
+    result.data *= result.data
+    result.data += delta_lambda**2 / 12
+    result.data *= result.coords['Q'] ** 2
+    result.data += (pi**2 / 3) * pixel_term
     inv_lambda = sc.reciprocal(result.coords['wavelength'])
     return QResolutionByPixel(sc.sqrt(result) * inv_lambda)
 
