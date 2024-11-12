@@ -144,6 +144,12 @@ def q_resolution_by_pixel(
     """
     Calculate the Q-resolution per pixel and wavelength.
 
+    This is a Gaussian approximation to the Q-resolution (Mildner and Carpenter). It is
+    likely not sufficient for the long ESS pulse. Based on communication with Andrew
+    Jackson this "approximation works OK when you have all your Q points from a single
+    planar detector (as on SANS2D) and was implemented by Richard Heenan as a 'hack' to
+    get a resolution value of some kind".
+
     Parameters
     ----------
     sigma_moderator:
@@ -181,8 +187,9 @@ def q_resolution_by_pixel(
     result.data += delta_lambda**2 / 12
     result.data *= result.coords['Q'] ** 2
     result.data += (pi**2 / 3) * pixel_term
-    inv_lambda = sc.reciprocal(result.coords['wavelength'])
-    return QResolutionByPixel(sc.sqrt(result) * inv_lambda)
+    result = sc.sqrt(result)
+    result /= result.coords['wavelength']
+    return QResolutionByPixel(result)
 
 
 def q_resolution_by_wavelength(
