@@ -9,7 +9,7 @@ import scipp as sc
 from scipp.constants import pi
 
 from .common import mask_range
-from .conversions import ElasticCoordTransformGraph
+from .conversions import ElasticCoordTransformGraph, sans_elastic
 from .i_of_q import resample_direct_beam
 from .normalization import _reduce
 from .types import (
@@ -87,7 +87,6 @@ def load_isis_moderator_time_spread(
 def moderator_time_spread_to_wavelength_spread(
     moderator_time_spread: ModeratorTimeSpread,
     beamline: CalibratedBeamline[SampleRun],
-    graph: ElasticCoordTransformGraph,
     wavelength_bins: WavelengthBins,
     masks: DetectorMasks,
 ) -> SigmaModerator:
@@ -106,8 +105,6 @@ def moderator_time_spread_to_wavelength_spread(
         Beamline geometry information required for converting time spread to wavelength
         spread. The latter depends on the pixel position via sample-detector distance
         L2.
-    graph:
-        Coordinate transformation graph for elastic scattering for computing wavelength.
     wavelength_bins:
         Binning in wavelength.
     masks:
@@ -118,6 +115,10 @@ def moderator_time_spread_to_wavelength_spread(
     :
         Wavelength spread of the moderator.
     """
+    # We want to convert a small time-of-flight spread to a wavelength spread. As this
+    # time spread is assumed to be symmetric around the base time-of-flight we do not
+    # want to correct for gravity here as it would skew the result.
+    graph = sans_elastic(correct_for_gravity=False)
     dtof = resample_direct_beam(moderator_time_spread, wavelength_bins=wavelength_bins)
     # We would like to "transform" the *data*, but we only have transform_coords, so
     # there is some back and forth between data and coords here.
