@@ -242,6 +242,8 @@ def norm_detector_term(
     dims = list(direct_beam.dims)
     dims.remove('wavelength')
     dims.append('wavelength')
+    if 'spectrum' in direct_beam.coords.keys():
+        direct_beam.coords.set_aligned('spectrum', False)
     direct_beam = direct_beam.transpose(dims)
     out = solid_angle * broadcast_uncertainties(
         direct_beam, prototype=solid_angle, mode=uncertainties
