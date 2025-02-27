@@ -51,95 +51,233 @@ _registry = Registry(
         'mask_new_July2022.xml': 'md5:421b6dc9db74126ffbc5d88164d017b0',
         # Direct beam from LoKI@Larmor detector test experiment
         'direct-beam-loki-all-pixels.h5': "md5:b85d7b486b312c5bb2a31d2bb6314f69",
+        # Smaller files for unit tests
+        'TEST_60250-2022-02-28_2215.nxs': 'md5:e611c7fb022b8befde78b0c42ec5d46c',
+        'TEST_60339-2022-02-28_2215.nxs': 'md5:10c458d57509b69ff9cc5571f09fd40e',
+        'TEST_60392-2022-02-28_2215.nxs': 'md5:a2b170d4319d71584b40c6882c4c534c',
+        'TEST_60393-2022-02-28_2215.nxs': 'md5:54d6c0116ca3ac97447e7be2ee3d4203',
+        'TEST_60394-2022-02-28_2215.nxs': 'md5:fd9ee448998e41e48957d2b7c45a8f42',
     },
     version='2',
 )
 
 
-def loki_tutorial_sample_run_60250() -> Filename[SampleRun]:
-    """Sample run with sample and sample holder/can, no transmission monitor in beam."""
-    return Filename[SampleRun](_registry.get_path('60250-2022-02-28_2215.nxs'))
+def _get_path(filename: str, small: bool) -> str:
+    prefix = 'TEST_' if small else ''
+    return _registry.get_path(f'{prefix}{filename}')
 
 
-def loki_tutorial_sample_run_60339() -> Filename[SampleRun]:
-    """Sample run with sample and sample holder/can, no transmission monitor in beam."""
-    return Filename[SampleRun](_registry.get_path('60339-2022-02-28_2215.nxs'))
+def loki_tutorial_sample_run_60250(*, small: bool = False) -> Filename[SampleRun]:
+    """Sample run with sample and sample holder/can, no transmission monitor in beam.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[SampleRun](_get_path('60250-2022-02-28_2215.nxs', small=small))
 
 
-def loki_tutorial_background_run_60248() -> Filename[BackgroundRun]:
-    """Background run with sample holder/can only, no transmission monitor."""
-    return Filename[BackgroundRun](_registry.get_path('60248-2022-02-28_2215.nxs'))
+def loki_tutorial_sample_run_60339(*, small: bool = False) -> Filename[SampleRun]:
+    """Sample run with sample and sample holder/can, no transmission monitor in beam.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder."""
+    return Filename[SampleRun](_get_path('60339-2022-02-28_2215.nxs', small=small))
 
 
-def loki_tutorial_background_run_60393() -> Filename[BackgroundRun]:
-    """Background run with sample holder/can only, no transmission monitor."""
-    return Filename[BackgroundRun](_registry.get_path('60393-2022-02-28_2215.nxs'))
+def loki_tutorial_background_run_60248(
+    *, small: bool = False
+) -> Filename[BackgroundRun]:
+    """Background run with sample holder/can only, no transmission monitor.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[BackgroundRun](_get_path('60248-2022-02-28_2215.nxs', small=small))
 
 
-def loki_tutorial_sample_transmission_run() -> Filename[TransmissionRun[SampleRun]]:
-    """Sample transmission run (sample + sample holder/can + transmission monitor)."""
+def loki_tutorial_background_run_60393(
+    *, small: bool = False
+) -> Filename[BackgroundRun]:
+    """Background run with sample holder/can only, no transmission monitor.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[BackgroundRun](_get_path('60393-2022-02-28_2215.nxs', small=small))
+
+
+def loki_tutorial_sample_transmission_run(
+    *, small: bool = False
+) -> Filename[TransmissionRun[SampleRun]]:
+    """Sample transmission run (sample + sample holder/can + transmission monitor).
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[SampleRun]](
-        _registry.get_path('60394-2022-02-28_2215.nxs')
+        _get_path('60394-2022-02-28_2215.nxs', small=small)
     )
 
 
-def loki_tutorial_run_60392() -> Filename[TransmissionRun[BackgroundRun]]:
+def loki_tutorial_run_60392(
+    *, small: bool = False
+) -> Filename[TransmissionRun[BackgroundRun]]:
     """Background transmission run (sample holder/can + transmission monitor), also
-    used as empty beam run."""
+    used as empty beam run.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[BackgroundRun]](
-        _registry.get_path('60392-2022-02-28_2215.nxs')
+        _get_path('60392-2022-02-28_2215.nxs', small=small)
     )
 
 
-def loki_tutorial_isis_polymer_sample_run() -> Filename[SampleRun]:
-    """Sample run with ISIS polymer sample."""
-    return Filename[SampleRun](_registry.get_path("60395-2022-02-28_2215.nxs"))
+def loki_tutorial_isis_polymer_sample_run(
+    *, small: bool = False
+) -> Filename[SampleRun]:
+    """Sample run with ISIS polymer sample.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[SampleRun](_get_path("60395-2022-02-28_2215.nxs", small=small))
 
 
-def loki_tutorial_isis_polymer_transmission_run() -> (
-    Filename[TransmissionRun[SampleRun]]
-):
-    """Transmission run for ISIS polymer run."""
+def loki_tutorial_isis_polymer_transmission_run(
+    *, small: bool = False
+) -> Filename[TransmissionRun[SampleRun]]:
+    """Transmission run for ISIS polymer run.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[SampleRun]](
-        _registry.get_path("60394-2022-02-28_2215.nxs")
+        _get_path("60394-2022-02-28_2215.nxs", small=small)
     )
 
 
-def loki_tutorial_agbeh_sample_run() -> Filename[SampleRun]:
-    """Sample run with AgBeh sample."""
-    return Filename[SampleRun](_registry.get_path("60387-2022-02-28_2215.nxs"))
+def loki_tutorial_agbeh_sample_run(*, small: bool = False) -> Filename[SampleRun]:
+    """Sample run with AgBeh sample.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[SampleRun](_get_path("60387-2022-02-28_2215.nxs", small=small))
 
 
-def loki_tutorial_agbeh_transmission_run() -> Filename[TransmissionRun[SampleRun]]:
-    """Transmission run for AgBeh run."""
+def loki_tutorial_agbeh_transmission_run(
+    *, small: bool = False
+) -> Filename[TransmissionRun[SampleRun]]:
+    """Transmission run for AgBeh run.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[SampleRun]](
-        _registry.get_path("60386-2022-02-28_2215.nxs")
+        _get_path("60386-2022-02-28_2215.nxs", small=small)
     )
 
 
-def loki_tutorial_porous_silica_sample_run() -> Filename[SampleRun]:
-    """Sample run with Porous silica sample."""
-    return Filename[SampleRun](_registry.get_path("60385-2022-02-28_2215.nxs"))
+def loki_tutorial_porous_silica_sample_run(
+    *, small: bool = False
+) -> Filename[SampleRun]:
+    """Sample run with Porous silica sample.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[SampleRun](_get_path("60385-2022-02-28_2215.nxs", small=small))
 
 
-def loki_tutorial_porous_silica_transmission_run() -> (
-    Filename[TransmissionRun[SampleRun]]
-):
-    """Transmission run for Porous silica run."""
+def loki_tutorial_porous_silica_transmission_run(
+    *, small: bool = False
+) -> Filename[TransmissionRun[SampleRun]]:
+    """Transmission run for Porous silica run.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[SampleRun]](
-        _registry.get_path("60384-2022-02-28_2215.nxs")
+        _get_path("60384-2022-02-28_2215.nxs", small=small)
     )
 
 
-def loki_tutorial_deut_sds_sample_run() -> Filename[SampleRun]:
-    """Sample run with deut-SDS sample."""
-    return Filename[SampleRun](_registry.get_path("60389-2022-02-28_2215.nxs"))
+def loki_tutorial_deut_sds_sample_run(*, small: bool = False) -> Filename[SampleRun]:
+    """Sample run with deut-SDS sample.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
+    return Filename[SampleRun](_get_path("60389-2022-02-28_2215.nxs", small=small))
 
 
-def loki_tutorial_deut_sds_transmission_run() -> Filename[TransmissionRun[SampleRun]]:
-    """Transmission run for deut-SDS run."""
+def loki_tutorial_deut_sds_transmission_run(
+    *, small: bool = False
+) -> Filename[TransmissionRun[SampleRun]]:
+    """Transmission run for deut-SDS run.
+
+    Parameters
+    ----------
+    small:
+        If True, return a smaller version of the file for unit tests.
+        The file was created using the shrink_nexus_loki.py script in the repository
+        top level `tools` folder.
+    """
     return Filename[TransmissionRun[SampleRun]](
-        _registry.get_path("60388-2022-02-28_2215.nxs")
+        _get_path("60388-2022-02-28_2215.nxs", small=small)
     )
 
 
