@@ -12,6 +12,7 @@ from ess import sans
 from ess import loki
 from ess.sans.types import *
 
+
 def reduce_loki_batch_preliminary(
     sample_run_file: str,
     transmission_run_file: str,
@@ -72,7 +73,7 @@ def find_direct_beam(work_dir):
     if files:
         return files[0]
     else:
-        raise FileNotFoundError(f"Could not find direct-beam file matching pattern {pattern}")
+        raise FileNotFoundError(f"Could not find direct beam file matching pattern {pattern}")
 
 
 def find_mask_file(work_dir):
@@ -123,21 +124,27 @@ class SansBatchReductionWidget:
         self.table = DataGrid(pd.DataFrame([]), editable=True, auto_fit_columns=True)
         self.reduce_button = widgets.Button(description="Reduce")
         self.reduce_button.on_click(self.run_reduction)
-        # New Clear Log button.
         self.clear_log_button = widgets.Button(description="Clear Log")
         self.clear_log_button.on_click(self.clear_log)
+        self.clear_plots_button = widgets.Button(description="Clear Plots")
+        self.clear_plots_button.on_click(self.clear_plots)
         self.log_output = widgets.Output()
+        self.plot_output = widgets.Output()
         self.main = widgets.VBox([
             widgets.HBox([self.csv_chooser, self.input_dir_chooser, self.output_dir_chooser]),
             widgets.HBox([self.ebeam_sans_widget, self.ebeam_trans_widget]),
             self.load_csv_button,
             self.table,
-            widgets.HBox([self.reduce_button, self.clear_log_button]),
-            self.log_output
+            widgets.HBox([self.reduce_button, self.clear_log_button, self.clear_plots_button]),
+            self.log_output,
+            self.plot_output
         ])
     
     def clear_log(self, _):
         self.log_output.clear_output()
+    
+    def clear_plots(self, _):
+        self.plot_output.clear_output()
     
     def load_csv(self, _):
         csv_path = self.csv_chooser.selected
@@ -164,21 +171,21 @@ class SansBatchReductionWidget:
         try:
             direct_beam_file = find_direct_beam(input_dir)
             with self.log_output:
-                print("Using direct-beam file:", direct_beam_file)
+                print("Using direct beam file:", direct_beam_file)
         except Exception as e:
             with self.log_output:
-                print("Direct-beam file not found:", e)
+                print("Direct beam file not found:", e)
             return
         try:
             background_run_file = find_file(input_dir, self.ebeam_sans_widget.value, extension=".nxs")
             empty_beam_file = find_file(input_dir, self.ebeam_trans_widget.value, extension=".nxs")
             with self.log_output:
-                print("Using empty-beam files:")
+                print("Using empty beam files:")
                 print("  Background (Ebeam SANS):", background_run_file)
-                print("  Empty-beam (Ebeam TRANS):", empty_beam_file)
+                print("  Empty beam (Ebeam TRANS):", empty_beam_file)
         except Exception as e:
             with self.log_output:
-                print("Error finding empty-beam files:", e)
+                print("Error finding empty beam files:", e)
             return
         df = self.table.data
         for idx, row in df.iterrows():
@@ -200,7 +207,7 @@ class SansBatchReductionWidget:
                 try:
                     mask_file = find_mask_file(input_dir)
                     with self.log_output:
-                        print(f"Using mask file: {mask_file} for sample {sample}")
+                        print(f"Using global mask file: {mask_file} for sample {sample}")
                 except Exception as e:
                     with self.log_output:
                         print(f"Mask file not found for sample {sample}: {e}")
@@ -228,35 +235,58 @@ class SansBatchReductionWidget:
             except Exception as e:
                 with self.log_output:
                     print(f"Failed to save reduced data for {sample}: {e}")
+            # Generate and display Transmission plot.
             wavelength_bins = sc.linspace("wavelength", 1.0, 13.0, 201, unit="angstrom")
             x_wl = 0.5 * (wavelength_bins.values[:-1] + wavelength_bins.values[1:])
-            plt.figure()
-            plt.plot(x_wl, res["transmission"].values, marker='o', linestyle='-')
-            plt.title(f"Transmission: {os.path.basename(sample_run_file)}")
-            plt.xlabel("Wavelength (angstrom)")
-            plt.ylabel("Transmission")
+            fig_trans, ax_trans = plt.subplots()
+            ax_trans.plot(x_wl, res["transmission"].values, marker='o', linestyle='-')
+            ax_trans.set_title(f"Transmission: {sample} {os.path.basename(sample_run_file)}")
+            ax_trans.set_xlabel("Wavelength (Å)")
+            ax_trans.set_ylabel("Transmission")
+            plt.tight_layout()
+            #with self.plot_output:
+                #display(fig_trans)
             trans_png = os.path.join(output_dir, os.path.basename(sample_run_file).replace(".nxs", "_transmission.png"))
-            plt.savefig(trans_png)
-            plt.close()
+            fig_trans.savefig(trans_png, dpi=300)
+            plt.close(fig_trans)
+            # Generate and display I(Q) plot.
             q_bins = sc.linspace("Q", 0.01, 0.3, 101, unit="1/angstrom")
             x_q = 0.5 * (q_bins.values[:-1] + q_bins.values[1:])
-            plt.figure()
+            fig_iq, ax_iq = plt.subplots()
             if res["IofQ"].variances is not None:
                 yerr = np.sqrt(res["IofQ"].variances)
-                plt.errorbar(x_q, res["IofQ"].values, yerr=yerr, marker='o', linestyle='-')
+                ax_iq.errorbar(x_q, res["IofQ"].values, yerr=yerr, marker='o', linestyle='-')
             else:
-                plt.plot(x_q, res["IofQ"].values, marker='o', linestyle='-')
-            plt.title(f"I(Q): {os.path.basename(sample_run_file)}")
-            plt.xlabel("Q (1/angstrom)")
-            plt.ylabel("I(Q)")
-            plt.xscale("log")
-            plt.yscale("log")
+                ax_iq.plot(x_q, res["IofQ"].values, marker='o', linestyle='-')
+            ax_iq.set_title(f"{os.path.basename(sample_run_file)} ({sample})")
+            ax_iq.set_xlabel("Q (Å$^{-1}$)")
+            ax_iq.set_ylabel("I(Q)")
+            ax_iq.set_xscale("log")
+            ax_iq.set_yscale("log")
+            plt.tight_layout()
+            with self.plot_output:
+                display(fig_iq)
             iq_png = os.path.join(output_dir, os.path.basename(sample_run_file).replace(".nxs", "_IofQ.png"))
-            plt.savefig(iq_png)
-            plt.close()
+            fig_iq.savefig(iq_png, dpi=300)
+            plt.close(fig_iq)
             with self.log_output:
                 print(f"Reduced sample {sample} and saved outputs.")
     
     @property
     def widget(self):
         return self.main
+
+
+def save_xye_pandas(data_array, filename):
+    q_vals = data_array.coords["Q"].values
+    i_vals = data_array.values
+    if len(q_vals) != len(i_vals):
+        q_vals = 0.5 * (q_vals[:-1] + q_vals[1:])
+    if data_array.variances is not None:
+        err_vals = np.sqrt(data_array.variances)
+        if len(err_vals) != len(i_vals):
+            err_vals = 0.5 * (err_vals[:-1] + err_vals[1:])
+    else:
+        err_vals = np.zeros_like(i_vals)
+    df = pd.DataFrame({"Q": q_vals, "I(Q)": i_vals, "Error": err_vals})
+    df.to_csv(filename, sep=" ", index=False, header=True)
