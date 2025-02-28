@@ -89,9 +89,9 @@ def test_can_compute_direct_beam_per_layer():
     assert iofq_full.dims == ('layer', 'Q')
     assert iofq_bands.dims == ('band', 'layer', 'Q')
     assert iofq_bands.sizes['band'] == n_wavelength_bands
-    assert iofq_bands.sizes['layer'] == 4
+    assert iofq_bands.sizes['layer'] == 2  # Only two layers in the small file
     assert direct_beam_function.sizes['wavelength'] == n_wavelength_bands
-    assert direct_beam_function.sizes['layer'] == 4
+    assert direct_beam_function.sizes['layer'] == 2
 
 
 def test_can_compute_direct_beam_per_layer_and_straw():

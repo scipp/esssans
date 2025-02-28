@@ -49,7 +49,7 @@ def make_workflow(
     if use_small_files:
         # Overwrite the default detector bank sizes with the small file sizes
         wf[DetectorBankSizes] = {
-            'larmor_detector': {'layer': 4, 'tube': 1, 'straw': 7, 'pixel': 512}
+            'larmor_detector': {'layer': 2, 'tube': 16, 'straw': 3, 'pixel': 128}
         }
 
     wf[WavelengthBins] = sc.linspace(

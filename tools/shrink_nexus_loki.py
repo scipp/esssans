@@ -35,7 +35,11 @@ for fname in files:
             base_path = f"entry/instrument/{key}"
             det_nums = ds[base_path + '/detector_number'][()]
             folded = det_nums.reshape(list(DETECTOR_BANK_SIZES[key].values()))
-            keep = folded[:, 16, :, :]  # keep one slice of tubes close to the center
+            # First and last layer
+            # Every other tube
+            # First, middle and last straw
+            # Every fourth pixel
+            keep = folded[::3, ::2, ::3, ::4]
 
             tmp = base_path + "/tmp"  # noqa: S108
             sel = np.isin(det_nums, keep)
@@ -102,15 +106,16 @@ for fname in files:
         # Monitors
         for m in range(2):
             mon1_path = instr_path + f'/monitor_{m + 1}/monitor_{m + 1}_events'
-            # Select first pulse
+            # Select 10 times less pulses
             ev_ind_path = mon1_path + '/event_index'
             ev_ind = ds[ev_ind_path][()]
-            n = ev_ind[1]
+            npulses = max(1, len(ev_ind) // 10)
+            n = ev_ind[npulses]
             tmp = mon1_path + "/temp_path"
             # event_index
             ds[tmp] = ds[ev_ind_path]
             del ds[ev_ind_path]
-            ds.create_dataset(ev_ind_path, data=ev_ind[0:1])
+            ds.create_dataset(ev_ind_path, data=ev_ind[0:npulses])
             ds[ev_ind_path].attrs.update(ds[tmp].attrs)
             del ds[tmp]
             # event_id
@@ -134,6 +139,6 @@ for fname in files:
             etz = ds[etz_path][()]
             ds[tmp] = ds[etz_path]
             del ds[etz_path]
-            ds.create_dataset(etz_path, data=etos[0:1])
+            ds.create_dataset(etz_path, data=etos[0:npulses])
             ds[etz_path].attrs.update(ds[tmp].attrs)
             del ds[tmp]
