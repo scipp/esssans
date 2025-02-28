@@ -5,11 +5,19 @@ import h5py as h5
 import numpy as np
 
 files = [
+    '60248-2022-02-28_2215.nxs',
     '60250-2022-02-28_2215.nxs',
+    '60339-2022-02-28_2215.nxs',
+    '60384-2022-02-28_2215.nxs',
+    '60385-2022-02-28_2215.nxs',
+    '60386-2022-02-28_2215.nxs',
+    '60387-2022-02-28_2215.nxs',
+    '60388-2022-02-28_2215.nxs',
+    '60389-2022-02-28_2215.nxs',
     '60392-2022-02-28_2215.nxs',
     '60393-2022-02-28_2215.nxs',
     '60394-2022-02-28_2215.nxs',
-    '60339-2022-02-28_2215.nxs',
+    '60395-2022-02-28_2215.nxs',
 ]
 
 DETECTOR_BANK_SIZES = {
@@ -27,9 +35,8 @@ for fname in files:
             base_path = f"entry/instrument/{key}"
             det_nums = ds[base_path + '/detector_number'][()]
             folded = det_nums.reshape(list(DETECTOR_BANK_SIZES[key].values()))
-            keep = folded[0, :, 0, :]
+            keep = folded[:, 16, :, :]  # keep one slice of tubes close to the center
 
-            del ds[base_path + '/pixel_shape']
             tmp = base_path + "/tmp"  # noqa: S108
             sel = np.isin(det_nums, keep)
             for field in (

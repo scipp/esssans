@@ -96,7 +96,9 @@ def test_can_compute_direct_beam_per_layer():
 
 def test_can_compute_direct_beam_per_layer_and_straw():
     n_wavelength_bands = 10
-    pipeline = make_workflow()
+    # The test fails when using small files because the counts are too low, leading to
+    # divisions by zero and NaNs in the result.
+    pipeline = make_workflow(use_small_files=False)
     edges = pipeline.compute(WavelengthBins)
     pipeline[WavelengthBands] = sc.linspace(
         'wavelength', edges.min(), edges.max(), n_wavelength_bands + 1

@@ -8,6 +8,7 @@ from ess import loki
 from ess.sans.types import (
     BackgroundRun,
     CorrectForGravity,
+    DetectorBankSizes,
     DetectorMasks,
     DirectBeam,
     EmptyBeamRun,
@@ -24,21 +25,32 @@ from ess.sans.types import (
 )
 
 
-def make_workflow(no_masks: bool = True) -> sciline.Pipeline:
+def make_workflow(
+    no_masks: bool = True, use_small_files: bool = True
+) -> sciline.Pipeline:
     wf = loki.LokiAtLarmorWorkflow()
 
     wf[NeXusDetectorName] = "larmor_detector"
-    wf[Filename[SampleRun]] = loki.data.loki_tutorial_sample_run_60339(small=True)
+    wf[Filename[SampleRun]] = loki.data.loki_tutorial_sample_run_60339(
+        small=use_small_files
+    )
     wf[Filename[BackgroundRun]] = loki.data.loki_tutorial_background_run_60393(
-        small=True
+        small=use_small_files
     )
     wf[Filename[TransmissionRun[SampleRun]]] = (
-        loki.data.loki_tutorial_sample_transmission_run(small=True)
+        loki.data.loki_tutorial_sample_transmission_run(small=use_small_files)
     )
     wf[Filename[TransmissionRun[BackgroundRun]]] = loki.data.loki_tutorial_run_60392(
-        small=True
+        small=use_small_files
     )
-    wf[Filename[EmptyBeamRun]] = loki.data.loki_tutorial_run_60392(small=True)
+    wf[Filename[EmptyBeamRun]] = loki.data.loki_tutorial_run_60392(
+        small=use_small_files
+    )
+    if use_small_files:
+        # Overwrite the default detector bank sizes with the small file sizes
+        wf[DetectorBankSizes] = {
+            'larmor_detector': {'layer': 4, 'tube': 1, 'straw': 7, 'pixel': 512}
+        }
 
     wf[WavelengthBins] = sc.linspace(
         "wavelength", start=1.0, stop=13.0, num=51, unit="angstrom"
