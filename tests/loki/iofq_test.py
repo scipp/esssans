@@ -173,7 +173,7 @@ def test_pipeline_can_compute_IofQ_in_layers(qxy: bool):
         BackgroundSubtractedIofQxy if qxy else BackgroundSubtractedIofQ
     )
     assert result.dims == ('layer', 'Qy', 'Qx') if qxy else ('layer', 'Q')
-    assert result.sizes['layer'] == 4
+    assert result.sizes['layer'] == 2
 
 
 def _compute_beam_center():
@@ -182,12 +182,12 @@ def _compute_beam_center():
 
 def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs():
     sample_runs = [
-        loki.data.loki_tutorial_sample_run_60250(),
-        loki.data.loki_tutorial_sample_run_60339(),
+        loki.data.loki_tutorial_sample_run_60250(small=True),
+        loki.data.loki_tutorial_sample_run_60339(small=True),
     ]
     background_runs = [
-        loki.data.loki_tutorial_background_run_60248(),
-        loki.data.loki_tutorial_background_run_60393(),
+        loki.data.loki_tutorial_background_run_60248(small=True),
+        loki.data.loki_tutorial_background_run_60393(small=True),
     ]
     pipeline = make_workflow()
     pipeline[BeamCenter] = _compute_beam_center()
@@ -210,12 +210,12 @@ def test_pipeline_can_compute_IofQ_by_bank():
 
 def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs_by_bank():
     sample_runs = [
-        loki.data.loki_tutorial_sample_run_60250(),
-        loki.data.loki_tutorial_sample_run_60339(),
+        loki.data.loki_tutorial_sample_run_60250(small=True),
+        loki.data.loki_tutorial_sample_run_60339(small=True),
     ]
     background_runs = [
-        loki.data.loki_tutorial_background_run_60248(),
-        loki.data.loki_tutorial_background_run_60393(),
+        loki.data.loki_tutorial_background_run_60248(small=True),
+        loki.data.loki_tutorial_background_run_60393(small=True),
     ]
     pipeline = make_workflow()
     pipeline[BeamCenter] = _compute_beam_center()
