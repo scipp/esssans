@@ -17,6 +17,7 @@ from scipp.scipy.interpolate import interp1d
 import plopp as pp  # used for plotting in direct beam section
 import threading
 import time
+from ipywidgets import Output, IntSlider
 
 # ----------------------------
 # Reduction Functionality
@@ -947,10 +948,12 @@ class SansBatchReductionWidget:
             plt.close(fig_iq)
             with self.log_output:
                 print(f"Reduced sample {sample} and saved outputs.")
+
     
     @property
     def widget(self):
         return self.main
+
 
 # ----------------------------
 # Build the tabbed widget.
