@@ -14,12 +14,12 @@ from ess import sans
 from ess import loki
 from ess.sans.types import *
 from scipp.scipy.interpolate import interp1d
-import plopp as pp  # used for plotting in direct beam section
+import plopp as pp  
 import threading
 import time
 
 # ----------------------------
-# Common Utility Functions
+# Utility Functions
 # ----------------------------
 def find_file(work_dir, run_number, extension=".nxs"):
     pattern = os.path.join(work_dir, f"*{run_number}*{extension}")
@@ -29,7 +29,7 @@ def find_file(work_dir, run_number, extension=".nxs"):
     else:
         raise FileNotFoundError(f"Could not find file matching pattern {pattern}")
 
-def find_direct_beam(work_dir):
+def find_direct_beam(work_dir): #Find the direct beam automagically 
     pattern = os.path.join(work_dir, "*direct-beam*.h5")
     files = glob.glob(pattern)
     if files:
@@ -37,7 +37,7 @@ def find_direct_beam(work_dir):
     else:
         raise FileNotFoundError(f"Could not find direct-beam file matching pattern {pattern}")
 
-def find_mask_file(work_dir):
+def find_mask_file(work_dir): #Find the mask automagically 
     pattern = os.path.join(work_dir, "*mask*.xml")
     files = glob.glob(pattern)
     if files:
@@ -45,7 +45,7 @@ def find_mask_file(work_dir):
     else:
         raise FileNotFoundError(f"Could not find mask file matching pattern {pattern}")
 
-def save_xye_pandas(data_array, filename):
+def save_xye_pandas(data_array, filename): ###Note here this needs to be 'fixed' / updated to use scipp io – ideally I want a nxcansas and xye saved for each file, but I struggled with the syntax and just did it in pandas as a first pass 
     q_vals = data_array.coords["Q"].values
     i_vals = data_array.values
     if len(q_vals) != len(i_vals):
@@ -65,7 +65,7 @@ def extract_run_number(filename):
         return m.group(1)
     return ""
 
-def parse_nx_details(filepath):
+def parse_nx_details(filepath): #For finding/grouping files by common title assigned by NICOS, e.g. 'runlabel' and 'runtype'
     details = {}
     with h5py.File(filepath, 'r') as f:
         if 'nicos_details' in f['entry']:
@@ -157,7 +157,7 @@ def save_reduction_plots(res, sample, sample_run_file, wavelength_min, wavelengt
     plt.close(fig)
 
 # ----------------------------
-# Unified Backend Function for Reduction
+# Unified "Backend" Function for Reduction
 # ----------------------------
 def perform_reduction_for_sample(
     sample_info: dict,
@@ -244,7 +244,7 @@ def perform_reduction_for_sample(
     return res
 
 # ----------------------------
-# GUI Widgets (Refactored to use Unified Backend)
+# GUI Widgets 
 # ----------------------------
 class SansBatchReductionWidget:
     def __init__(self):
@@ -671,7 +671,7 @@ class AutoReductionWidget:
         return self.main
 
 # ----------------------------
-# Direct Beam Functionality and Widget (unchanged)
+# Direct Beam stuff
 # ----------------------------
 def compute_direct_beam_local(
     mask: str,
@@ -810,7 +810,7 @@ class DirectBeamWidget:
         return self.main
 
 # ----------------------------
-# Build the Tabbed Widget
+# Build it
 # ----------------------------
 reduction_widget = SansBatchReductionWidget().widget
 direct_beam_widget = DirectBeamWidget().widget
@@ -824,3 +824,4 @@ tabs.set_title(2, "Reduction (Smart)")
 tabs.set_title(3, "Reduction (Auto)")
 
 # display(tabs)
+# voila /src/ess/loki/tabwidget.ipynb #--theme=dark
