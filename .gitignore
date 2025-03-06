@@ -32,7 +32,6 @@ docs/generated/
 # Data files
 *.data
 *.dat
-*.csv
 *.xye
 *.h5
 *.hdf5
