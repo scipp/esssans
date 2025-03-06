@@ -175,7 +175,7 @@ def save_reduction_plots(res, sample, sample_run_file, lam_min, lam_max, lam_n, 
     axs[1].set_ylabel("Transmission")
     
     # Adjust layout to leave room for the suptitle.
-    plt.tight_layout(rect=[0, 0, 1, 0.90])
+    plt.tight_layout()#rect=[0, 0, 1, 0.90])
     
     # Save the figure.
     out_png = os.path.join(output_dir, os.path.basename(sample_run_file).replace(".nxs", "_reduced.png"))
