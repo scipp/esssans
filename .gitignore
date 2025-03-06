@@ -46,3 +46,4 @@ docs/generated/
 *.sqw
 *.nxspe
 /src/ess/loki/examplefiles
+/src/ess/loki/batch-gui-legacy
