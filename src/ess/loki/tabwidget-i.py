@@ -17,7 +17,6 @@ from scipp.scipy.interpolate import interp1d
 import plopp as pp  
 import threading
 import time
-from ipywidgets import Layout
 
 # ----------------------------
 # Utility Functions
@@ -30,7 +29,7 @@ def find_file(work_dir, run_number, extension=".nxs"):
     else:
         raise FileNotFoundError(f"Could not find file matching pattern {pattern}")
 
-def find_direct_beam(work_dir): #Find the direct beam automagically 
+def find_direct_beam(work_dir):  # Find the direct beam automatically 
     pattern = os.path.join(work_dir, "*direct-beam*.h5")
     files = glob.glob(pattern)
     if files:
@@ -38,7 +37,7 @@ def find_direct_beam(work_dir): #Find the direct beam automagically
     else:
         raise FileNotFoundError(f"Could not find direct-beam file matching pattern {pattern}")
 
-def find_mask_file(work_dir): #Find the mask automagically 
+def find_mask_file(work_dir):  # Find the mask automatically 
     pattern = os.path.join(work_dir, "*mask*.xml")
     files = glob.glob(pattern)
     if files:
@@ -46,7 +45,7 @@ def find_mask_file(work_dir): #Find the mask automagically
     else:
         raise FileNotFoundError(f"Could not find mask file matching pattern {pattern}")
 
-def save_xye_pandas(data_array, filename): ###Note here this needs to be 'fixed' / updated to use scipp io – ideally I want a nxcansas and xye saved for each file, but I struggled with the syntax and just did it in pandas as a first pass 
+def save_xye_pandas(data_array, filename):
     q_vals = data_array.coords["Q"].values
     i_vals = data_array.values
     if len(q_vals) != len(i_vals):
@@ -66,7 +65,7 @@ def extract_run_number(filename):
         return m.group(1)
     return ""
 
-def parse_nx_details(filepath): #For finding/grouping files by common title assigned by NICOS, e.g. 'runlabel' and 'runtype'
+def parse_nx_details(filepath):
     details = {}
     with h5py.File(filepath, 'r') as f:
         if 'nicos_details' in f['entry']:
@@ -81,7 +80,7 @@ def parse_nx_details(filepath): #For finding/grouping files by common title assi
 
 # ----------------------------
 # Colour Mapping From Filename 
-
+# ----------------------------
 def string_to_colour(input_str):
     if not input_str:
         return "#000000"  # Empty input = black
@@ -91,14 +90,12 @@ def string_to_colour(input_str):
             total += ord(ch.lower()) - ord('a') + 1  # a=1, b=2, ..., z=26
         elif ch.isdigit():
             total += 1 + int(ch) * (25/9)  # Maps '0' to 1 and '9' to 26
-        # Special characters equal 0
     avg = total / len(input_str)
     norm = max(0, min(1, avg / 26))  # Average and normalise to [0,1]
-    rgba = plt.get_cmap('flag')(norm)  #prism 
+    rgba = plt.get_cmap('flag')(norm)
     return '#{:02x}{:02x}{:02x}'.format(int(rgba[0]*255),
                                         int(rgba[1]*255),
                                         int(rgba[2]*255))
-
 
 # ----------------------------
 # Reduction and Plotting Functions
@@ -155,9 +152,8 @@ def save_reduction_plots(res, sample, sample_run_file, wavelength_min, wavelengt
     x_q = 0.5 * (q_bins.values[:-1] + q_bins.values[1:])
     if res["IofQ"].variances is not None:
         yerr = np.sqrt(res["IofQ"].variances)
-        #axs[0].errorbar(x_q, res["IofQ"].values, yerr=yerr, fmt='o', linestyle='none', color='k', alpha=0.5, markerfacecolor='none')
-        axs[0].errorbar(x_q, res["IofQ"].values, yerr=yerr, fmt='o', linestyle='none', color='k', alpha=0.5, markerfacecolor=string_to_colour(sample), ecolor='k', markersize=6)
-
+        axs[0].errorbar(x_q, res["IofQ"].values, yerr=yerr, fmt='o', linestyle='none',
+                        color='k', alpha=0.5, markerfacecolor=string_to_colour(sample), ecolor='k', markersize=6)
     else:
         axs[0].scatter(x_q, res["IofQ"].values)
     axs[0].set_xlabel("Q (Å$^{-1}$)")
@@ -168,10 +164,8 @@ def save_reduction_plots(res, sample, sample_run_file, wavelength_min, wavelengt
     x_wl = 0.5 * (wavelength_bins.values[:-1] + wavelength_bins.values[1:])
     if res["transmission"].variances is not None:
         yerr_tr = np.sqrt(res["transmission"].variances)
-        #axs[1].errorbar(x_wl, res["transmission"].values, yerr=yerr_tr, fmt='^', linestyle='none', color='k', alpha=0.5, markerfacecolor='none')
-        axs[1].errorbar(x_wl, res["transmission"].values, yerr=yerr_tr, fmt='^', linestyle='none', color='k', alpha=0.5, markerfacecolor=string_to_colour(sample), ecolor='k', markersize=6)
-
-        
+        axs[1].errorbar(x_wl, res["transmission"].values, yerr=yerr_tr, fmt='^', linestyle='none',
+                        color='k', alpha=0.5, markerfacecolor=string_to_colour(sample), ecolor='k', markersize=6)
     else:
         axs[1].scatter(x_wl, res["transmission"].values)
     axs[1].set_xlabel("Wavelength (Å)")
@@ -180,7 +174,7 @@ def save_reduction_plots(res, sample, sample_run_file, wavelength_min, wavelengt
     out_png = os.path.join(output_dir, os.path.basename(sample_run_file).replace(".nxs", "_reduced.png"))
     fig.savefig(out_png, dpi=300)
     if show:
-        display(fig)
+        plt.show()
     plt.close(fig)
 
 # ----------------------------
@@ -194,25 +188,15 @@ def perform_reduction_for_sample(
     background_run_file: str,
     empty_beam_file: str,
     direct_beam_file: str,
-    #log_func: callable
 ):
-    """
-    Processes a single sample reduction:
-      - Finds the necessary run files
-      - Optionally determines a mask (or finds one automatically)
-      - Calls the reduction and plotting routines
-      - Logs all steps via log_func(message) ### edited to just print statements - does logfunc work correctly with voila???
-    """
     sample = sample_info.get("SAMPLE", "Unknown")
     try:
         sample_run_file = find_file(input_dir, str(sample_info["SANS"]), extension=".nxs")
         transmission_run_file = find_file(input_dir, str(sample_info["TRANS"]), extension=".nxs")
     except Exception as e:
-        #log_func(f"Skipping sample {sample}: {e}")
         print(f"Skipping sample {sample}: {e}")
-
         return None
-    # Determine mask file.
+
     mask_file = None
     mask_candidate = str(sample_info.get("mask", "")).strip()
     if mask_candidate:
@@ -222,18 +206,12 @@ def perform_reduction_for_sample(
     if mask_file is None:
         try:
             mask_file = find_mask_file(input_dir)
-            #log_func(f"Identified mask file: {mask_file} for sample {sample}")
             print(f"Identified mask file: {mask_file} for sample {sample}")
-
         except Exception as e:
-            #log_func(f"Mask file not found for sample {sample}: {e}")
             print(f"Mask file not found for sample {sample}: {e}")
-
             return None
 
-    #log_func(f"Reducing sample {sample}...")
     print(f"Reducing sample {sample}...")
-
     try:
         res = reduce_loki_batch_preliminary(
             sample_run_file=sample_run_file,
@@ -250,18 +228,16 @@ def perform_reduction_for_sample(
             q_n=reduction_params["q_n"]
         )
     except Exception as e:
-        #log_func(f"Reduction failed for sample {sample}: {e}")
         print(f"Reduction failed for sample {sample}: {e}")
         return None
+
     out_xye = os.path.join(output_dir, os.path.basename(sample_run_file).replace(".nxs", ".xye"))
     try:
         save_xye_pandas(res["IofQ"], out_xye)
-        #log_func(f"Saved reduced data to {out_xye}")
         print(f"Saved reduced data to {out_xye}")
-
     except Exception as e:
-        #log_func(f"Failed to save reduced data for {sample}: {e}")
         print(f"Failed to save reduced data for {sample}: {e}")
+
     try:
         save_reduction_plots(
             res,
@@ -276,11 +252,6 @@ def perform_reduction_for_sample(
             output_dir,
             show=True
         )
-#        log_func(f"Saved reduction plot for sample {sample}.")
-#    except Exception as e:
-#        log_func(f"Failed to save reduction plot for {sample}: {e}")
-#    log_func(f"Reduced sample {sample} and saved outputs.")
-#    return res
         print(f"Saved reduction plot for sample {sample}.")
     except Exception as e:
         print(f"Failed to save reduction plot for {sample}: {e}")
@@ -313,11 +284,10 @@ class SansBatchReductionWidget:
         self.reduce_button = widgets.Button(description="Reduce")
         self.reduce_button.on_click(self.run_reduction)
         self.clear_log_button = widgets.Button(description="Clear Log")
-        self.clear_log_button.on_click(lambda _: self.log_output.clear_output())
+        self.clear_log_button.on_click(lambda _: print("\n--- Log Cleared ---\n"))
         self.clear_plots_button = widgets.Button(description="Clear Plots")
-        self.clear_plots_button.on_click(lambda _: self.plot_output.clear_output())
-        self.log_output = widgets.Output()
-        self.plot_output = widgets.Output()
+        self.clear_plots_button.on_click(lambda _: plt.close('all'))
+        # Remove widget outputs from the layout since we use plain print and plt.show()
         self.main = widgets.VBox([
             widgets.HBox([self.csv_chooser, self.input_dir_chooser, self.output_dir_chooser]),
             widgets.HBox([self.ebeam_sans_widget, self.ebeam_trans_widget]),
@@ -325,53 +295,41 @@ class SansBatchReductionWidget:
             widgets.HBox([self.q_start_widget, self.q_stop_widget, self.q_n_widget]),
             self.load_csv_button,
             self.table,
-            widgets.HBox([self.reduce_button, self.clear_log_button, self.clear_plots_button]),
-            self.log_output,
-            self.plot_output
+            widgets.HBox([self.reduce_button, self.clear_log_button, self.clear_plots_button])
         ])
     
     def load_csv(self, _):
         csv_path = self.csv_chooser.selected
         if not csv_path or not os.path.exists(csv_path):
-            with self.log_output:
-                print("CSV file not selected or does not exist.")
+            print("CSV file not selected or does not exist.")
             return
         df = pd.read_csv(csv_path)
         self.table.data = df
-        with self.log_output:
-            print(f"Loaded reduction table with {len(df)} rows from {csv_path}.")
+        print(f"Loaded reduction table with {len(df)} rows from {csv_path}.")
     
     def run_reduction(self, _):
-        self.log_output.clear_output()
-        self.plot_output.clear_output()
         input_dir = self.input_dir_chooser.selected
         output_dir = self.output_dir_chooser.selected
         if not input_dir or not os.path.isdir(input_dir):
-            with self.log_output:
-                print("Input folder is not valid.")
+            print("Input folder is not valid.")
             return
         if not output_dir or not os.path.isdir(output_dir):
-            with self.log_output:
-                print("Output folder is not valid.")
+            print("Output folder is not valid.")
             return
         try:
             direct_beam_file = find_direct_beam(input_dir)
-            with self.log_output:
-                print("Using direct-beam file:", direct_beam_file)
+            print("Using direct-beam file:", direct_beam_file)
         except Exception as e:
-            with self.log_output:
-                print("Direct-beam file not found:", e)
+            print("Direct-beam file not found:", e)
             return
         try:
             background_run_file = find_file(input_dir, self.ebeam_sans_widget.value, extension=".nxs")
             empty_beam_file = find_file(input_dir, self.ebeam_trans_widget.value, extension=".nxs")
-            with self.log_output:
-                print("Using empty-beam files:")
-                print("  Background (Ebeam SANS):", background_run_file)
-                print("  Empty beam (Ebeam TRANS):", empty_beam_file)
+            print("Using empty-beam files:")
+            print("  Background (Ebeam SANS):", background_run_file)
+            print("  Empty beam (Ebeam TRANS):", empty_beam_file)
         except Exception as e:
-            with self.log_output:
-                print("Error finding empty beam files:", e)
+            print("Error finding empty beam files:", e)
             return
         
         reduction_params = {
@@ -392,8 +350,7 @@ class SansBatchReductionWidget:
                 reduction_params=reduction_params,
                 background_run_file=background_run_file,
                 empty_beam_file=empty_beam_file,
-                direct_beam_file=direct_beam_file,
-                #log_func=lambda msg: print(msg)
+                direct_beam_file=direct_beam_file
             )
     
     @property
@@ -423,12 +380,10 @@ class SemiAutoReductionWidget:
         self.empty_beam_trans_text = widgets.Text(value="", description="Ebeam TRANS:", disabled=True)
         self.reduce_button = widgets.Button(description="Reduce")
         self.reduce_button.on_click(self.run_reduction)
-        #self.clear_log_button = widgets.Button(description="Clear Log")
-        #self.clear_log_button.on_click(lambda _: self.log_output.clear_output())
-        #self.clear_plots_button = widgets.Button(description="Clear Plots")
-        #self.clear_plots_button.on_click(lambda _: self.plot_output.clear_output())
-        self.log_output = widgets.Output()
-        self.plot_output = widgets.Output()
+        self.clear_log_button = widgets.Button(description="Clear Log")
+        self.clear_log_button.on_click(lambda _: print("\n--- Log Cleared ---\n"))
+        self.clear_plots_button = widgets.Button(description="Clear Plots")
+        self.clear_plots_button.on_click(lambda _: plt.close('all'))
         self.processed = set()
         self.main = widgets.VBox([
             widgets.HBox([self.input_dir_chooser, self.output_dir_chooser]),
@@ -438,9 +393,7 @@ class SemiAutoReductionWidget:
             widgets.HBox([self.lambda_min_widget, self.lambda_max_widget, self.lambda_n_widget]),
             widgets.HBox([self.q_min_widget, self.q_max_widget, self.q_n_widget]),
             widgets.HBox([self.empty_beam_sans_text, self.empty_beam_trans_text]),
-            widgets.HBox([self.reduce_button]),# self.clear_log_button, self.clear_plots_button]),
-            self.log_output,
-            self.plot_output
+            widgets.HBox([self.reduce_button, self.clear_log_button, self.clear_plots_button])
         ])
     
     def add_row(self, _):
@@ -455,11 +408,10 @@ class SemiAutoReductionWidget:
             self.table.data = df.iloc[:-1]
 
     def scan_directory(self, _):
-        self.log_output.clear_output()
+        print("Scanning directory...")
         input_dir = self.input_dir_chooser.selected
         if not input_dir or not os.path.isdir(input_dir):
-            with self.log_output:
-                print("Invalid input folder.")
+            print("Invalid input folder.")
             return
         nxs_files = glob.glob(os.path.join(input_dir, "*.nxs"))
         groups = {}
@@ -482,8 +434,7 @@ class SemiAutoReductionWidget:
                 table_rows.append({'SAMPLE': runlabel, 'SANS': d['sans'], 'TRANS': d['trans']})
         df = pd.DataFrame(table_rows)
         self.table.data = df
-        with self.log_output:
-            print(f"Scanned {len(nxs_files)} files. Found {len(df)} reduction entries.")
+        print(f"Scanned {len(nxs_files)} files. Found {len(df)} reduction entries.")
         ebeam_sans_files = []
         ebeam_trans_files = []
         for f in nxs_files:
@@ -508,31 +459,24 @@ class SemiAutoReductionWidget:
             self.empty_beam_trans_text.value = ""
     
     def run_reduction(self, _):
-        self.log_output.clear_output()
-        self.plot_output.clear_output()
         input_dir = self.input_dir_chooser.selected
         output_dir = self.output_dir_chooser.selected
         if not input_dir or not os.path.isdir(input_dir):
-            with self.log_output:
-                print("Input folder is not valid.")
+            print("Input folder is not valid.")
             return
         if not output_dir or not os.path.isdir(output_dir):
-            with self.log_output:
-                print("Output folder is not valid.")
+            print("Output folder is not valid.")
             return
         try:
             direct_beam_file = find_direct_beam(input_dir)
-            with self.log_output:
-                print("Using direct-beam file:", direct_beam_file)
+            print("Using direct-beam file:", direct_beam_file)
         except Exception as e:
-            with self.log_output:
-                print("Direct-beam file not found:", e)
+            print("Direct-beam file not found:", e)
             return
         background_run_file = self.empty_beam_sans_text.value
         empty_beam_file = self.empty_beam_trans_text.value
         if not background_run_file or not empty_beam_file:
-            with self.log_output:
-                print("Empty beam files not found.")
+            print("Empty beam files not found.")
             return
         
         reduction_params = {
@@ -553,8 +497,7 @@ class SemiAutoReductionWidget:
                 reduction_params=reduction_params,
                 background_run_file=background_run_file,
                 empty_beam_file=empty_beam_file,
-                direct_beam_file=direct_beam_file,
-                #log_func=lambda msg: print(msg)
+                direct_beam_file=direct_beam_file
             )
     
     @property
@@ -571,8 +514,6 @@ class AutoReductionWidget:
         self.start_stop_button.on_click(self.toggle_running)
         self.status_label = widgets.Label(value="Stopped")
         self.table = DataGrid(pd.DataFrame([]), editable=False, auto_fit_columns=True)
-        self.log_output = widgets.Output()
-        self.plot_output = widgets.Output()
         self.running = False
         self.thread = None
         self.processed = set()
@@ -581,9 +522,7 @@ class AutoReductionWidget:
         self.main = widgets.VBox([
             widgets.HBox([self.input_dir_chooser, self.output_dir_chooser]),
             widgets.HBox([self.start_stop_button, self.status_label]),
-            self.table,
-            self.log_output,
-            self.plot_output
+            self.table
         ])
     
     def toggle_running(self, _):
@@ -603,13 +542,11 @@ class AutoReductionWidget:
             input_dir = self.input_dir_chooser.selected
             output_dir = self.output_dir_chooser.selected
             if not input_dir or not os.path.isdir(input_dir):
-                with self.log_output:
-                    print("Invalid input folder. Waiting for valid selection...")
+                print("Invalid input folder. Waiting for valid selection...")
                 time.sleep(60)
                 continue
             if not output_dir or not os.path.isdir(output_dir):
-                with self.log_output:
-                    print("Invalid output folder. Waiting for valid selection...")
+                print("Invalid output folder. Waiting for valid selection...")
                 time.sleep(60)
                 continue
             nxs_files = glob.glob(os.path.join(input_dir, "*.nxs"))
@@ -633,8 +570,7 @@ class AutoReductionWidget:
                     table_rows.append({'SAMPLE': runlabel, 'SANS': d['sans'], 'TRANS': d['trans']})
             df = pd.DataFrame(table_rows)
             self.table.data = df
-            with self.log_output:
-                print(f"Scanned {len(nxs_files)} files. Found {len(df)} reduction entries.")
+            print(f"Scanned {len(nxs_files)} files. Found {len(df)} reduction entries.")
             ebeam_sans_files = []
             ebeam_trans_files = []
             for f in nxs_files:
@@ -660,8 +596,7 @@ class AutoReductionWidget:
             try:
                 direct_beam_file = find_direct_beam(input_dir)
             except Exception as e:
-                with self.log_output:
-                    print("Direct-beam file not found:", e)
+                print("Direct-beam file not found:", e)
                 time.sleep(60)
                 continue
             for index, row in df.iterrows():
@@ -672,23 +607,18 @@ class AutoReductionWidget:
                     sample_run_file = find_file(input_dir, row["SANS"], extension=".nxs")
                     transmission_run_file = find_file(input_dir, row["TRANS"], extension=".nxs")
                 except Exception as e:
-                    with self.log_output:
-                        print(f"Skipping sample {row['SAMPLE']}: {e}")
+                    print(f"Skipping sample {row['SAMPLE']}: {e}")
                     continue
                 try:
                     mask_file = find_mask_file(input_dir)
-                    with self.log_output:
-                        print(f"Using mask file: {mask_file} for sample {row['SAMPLE']}")
+                    print(f"Using mask file: {mask_file} for sample {row['SAMPLE']}")
                 except Exception as e:
-                    with self.log_output:
-                        print(f"Mask file not found for sample {row['SAMPLE']}: {e}")
+                    print(f"Mask file not found for sample {row['SAMPLE']}: {e}")
                     continue
                 if not self.empty_beam_sans or not self.empty_beam_trans:
-                    with self.log_output:
-                        print("Empty beam files not found, skipping reduction for sample", row["SAMPLE"])
+                    print("Empty beam files not found, skipping reduction for sample", row["SAMPLE"])
                     continue
-                with self.log_output:
-                    print(f"Reducing sample {row['SAMPLE']}...")
+                print(f"Reducing sample {row['SAMPLE']}...")
                 reduction_params = {
                     "wavelength_min": 1.0,
                     "wavelength_max": 13.0,
@@ -704,8 +634,7 @@ class AutoReductionWidget:
                     reduction_params=reduction_params,
                     background_run_file=self.empty_beam_sans,
                     empty_beam_file=self.empty_beam_trans,
-                    direct_beam_file=direct_beam_file,
-                    #log_func=lambda msg: print(msg)
+                    direct_beam_file=direct_beam_file
                 )
                 self.processed.add(key)
             time.sleep(60)
@@ -784,8 +713,10 @@ class DirectBeamWidget:
         self.db_n_wavelength_bands_widget = widgets.IntText(value=50, description="λ n_bands:")
         self.compute_button = widgets.Button(description="Compute Direct Beam")
         self.compute_button.on_click(self.compute_direct_beam)
-        self.log_output = widgets.Output()
-        self.plot_output = widgets.Output()
+        self.clear_log_button = widgets.Button(description="Clear Log")
+        self.clear_log_button.on_click(lambda _: print("\n--- Log Cleared ---\n"))
+        self.clear_plots_button = widgets.Button(description="Clear Plots")
+        self.clear_plots_button.on_click(lambda _: plt.close('all'))
         self.main = widgets.VBox([
             self.mask_text,
             self.sample_sans_text,
@@ -801,13 +732,11 @@ class DirectBeamWidget:
                 self.db_n_wavelength_bands_widget
             ]),
             self.compute_button,
-            self.log_output,
-            self.plot_output
+            widgets.HBox([self.clear_log_button, self.clear_plots_button])
         ])
     
     def compute_direct_beam(self, _):
-        self.log_output.clear_output()
-        self.plot_output.clear_output()
+        # No longer clearing widget outputs; we simply print new info.
         mask = self.mask_text.value
         sample_sans = self.sample_sans_text.value
         background_sans = self.background_sans_text.value
@@ -819,16 +748,15 @@ class DirectBeamWidget:
         wl_max = self.db_wavelength_max_widget.value
         n_bins = self.db_n_wavelength_bins_widget.value
         n_bands = self.db_n_wavelength_bands_widget.value
-        with self.log_output:
-            print("Computing direct beam with:")
-            print("  Mask:", mask)
-            print("  Sample SANS:", sample_sans)
-            print("  Background SANS:", background_sans)
-            print("  Sample TRANS:", sample_trans)
-            print("  Background TRANS:", background_trans)
-            print("  Empty Beam:", empty_beam)
-            print("  I(q) Theory:", local_Iq_theory)
-            print("  λ min:", wl_min, "λ max:", wl_max, "n_bins:", n_bins, "n_bands:", n_bands)
+        print("Computing direct beam with:")
+        print("  Mask:", mask)
+        print("  Sample SANS:", sample_sans)
+        print("  Background SANS:", background_sans)
+        print("  Sample TRANS:", sample_trans)
+        print("  Background TRANS:", background_trans)
+        print("  Empty Beam:", empty_beam)
+        print("  I(q) Theory:", local_Iq_theory)
+        print("  λ min:", wl_min, "λ max:", wl_max, "n_bins:", n_bins, "n_bands:", n_bands)
         try:
             results = compute_direct_beam_local(
                 mask,
@@ -843,11 +771,9 @@ class DirectBeamWidget:
                 n_wavelength_bins=n_bins,
                 n_wavelength_bands=n_bands
             )
-            with self.log_output:
-                print("Direct beam computation complete.")
+            print("Direct beam computation complete.")
         except Exception as e:
-            with self.log_output:
-                print("Error computing direct beam:", e)
+            print("Error computing direct beam:", e)
     
     @property
     def widget(self):
@@ -867,5 +793,5 @@ tabs.set_title(1, "Reduction (Manual)")
 tabs.set_title(2, "Reduction (Smart)")
 tabs.set_title(3, "Reduction (Auto)")
 
-# display(tabs)
-# voila /src/ess/loki/tabwidget.ipynb #--theme=dark
+# To display the tabs in a Voila deployment, simply display the tabs widget.
+#display(tabs)
