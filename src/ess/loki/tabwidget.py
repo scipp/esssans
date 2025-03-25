@@ -357,16 +357,16 @@ class SansBatchReductionWidget:
         try:
             direct_beam_file = find_direct_beam(input_dir)
             with self.log_output:
-                print("Using direct-beam file:", direct_beam_file)
+                print("Using direct beam file:", direct_beam_file)
         except Exception as e:
             with self.log_output:
-                print("Direct-beam file not found:", e)
+                print("Direct beam file not found:", e)
             return
         try:
             background_run_file = find_file(input_dir, self.ebeam_sans_widget.value, extension=".nxs")
             empty_beam_file = find_file(input_dir, self.ebeam_trans_widget.value, extension=".nxs")
             with self.log_output:
-                print("Using empty-beam files:")
+                print("Using empty beam files:")
                 print("  Background (Ebeam SANS):", background_run_file)
                 print("  Empty beam (Ebeam TRANS):", empty_beam_file)
         except Exception as e:
@@ -523,10 +523,10 @@ class SemiAutoReductionWidget:
         try:
             direct_beam_file = find_direct_beam(input_dir)
             with self.log_output:
-                print("Using direct-beam file:", direct_beam_file)
+                print("Using direct beam file:", direct_beam_file)
         except Exception as e:
             with self.log_output:
-                print("Direct-beam file not found:", e)
+                print("Direct beam file not found:", e)
             return
         background_run_file = self.empty_beam_sans_text.value
         empty_beam_file = self.empty_beam_trans_text.value
