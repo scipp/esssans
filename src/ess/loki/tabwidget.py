@@ -36,7 +36,7 @@ def find_direct_beam(work_dir): #Find the direct beam automagically
     if files:
         return files[0]
     else:
-        raise FileNotFoundError(f"Could not find direct-beam file matching pattern {pattern}")
+        raise FileNotFoundError(f"Could not find direct beam file matching pattern {pattern}")
 
 def find_mask_file(work_dir): #Find the mask automagically 
     pattern = os.path.join(work_dir, "*mask*.xml")
