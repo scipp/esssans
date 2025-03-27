@@ -32,7 +32,6 @@ docs/generated/
 # Data files
 *.data
 *.dat
-*.csv
 *.xye
 *.h5
 *.hdf5
@@ -45,3 +44,5 @@ docs/generated/
 *.zip
 *.sqw
 *.nxspe
+/src/ess/loki/examplefiles
+/src/ess/loki/batch-gui-legacy
