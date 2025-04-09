@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
+from functools import cache
 
 
 class Registry:
@@ -25,6 +26,7 @@ class Registry:
     def __contains__(self, key):
         return key in self._registry.registry
 
+    @cache  # noqa: B019
     def get_path(self, name: str, unzip: bool = False) -> str:
         """
         Get the path to a file in the registry.
