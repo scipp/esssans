@@ -392,7 +392,7 @@ def _reduce(part: sc.DataArray, /, *, bands: ProcessedWavelengthBands) -> sc.Dat
         Q-dependent data, ready for normalization.
     """
     wav = 'wavelength'
-    if part.bins is not None:
+    if part.bins is not None and wav in part.bins.coords:
         # If in event mode the desired wavelength binning has not been applied, we need
         # it for splitting by bands, or restricting the range in case of a single band.
         part = part.bin(wavelength=sc.sort(bands.flatten(to=wav), wav))
