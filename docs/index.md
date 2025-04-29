@@ -49,9 +49,22 @@
 
 ::::
 
-:::{include} user-guide/installation.md
-:heading-offset: 1
-:::
+## Installation
+
+To install ESSsans and all of its dependencies, use
+
+`````{tab-set}
+````{tab-item} pip
+```sh
+pip install esssans
+```
+````
+````{tab-item} conda
+```sh
+conda install -c conda-forge -c scipp esssans
+```
+````
+`````
 
 ## Get in touch
 
@@ -63,7 +76,10 @@
 hidden:
 ---
 
-user-guide/index
+loki/index
+skadi/index
+isis/index
+common/index
 api-reference/index
 developer/index
 about/index
