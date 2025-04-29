@@ -23,7 +23,7 @@
 
 # {transparent}`ESSsans`
 
-<span style="font-size:1.2em;font-style:italic;color:var(--pst-color-text-muted)">
+<span style="font-size:1.2em;font-style:italic;color:var(--pst-color-text-muted);text-align:center;">
   SANS data reduction for the European Spallation Source
   </br></br>
 </span>
@@ -33,17 +33,27 @@
 ::::{grid} 3
 
 :::{grid-item-card} LoKI
-:link: user-guide/loki/index.md
+:link: loki/index.md
+:img-bottom: ../_static/previews/loki.png
+
+:::
+
+:::{grid-item-card} Skadi
+:link: skadi/index.md
 
 :::
 
 :::{grid-item-card} ISIS instruments
-:link: user-guide/isis/index.md
+:link: isis/index.md
 
 :::
 
+::::
+
+::::{grid} 3
+
 ::::{grid-item-card} Common tools
-:link: user-guide/common/index.md
+:link: common/index.md
 
 :::
 
