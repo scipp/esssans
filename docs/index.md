@@ -34,7 +34,7 @@
 
 :::{grid-item-card} LoKI
 :link: loki/index.md
-:img-bottom: ../_static/previews/loki.png
+:img-bottom: _static/previews/loki.png
 
 :::
 
@@ -45,6 +45,7 @@
 
 :::{grid-item-card} ISIS instruments
 :link: isis/index.md
+:img-bottom: https://www.isis.stfc.ac.uk/Gallery/isis_instruments_map_v3.png
 
 :::
 
