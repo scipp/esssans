@@ -9,7 +9,7 @@ import scipp as sc
 from ess.reduce.nexus.workflow import GenericNeXusWorkflow
 from ess.reduce.parameter import parameter_mappers
 
-from . import common, conversions, i_of_q, masking, normalization
+from . import common, conversions, i_of_q, masking, normalization, qresolution
 from .types import (
     BackgroundRun,
     CorrectForGravity,
@@ -154,6 +154,7 @@ providers = (
     *masking.providers,
     *normalization.providers,
     common.beam_center_to_detector_position_offset,
+    *qresolution.providers,
 )
 """
 List of providers for setting up a Sciline pipeline.

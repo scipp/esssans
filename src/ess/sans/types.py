@@ -16,6 +16,7 @@ from ess.reduce.nexus import types as reduce_t
 from ess.reduce.uncertainty import UncertaintyBroadcastMode as _UncertaintyBroadcastMode
 
 BackgroundRun = reduce_t.BackgroundRun
+CalibratedBeamline = reduce_t.CalibratedBeamline
 CalibratedDetector = reduce_t.CalibratedDetector
 CalibratedMonitor = reduce_t.CalibratedMonitor
 DetectorData = reduce_t.DetectorData
@@ -49,9 +50,9 @@ ScatteringRunType = TypeVar('ScatteringRunType', BackgroundRun, SampleRun)
 UncertaintyBroadcastMode = _UncertaintyBroadcastMode
 
 # 1.3  Numerator and denominator of IofQ
-Numerator = NewType('Numerator', sc.DataArray)
+Numerator = NewType('Numerator', int)
 """Numerator of IofQ"""
-Denominator = NewType('Denominator', sc.DataArray)
+Denominator = NewType('Denominator', int)
 """Denominator of IofQ"""
 IofQPart = TypeVar('IofQPart', Numerator, Denominator)
 """TypeVar used for specifying Numerator or Denominator of IofQ"""
