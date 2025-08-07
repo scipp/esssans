@@ -25,15 +25,16 @@ except ModuleNotFoundError:
     class _MantidFallback:
         # autodoc_pydantic isn't happy with the getattr method, so we define the methods
         # here instead.
-        def Load(self, *args, **kwargs):
+        def _raise_import_error(self):
             raise ImportError(
                 'Mantid is required to use `sans.isis.mantidio` but is not installed'
             ) from None
 
+        def Load(self, *args, **kwargs):
+            self._raise_import_error()
+
         def CopyInstrumentParameters(self, *args, **kwargs):
-            raise ImportError(
-                'Mantid is required to use `sans.isis.mantidio` but is not installed'
-            ) from None
+            self._raise_import_error()
 
     _mantid_api = _MantidFallback()
     _mantid_simpleapi = _MantidFallback
