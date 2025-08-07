@@ -29,6 +29,7 @@ except ModuleNotFoundError:
             raise ImportError(
                 'Mantid is required to use `sans.isis.mantidio` but is not installed'
             ) from None
+
         def CopyInstrumentParameters(self, *args, **kwargs):
             raise ImportError(
                 'Mantid is required to use `sans.isis.mantidio` but is not installed'
