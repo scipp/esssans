@@ -5,7 +5,7 @@ File loading functions for ISIS data using Mantid.
 """
 
 import threading
-from typing import NewType, NoReturn
+from typing import NewType
 
 import sciline
 import scipp as sc
