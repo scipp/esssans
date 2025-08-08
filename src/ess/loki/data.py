@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2023 Scipp contributors (https://github.com/scipp)
+# Copyright (c) 2025 Scipp contributors (https://github.com/scipp)
 from pathlib import Path
 
-from ess.sans.data import Registry
+from ess.reduce.data import Registry
 from ess.sans.types import (
     BackgroundRun,
     DirectBeamFilename,
@@ -152,7 +152,7 @@ def loki_tutorial_mask_filenames() -> list[PixelMaskFilename]:
 
 def loki_tutorial_poly_gauss_I0() -> Path:
     """Analytical model for the I(Q) of the Poly-Gauss sample."""
-    return Path(_registry.get_path('PolyGauss_I0-50_Rg-60.h5'))
+    return _registry.get_path('PolyGauss_I0-50_Rg-60.h5')
 
 
 def loki_tutorial_direct_beam_all_pixels() -> DirectBeamFilename:

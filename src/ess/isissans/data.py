@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright (c) 2024 Scipp contributors (https://github.com/scipp)
-from ess.sans.data import Registry
+# Copyright (c) 2025 Scipp contributors (https://github.com/scipp)
+from ess.reduce.data import Registry
 from ess.sans.types import (
     BackgroundRun,
     DirectBeamFilename,
