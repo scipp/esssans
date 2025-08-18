@@ -42,7 +42,16 @@ from ..sans.types import (
 )
 
 DETECTOR_BANK_SIZES = {
-    'larmor_detector': {'layer': 4, 'tube': 32, 'straw': 7, 'pixel': 512}
+    'larmor_detector': {'layer': 4, 'tube': 32, 'straw': 7, 'pixel': 512},
+    'loki_detector_0': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_1': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_2': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_3': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_4': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_5': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_6': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_7': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
+    'loki_detector_8': {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512},
 }
 
 
@@ -134,3 +143,30 @@ def LokiAtLarmorTutorialWorkflow() -> sciline.Pipeline:
     workflow[Filename[EmptyBeamRun]] = data.loki_tutorial_run_60392()
     workflow[BeamCenter] = sc.vector(value=[-0.02914868, -0.01816138, 0.0], unit='m')
     return workflow
+
+
+@register_workflow
+def LokiWorkflow() -> sciline.Pipeline:
+    """ """
+    workflow = sans.SansWorkflow()
+    for provider in loki_providers:
+        workflow.insert(provider)
+    for key, param in default_parameters().items():
+        workflow[key] = param
+    # workflow.insert(read_xml_detector_masking)
+    workflow.typical_outputs = typical_outputs
+
+    return sans.with_banks(
+        workflow,
+        banks=[
+            'loki_detector_0',
+            'loki_detector_1',
+            'loki_detector_2',
+            'loki_detector_3',
+            'loki_detector_4',
+            'loki_detector_5',
+            'loki_detector_6',
+            'loki_detector_7',
+            'loki_detector_8',
+        ],
+    )
