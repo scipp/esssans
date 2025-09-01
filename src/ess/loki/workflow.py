@@ -41,8 +41,10 @@ from ..sans.types import (
     TransmissionRun,
 )
 
+bank_size = {'layer': 4, 'tube': -1, 'straw': 7, 'pixel': 512}
 DETECTOR_BANK_SIZES = {
-    'larmor_detector': {'layer': 4, 'tube': 32, 'straw': 7, 'pixel': 512}
+    'larmor_detector': bank_size,
+    **{f'loki_detector_{i}': bank_size for i in range(9)},
 }
 
 
@@ -133,4 +135,23 @@ def LokiAtLarmorTutorialWorkflow() -> sciline.Pipeline:
     workflow[Filename[TransmissionRun[BackgroundRun]]] = data.loki_tutorial_run_60392()
     workflow[Filename[EmptyBeamRun]] = data.loki_tutorial_run_60392()
     workflow[BeamCenter] = sc.vector(value=[-0.02914868, -0.01816138, 0.0], unit='m')
+    return workflow
+
+
+@register_workflow
+def LokiWorkflow() -> sciline.Pipeline:
+    """
+    Workflow with default parameters for Loki.
+
+    Returns
+    -------
+    :
+        Loki workflow as a sciline.Pipeline
+    """
+    workflow = sans.SansWorkflow()
+    for provider in loki_providers:
+        workflow.insert(provider)
+    for key, param in default_parameters().items():
+        workflow[key] = param
+    workflow.typical_outputs = typical_outputs
     return workflow
