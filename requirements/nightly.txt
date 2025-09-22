@@ -14,9 +14,9 @@ asttokens==3.0.0
     # via stack-data
 certifi==2025.8.3
     # via requests
-charset-normalizer==3.4.2
+charset-normalizer==3.4.3
     # via requests
-click==8.2.1
+click==8.3.0
     # via dask
 cloudpickle==3.1.1
     # via dask
@@ -28,21 +28,21 @@ cyclebane==24.10.0
     # via sciline
 cycler==0.12.1
     # via matplotlib
-dask==2025.7.0
+dask==2025.9.1
     # via -r nightly.in
 decorator==5.2.1
     # via ipython
-dnspython==2.7.0
+dnspython==2.8.0
     # via email-validator
-email-validator==2.2.0
+email-validator==2.3.0
     # via scippneutron
 essreduce @ git+https://github.com/scipp/essreduce@main
     # via -r nightly.in
-executing==2.2.0
+executing==2.2.1
     # via stack-data
-fonttools==4.59.0
+fonttools==4.60.0
     # via matplotlib
-fsspec==2025.7.0
+fsspec==2025.9.0
     # via dask
 graphviz==0.21
     # via -r nightly.in
@@ -60,7 +60,7 @@ iniconfig==2.1.0
     # via pytest
 ipydatawidgets==4.3.5
     # via pythreejs
-ipython==9.4.0
+ipython==9.5.0
     # via ipywidgets
 ipython-pygments-lexers==1.1.1
     # via ipython
@@ -72,7 +72,7 @@ jedi==0.19.2
     # via ipython
 jupyterlab-widgets==3.0.15
     # via ipywidgets
-kiwisolver==1.4.8
+kiwisolver==1.4.10rc0
     # via matplotlib
 lazy-loader==0.4
     # via
@@ -80,7 +80,7 @@ lazy-loader==0.4
     #   scippneutron
 locket==1.0.0
     # via partd
-matplotlib==3.10.5
+matplotlib==3.10.6
     # via
     #   mpltoolbox
     #   plopp
@@ -90,7 +90,7 @@ mpltoolbox==25.5.0
     # via scippneutron
 networkx==3.5
     # via cyclebane
-numpy==2.3.2
+numpy==2.3.3
     # via
     #   -r nightly.in
     #   contourpy
@@ -109,9 +109,9 @@ packaging==25.0
     #   matplotlib
     #   pooch
     #   pytest
-pandas==2.3.1
+pandas==2.3.2
     # via -r nightly.in
-parso==0.8.4
+parso==0.8.5
     # via jedi
 partd==1.4.2
     # via dask
@@ -119,7 +119,7 @@ pexpect==4.9.0
     # via ipython
 pillow==11.3.0
     # via matplotlib
-platformdirs==4.3.8
+platformdirs==4.4.0
     # via pooch
 plopp @ git+https://github.com/scipp/plopp@main
     # via
@@ -129,7 +129,7 @@ pluggy==1.6.0
     # via pytest
 pooch==1.8.2
     # via -r nightly.in
-prompt-toolkit==3.0.51
+prompt-toolkit==3.0.52
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
@@ -144,9 +144,9 @@ pygments==2.19.2
     #   ipython
     #   ipython-pygments-lexers
     #   pytest
-pyparsing==3.2.3
+pyparsing==3.2.5
     # via matplotlib
-pytest==8.4.1
+pytest==8.4.2
     # via -r nightly.in
 python-dateutil==2.9.0.post0
     # via
@@ -159,7 +159,7 @@ pytz==2025.2
     # via pandas
 pyyaml==6.0.2
     # via dask
-requests==2.32.4
+requests==2.32.5
     # via pooch
 sciline @ git+https://github.com/scipp/sciline@main
     # via
@@ -180,7 +180,7 @@ scippnexus @ git+https://github.com/scipp/scippnexus@main
     #   -r nightly.in
     #   essreduce
     #   scippneutron
-scipy==1.16.1
+scipy==1.16.2
     # via
     #   -r nightly.in
     #   scippneutron
@@ -202,7 +202,7 @@ traitlets==5.14.3
     #   traittypes
 traittypes==0.2.1
     # via ipydatawidgets
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   ipython
     #   pydantic
