@@ -56,8 +56,8 @@
    :recursive:
 
    data
-   general
-   io
+   live
+   workflow
 ```
 
 ```{eval-rst}
@@ -78,7 +78,6 @@
    :template: module-template.rst
    :recursive:
 
-   components
    data
    general
    io
