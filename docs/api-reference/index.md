@@ -65,7 +65,7 @@
    :toctree: ../generated/functions
    :recursive:
 
-   ess.loki.LokiAtLarmorWorkflow
+   LokiAtLarmorWorkflow
 ```
 
 ## ISIS sans
