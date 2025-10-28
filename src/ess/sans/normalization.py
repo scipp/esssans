@@ -10,7 +10,7 @@ from ess.reduce.uncertainty import UncertaintyBroadcastMode, broadcast_uncertain
 from .types import (
     CleanDirectBeam,
     CorrectedMonitor,
-    CleanWavelength,
+    CorrectedDetector,
     Denominator,
     DetectorMasks,
     DetectorPixelShape,
@@ -207,7 +207,7 @@ def norm_detector_term(
     solid_angle: MaskedSolidAngle[ScatteringRunType],
     direct_beam: CleanDirectBeam,
     uncertainties: UncertaintyBroadcastMode,
-) -> CleanWavelength[ScatteringRunType, Denominator]:
+) -> CorrectedDetector[ScatteringRunType, Denominator]:
     """
     Compute the detector-dependent contribution to the denominator term of I(Q).
 
@@ -248,7 +248,7 @@ def norm_detector_term(
     )
     # Convert wavelength coordinate to midpoints for future histogramming
     out.coords['wavelength'] = sc.midpoints(out.coords['wavelength'])
-    return CleanWavelength[ScatteringRunType, Denominator](out)
+    return CorrectedDetector[ScatteringRunType, Denominator](out)
 
 
 def process_wavelength_bands(
