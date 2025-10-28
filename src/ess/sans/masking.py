@@ -8,19 +8,19 @@ import numpy as np
 import scipp as sc
 
 from .types import (
-    CalibratedDetector,
     DetectorIDs,
     DetectorMasks,
+    EmptyDetector,
     MaskedData,
     MaskedDetectorIDs,
     PixelMaskFilename,
     SampleRun,
     ScatteringRunType,
-    TofData,
+    TofDetector,
 )
 
 
-def get_detector_ids_from_detector(data: CalibratedDetector[SampleRun]) -> DetectorIDs:
+def get_detector_ids_from_detector(data: EmptyDetector[SampleRun]) -> DetectorIDs:
     """Extract detector IDs from a detector."""
     return DetectorIDs(
         data.coords[
@@ -52,7 +52,7 @@ def to_detector_mask(
 
 
 def apply_pixel_masks(
-    data: TofData[ScatteringRunType],
+    data: TofDetector[ScatteringRunType],
     masks: DetectorMasks,
 ) -> MaskedData[ScatteringRunType]:
     """Apply pixel-specific masks to raw data.

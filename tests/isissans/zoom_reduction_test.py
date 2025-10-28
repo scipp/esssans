@@ -12,8 +12,8 @@ from ess.sans.types import (
     DetectorPositionOffset,
     Filename,
     Incident,
-    IofQ,
-    IofQxy,
+    IntensityQ,
+    IntensityQxy,
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
     QBins,
@@ -72,19 +72,19 @@ def test_can_create_pipeline(pipeline):
     pipeline = sans.with_pixel_mask_filenames(
         pipeline, isis.data.zoom_tutorial_mask_filenames()
     )
-    pipeline.get(IofQ[SampleRun])
+    pipeline.get(IntensityQ[SampleRun])
 
 
-def test_pipeline_can_compute_IofQ(pipeline):
+def test_pipeline_can_compute_IntensityQ(pipeline):
     pipeline[BeamCenter] = sc.vector([0, 0, 0], unit='m')
     pipeline = sans.with_pixel_mask_filenames(
         pipeline, isis.data.zoom_tutorial_mask_filenames()
     )
-    result = pipeline.compute(IofQ[SampleRun])
+    result = pipeline.compute(IntensityQ[SampleRun])
     assert result.dims == ('Q',)
 
 
-def test_pipeline_can_compute_IofQxQy(pipeline):
+def test_pipeline_can_compute_IntensityQxQy(pipeline):
     pipeline[BeamCenter] = sc.vector([0, 0, 0], unit='m')
     pipeline = sans.with_pixel_mask_filenames(
         pipeline, isis.data.zoom_tutorial_mask_filenames()
@@ -96,5 +96,5 @@ def test_pipeline_can_compute_IofQxQy(pipeline):
         dim='Qy', start=-0.8, stop=0.8, num=101, unit='1/angstrom'
     )
 
-    result = pipeline.compute(IofQxy[SampleRun])
+    result = pipeline.compute(IntensityQxy[SampleRun])
     assert result.dims == ('Qy', 'Qx')

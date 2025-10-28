@@ -9,15 +9,15 @@ import scippnexus as snx
 from scippnexus.application_definitions import nxcansas
 
 from ess.sans.io import save_background_subtracted_iofq
-from ess.sans.types import BackgroundSubtractedIofQ, Measurement, OutFilename
+from ess.sans.types import BackgroundSubtractedIntensityQ, Measurement, OutFilename
 
 
 @pytest.mark.parametrize('use_edges', [True, False])
 def test_save_background_subtracted_iofq(use_edges, tmp_path):
-    def background_subtracted_iofq() -> BackgroundSubtractedIofQ:
+    def background_subtracted_iofq() -> BackgroundSubtractedIntensityQ:
         i = sc.arange('Q', 0.0, 400.0)
         i.variances = i.values / 10
-        return BackgroundSubtractedIofQ(
+        return BackgroundSubtractedIntensityQ(
             sc.DataArray(
                 i,
                 coords={

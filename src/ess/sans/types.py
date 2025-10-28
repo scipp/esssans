@@ -16,14 +16,14 @@ from ess.reduce.nexus import types as reduce_t
 from ess.reduce.uncertainty import UncertaintyBroadcastMode as _UncertaintyBroadcastMode
 
 BackgroundRun = reduce_t.BackgroundRun
-CalibratedDetector = reduce_t.CalibratedDetector
-CalibratedMonitor = reduce_t.CalibratedMonitor
-DetectorData = reduce_t.DetectorData
+EmptyDetector = reduce_t.EmptyDetector
+EmptyMonitor = reduce_t.EmptyMonitor
+RawDetector = reduce_t.RawDetector
 DetectorPositionOffset = reduce_t.DetectorPositionOffset
 EmptyBeamRun = reduce_t.EmptyBeamRun
 Filename = reduce_t.Filename
 Incident = reduce_t.IncidentMonitor
-MonitorData = reduce_t.MonitorData
+RawMonitor = reduce_t.RawMonitor
 MonitorPositionOffset = reduce_t.MonitorPositionOffset
 NeXusMonitorName = reduce_t.NeXusName
 NeXusComponent = reduce_t.NeXusComponent
@@ -48,13 +48,13 @@ ScatteringRunType = TypeVar('ScatteringRunType', BackgroundRun, SampleRun)
 
 UncertaintyBroadcastMode = _UncertaintyBroadcastMode
 
-# 1.3  Numerator and denominator of IofQ
+# 1.3  Numerator and denominator of IntensityQ
 Numerator = NewType('Numerator', sc.DataArray)
-"""Numerator of IofQ"""
+"""Numerator of IntensityQ"""
 Denominator = NewType('Denominator', sc.DataArray)
-"""Denominator of IofQ"""
-IofQPart = TypeVar('IofQPart', Numerator, Denominator)
-"""TypeVar used for specifying Numerator or Denominator of IofQ"""
+"""Denominator of IntensityQ"""
+IntensityQPart = TypeVar('IntensityQPart', Numerator, Denominator)
+"""TypeVar used for specifying Numerator or Denominator of IntensityQ"""
 
 # 1.4  Entry paths in NeXus files
 PixelShapePath = NewType('PixelShapePath', str)
@@ -100,13 +100,13 @@ must be two wavelength values defining the start and end wavelength of the band.
 
 
 QBins = NewType('QBins', sc.Variable)
-"""Q binning used when computing IofQ"""
+"""Q binning used when computing IntensityQ"""
 
 QxBins = NewType('QxBins', sc.Variable)
-"""Qx binning used when computing IofQxy"""
+"""Qx binning used when computing IntensityQxy"""
 
 QyBins = NewType('QyBins', sc.Variable)
-"""Qy binning used when computing IofQxy"""
+"""Qy binning used when computing IntensityQxy"""
 
 NonBackgroundWavelengthRange = NewType(
     'NonBackgroundWavelengthRange', sc.Variable | None
@@ -175,7 +175,7 @@ class MaskedSolidAngle(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataAr
     """Same as :py:class:`SolidAngle`, but with pixel masks applied"""
 
 
-class TofData(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
+class TofDetector(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
     """Data with a time-of-flight coordinate"""
 
 
@@ -191,14 +191,14 @@ class MaskedData(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
 
 
 class MonitorTerm(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
-    """Monitor-dependent factor of the Normalization term (numerator) for IofQ."""
+    """Monitor-dependent factor of the Normalization term (numerator) for IntensityQ."""
 
 
-class CleanWavelength(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+class CorrectedDetector(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """
-    Prerequisite for IofQ numerator or denominator.
+    Prerequisite for IntensityQ numerator or denominator.
 
     This can either be the sample or background counts, converted to wavelength,
     or the respective normalization terms computed from the respective solid angle,
@@ -207,60 +207,56 @@ class CleanWavelength(
 
 
 class WavelengthScaledQ(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQ`"""
+    """Result of applying wavelength scaling/masking to :py:class:`CorrectedQ`"""
 
 
 class WavelengthScaledQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQxy`"""
+    """Result of applying wavelength scaling/masking to :py:class:`CorrectedQxy`"""
 
 
-class CleanQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanWavelengthMasked` to Q"""
-
-
-class CleanQxy(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanWavelengthMasked` to Qx and Qy"""
-
-
-class CleanSummedQ(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+class CorrectedQ(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
+    """Result of computing Q coordinate and histogramming/binning into Q bins"""
 
 
-class CleanSummedQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+class CorrectedQxy(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQxy` over all pixels into Qx and
-    Qy bins"""
+    """Result of computing Qx and Qy coordinates and histogramming/binning into
+    Qx and Qy bins"""
 
 
-class ReducedQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of reducing :py:class:`CleanSummedQ` over the wavelength dimensions"""
+class ReducedQ(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
+):
+    """Result of reducing :py:class:`CorrectedQ` over the wavelength dimensions"""
 
 
 class ReducedQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of reducing :py:class:`CleanSummedQxy` over the wavelength dimensions"""
+    """Result of reducing :py:class:`CorrectedQxy` over the wavelength dimensions"""
 
 
-class IofQ(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
+class IntensityQ(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
     """I(Q)"""
 
 
-class IofQxy(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
+class IntensityQxy(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
     """I(Qx, Qy)"""
 
 
-BackgroundSubtractedIofQ = NewType('BackgroundSubtractedIofQ', sc.DataArray)
+BackgroundSubtractedIntensityQ = NewType('BackgroundSubtractedIntensityQ', sc.DataArray)
 """I(Q) with background (given by I(Q) of the background run) subtracted"""
 
-BackgroundSubtractedIofQxy = NewType('BackgroundSubtractedIofQxy', sc.DataArray)
+BackgroundSubtractedIntensityQxy = NewType(
+    'BackgroundSubtractedIntensityQxy', sc.DataArray
+)
 """I(Qx, Qy) with background (given by I(Qx, Qy) of the background run) subtracted"""
 
 
@@ -270,7 +266,7 @@ class WavelengthMonitor(
     """Monitor data converted to wavelength"""
 
 
-class CleanMonitor(sciline.Scope[RunType, MonitorType, sc.DataArray], sc.DataArray):
+class CorrectedMonitor(sciline.Scope[RunType, MonitorType, sc.DataArray], sc.DataArray):
     """Monitor data cleaned of background counts"""
 
 

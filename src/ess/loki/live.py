@@ -17,22 +17,22 @@ from ess.reduce.live import LiveWorkflow
 from ess.sans import with_pixel_mask_filenames
 from ess.sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
     BeamCenter,
     CorrectForGravity,
     Denominator,
-    DetectorData,
     DirectBeamFilename,
     EmptyBeamRun,
     Filename,
     Incident,
-    IofQ,
-    IofQxy,
+    IntensityQ,
+    IntensityQxy,
     Numerator,
     QBins,
     QxBins,
     QyBins,
+    RawDetector,
     ReducedQ,
     ReducedQxy,
     ReturnEvents,
@@ -49,7 +49,7 @@ from ess.sans.types import (
 RawDetectorView = NewType('RawDetectorView', sc.DataArray)
 
 
-def _raw_detector_view(data: DetectorData[SampleRun]) -> RawDetectorView:
+def _raw_detector_view(data: RawDetector[SampleRun]) -> RawDetectorView:
     """Very simple raw detector view for initial testing."""
     # Instead of histogramming concrete x and y (which leads to artifacts), another
     # quick option is to slice/sum some dimensions. But it will not give true positions:
@@ -181,9 +181,9 @@ def make_sample_run_workflow(
     try:
         workflow.compute(Filename[BackgroundRun])
     except sciline.UnsatisfiedRequirement:
-        iofq_keys = (IofQ[SampleRun], IofQxy[SampleRun])
+        iofq_keys = (IntensityQ[SampleRun], IntensityQxy[SampleRun])
     else:
-        iofq_keys = (BackgroundSubtractedIofQ, BackgroundSubtractedIofQxy)
+        iofq_keys = (BackgroundSubtractedIntensityQ, BackgroundSubtractedIntensityQxy)
     outputs.update(dict(zip(('I(Q)', '$I(Q_x, Q_y)$'), iofq_keys, strict=True)))
     factories = AccumulatorFactories(accum=streaming.RollingAccumulator, window=20)
 

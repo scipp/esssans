@@ -21,8 +21,8 @@ from ess.reduce.parameter import (
 
 from ..sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
     BeamCenter,
     CorrectForGravity,
     DirectBeam,
@@ -30,8 +30,8 @@ from ..sans.types import (
     EmptyBeamRun,
     Filename,
     Incident,
-    IofQ,
-    IofQxy,
+    IntensityQ,
+    IntensityQxy,
     MaskedData,
     NeXusDetectorName,
     NeXusMonitorName,
@@ -116,12 +116,12 @@ parameter_registry[BeamCenter] = Vector2dParameter.from_type(
 )
 
 typical_outputs = (
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
-    IofQ[SampleRun],
-    IofQxy[SampleRun],
-    IofQ[BackgroundRun],
-    IofQxy[BackgroundRun],
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
+    IntensityQ[SampleRun],
+    IntensityQxy[SampleRun],
+    IntensityQ[BackgroundRun],
+    IntensityQxy[BackgroundRun],
     MaskedData[BackgroundRun],
     MaskedData[SampleRun],
     WavelengthMonitor[SampleRun, Incident],

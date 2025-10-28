@@ -7,7 +7,7 @@ from sciline import Pipeline
 from .i_of_q import resample_direct_beam
 from .types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIntensityQ,
     Denominator,
     DirectBeam,
     Numerator,
@@ -130,9 +130,9 @@ def direct_beam(*, workflow: Pipeline, I0: sc.Variable, niter: int = 5) -> list[
         # The first time we compute I(Q), the direct beam function is not in the
         # parameters, nor given by any providers, so it will be considered flat.
         workflow[WavelengthBands] = full_wavelength_range
-        iofq_full = workflow.compute(BackgroundSubtractedIofQ)
+        iofq_full = workflow.compute(BackgroundSubtractedIntensityQ)
         workflow[WavelengthBands] = bands
-        iofq_bands = workflow.compute(BackgroundSubtractedIofQ)
+        iofq_bands = workflow.compute(BackgroundSubtractedIntensityQ)
 
         if direct_beam_function is None:
             # Make a flat direct beam

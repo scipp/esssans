@@ -6,7 +6,7 @@ import scippnexus as snx
 from scippnexus.application_definitions import nxcansas
 
 from .types import (
-    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIntensityQ,
     MaskedDetectorIDs,
     Measurement,
     OutFilename,
@@ -16,7 +16,7 @@ from .types import (
 
 def save_background_subtracted_iofq(
     *,
-    iofq: BackgroundSubtractedIofQ,
+    iofq: BackgroundSubtractedIntensityQ,
     out_filename: OutFilename,
     measurement: Measurement,
 ) -> None:

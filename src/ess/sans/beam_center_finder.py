@@ -18,7 +18,7 @@ from .types import (
     CleanDirectBeam,
     DetectorBankSizes,
     DimsToKeep,
-    IofQ,
+    IntensityQ,
     MaskedData,
     NeXusComponent,
     QBins,
@@ -171,7 +171,7 @@ def _iofq_in_quadrants(
     for i, quad in enumerate(quadrants):
         # Select pixels based on phi
         sel = (phi >= phi_bins[i]) & (phi < phi_bins[i + 1])
-        # The beam center is applied when computing CalibratedDetector, set quadrant
+        # The beam center is applied when computing EmptyDetector, set quadrant
         # *before* that step.
         workflow[NeXusComponent[snx.NXdetector, SampleRun]] = sc.DataGroup(
             data=detector[sel]
@@ -179,7 +179,7 @@ def _iofq_in_quadrants(
         # MaskedData would be computed automatically, but we did it above already
         workflow[MaskedData[SampleRun]] = calibrated[sel]
         workflow[CleanDirectBeam] = norm if norm.dims == ('wavelength',) else norm[sel]
-        out[quad] = workflow.compute(IofQ[SampleRun])
+        out[quad] = workflow.compute(IntensityQ[SampleRun])
     return out
 
 
