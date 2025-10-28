@@ -15,8 +15,8 @@ from .common import mask_range
 from .types import (
     CorrectedQ,
     CorrectedQxy,
-    CleanSummedQ,
-    CleanSummedQxy,
+    CorrectedQ,
+    CorrectedQxy,
     CorrectedDetector,
     CorrectForGravity,
     Denominator,
@@ -176,7 +176,7 @@ def detector_to_wavelength(
 
 
 def mask_wavelength_q(
-    da: CleanSummedQ[ScatteringRunType, Numerator], mask: WavelengthMask
+    da: CorrectedQ[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQ[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -184,7 +184,7 @@ def mask_wavelength_q(
 
 
 def mask_wavelength_qxy(
-    da: CleanSummedQxy[ScatteringRunType, Numerator], mask: WavelengthMask
+    da: CorrectedQxy[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQxy[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -192,7 +192,7 @@ def mask_wavelength_qxy(
 
 
 def mask_and_scale_wavelength_q(
-    da: CleanSummedQ[ScatteringRunType, Denominator],
+    da: CorrectedQ[ScatteringRunType, Denominator],
     mask: WavelengthMask,
     wavelength_term: MonitorTerm[ScatteringRunType],
     uncertainties: UncertaintyBroadcastMode,
@@ -204,7 +204,7 @@ def mask_and_scale_wavelength_q(
 
 
 def mask_and_scale_wavelength_qxy(
-    da: CleanSummedQxy[ScatteringRunType, Denominator],
+    da: CorrectedQxy[ScatteringRunType, Denominator],
     mask: WavelengthMask,
     wavelength_term: MonitorTerm[ScatteringRunType],
     uncertainties: UncertaintyBroadcastMode,

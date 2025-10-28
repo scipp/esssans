@@ -12,11 +12,9 @@ from .types import (
     BackgroundSubtractedIofQ,
     BackgroundSubtractedIofQxy,
     CleanDirectBeam,
+    CorrectedMonitor,
     CorrectedQ,
     CorrectedQxy,
-    CleanSummedQ,
-    CleanSummedQxy,
-    CorrectedMonitor,
     DimsToKeep,
     DirectBeam,
     IofQ,
@@ -135,81 +133,6 @@ def resample_direct_beam(
     return CleanDirectBeam(func(wavelength_bins, midpoints=True))
 
 
-# def bin_in_q(
-#     data: CorrectedQ[ScatteringRunType, IofQPart],
-#     q_bins: QBins,
-#     dims_to_keep: DimsToKeep,
-# ) -> CleanSummedQ[ScatteringRunType, IofQPart]:
-#     """
-#     Merges data from all pixels into a single I(Q) spectrum:
-
-#     * In the case of event data, events in all bins are concatenated
-#     * In the case of dense data, counts in all spectra are summed
-
-#     Parameters
-#     ----------
-#     data:
-#         A DataArray containing the data that is to be converted to Q.
-#     q_bins:
-#         The binning in Q to be used.
-#     dims_to_keep:
-#         Dimensions that should not be reduced and thus still be present in the final
-#         I(Q) result (this is typically the layer dimension).
-
-#     Returns
-#     -------
-#     :
-#         The input data converted to Q and then summed over all detector pixels.
-#     """
-#     out = _bin_in_q(data=data, edges={'Q': q_bins}, dims_to_keep=dims_to_keep)
-#     return CleanSummedQ[ScatteringRunType, IofQPart](out)
-
-
-# def bin_in_qxy(
-#     data: CorrectedQxy[ScatteringRunType, IofQPart],
-#     qx_bins: QxBins,
-#     qy_bins: QyBins,
-#     dims_to_keep: DimsToKeep,
-# ) -> CleanSummedQxy[ScatteringRunType, IofQPart]:
-#     """
-#     Merges data from all pixels into a single I(Q) spectrum:
-
-#     * In the case of event data, events in all bins are concatenated
-#     * In the case of dense data, counts in all spectra are summed
-
-#     Parameters
-#     ----------
-#     data:
-#         A DataArray containing the data that is to be converted to Q.
-#     qx_bins:
-#         The binning in Qx to be used.
-#     qy_bins:
-#         The binning in Qy to be used.
-#     dims_to_keep:
-#         Dimensions that should not be reduced and thus still be present in the final
-#         I(Q) result (this is typically the layer dimension).
-
-#     Returns
-#     -------
-#     :
-#         The input data converted to Qx and Qy and then summed over all detector pixels.
-#     """
-#     # We make Qx the inner dim, such that plots naturally show Qx on the x-axis.
-#     out = _bin_in_q(
-#         data=data,
-#         edges={'Qy': qy_bins, 'Qx': qx_bins},
-#         dims_to_keep=dims_to_keep,
-#     )
-#     return CleanSummedQxy[ScatteringRunType, IofQPart](out)
-
-
-# def _bin_in_q(
-#     data: sc.DataArray, edges: dict[str, sc.Variable], dims_to_keep: tuple[str, ...]
-# ) -> sc.DataArray:
-#     dims_to_reduce = set(data.dims) - {'wavelength'} - set(dims_to_keep or ())
-#     return (data.hist if data.bins is None else data.bin)(**edges, dim=dims_to_reduce)
-
-
 def _subtract_background(
     sample: sc.DataArray,
     background: sc.DataArray,
@@ -251,8 +174,6 @@ def subtract_background_xy(
 providers = (
     preprocess_monitor_data,
     resample_direct_beam,
-    # bin_in_q,
-    # bin_in_qxy,
     subtract_background,
     subtract_background_xy,
 )

@@ -209,13 +209,13 @@ class CorrectedDetector(
 class WavelengthScaledQ(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQ`"""
+    """Result of applying wavelength scaling/masking to :py:class:`CorrectedQ`"""
 
 
 class WavelengthScaledQxy(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQxy`"""
+    """Result of applying wavelength scaling/masking to :py:class:`CorrectedQxy`"""
 
 
 class CorrectedQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
@@ -226,13 +226,13 @@ class CorrectedQxy(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.
     """Result of converting :py:class:`CorrectedDetectorMasked` to Qx and Qy"""
 
 
-class CleanSummedQ(
+class CorrectedQ(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
     """Result of histogramming/binning :py:class:`CorrectedQ` over all pixels into Q bins"""
 
 
-class CleanSummedQxy(
+class CorrectedQxy(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
     """Result of histogramming/binning :py:class:`CorrectedQxy` over all pixels into Qx and
@@ -240,13 +240,13 @@ class CleanSummedQxy(
 
 
 class ReducedQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
-    """Result of reducing :py:class:`CleanSummedQ` over the wavelength dimensions"""
+    """Result of reducing :py:class:`CorrectedQ` over the wavelength dimensions"""
 
 
 class ReducedQxy(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of reducing :py:class:`CleanSummedQxy` over the wavelength dimensions"""
+    """Result of reducing :py:class:`CorrectedQxy` over the wavelength dimensions"""
 
 
 class IofQ(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
