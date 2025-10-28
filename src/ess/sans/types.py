@@ -218,28 +218,22 @@ class WavelengthScaledQxy(
     """Result of applying wavelength scaling/masking to :py:class:`CorrectedQxy`"""
 
 
-class CorrectedQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CorrectedDetectorMasked` to Q"""
-
-
-class CorrectedQxy(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CorrectedDetectorMasked` to Qx and Qy"""
-
-
 class CorrectedQ(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CorrectedQ` over all pixels into Q bins"""
+    """Result of computing Q coordinate and histogramming/binning into Q bins"""
 
 
 class CorrectedQxy(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CorrectedQxy` over all pixels into Qx and
-    Qy bins"""
+    """Result of computing Qx and Qy coordinates and histogramming/binning into
+    Qx and Qy bins"""
 
 
-class ReducedQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
+class ReducedQ(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
+):
     """Result of reducing :py:class:`CorrectedQ` over the wavelength dimensions"""
 
 
@@ -260,7 +254,9 @@ class IntensityQxy(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray)
 BackgroundSubtractedIntensityQ = NewType('BackgroundSubtractedIntensityQ', sc.DataArray)
 """I(Q) with background (given by I(Q) of the background run) subtracted"""
 
-BackgroundSubtractedIntensityQxy = NewType('BackgroundSubtractedIntensityQxy', sc.DataArray)
+BackgroundSubtractedIntensityQxy = NewType(
+    'BackgroundSubtractedIntensityQxy', sc.DataArray
+)
 """I(Qx, Qy) with background (given by I(Qx, Qy) of the background run) subtracted"""
 
 

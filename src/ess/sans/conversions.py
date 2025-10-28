@@ -13,11 +13,9 @@ from ess.reduce.uncertainty import broadcast_uncertainties
 
 from .common import mask_range
 from .types import (
-    CorrectedQ,
-    CorrectedQxy,
-    CorrectedQ,
-    CorrectedQxy,
     CorrectedDetector,
+    CorrectedQ,
+    CorrectedQxy,
     CorrectForGravity,
     Denominator,
     DimsToKeep,

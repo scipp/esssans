@@ -9,8 +9,8 @@ from ess.reduce.uncertainty import UncertaintyBroadcastMode, broadcast_uncertain
 
 from .types import (
     CleanDirectBeam,
-    CorrectedMonitor,
     CorrectedDetector,
+    CorrectedMonitor,
     Denominator,
     DetectorMasks,
     DetectorPixelShape,
@@ -134,7 +134,9 @@ def _approximate_solid_angle_for_cylinder_shaped_pixel_of_detector(
 
 
 def transmission_fraction(
-    sample_incident_monitor: CorrectedMonitor[TransmissionRun[ScatteringRunType], Incident],
+    sample_incident_monitor: CorrectedMonitor[
+        TransmissionRun[ScatteringRunType], Incident
+    ],
     sample_transmission_monitor: CorrectedMonitor[
         TransmissionRun[ScatteringRunType], Transmission
     ],
