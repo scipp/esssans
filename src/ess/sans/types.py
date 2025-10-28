@@ -218,24 +218,24 @@ class WavelengthScaledQxy(
     """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQxy`"""
 
 
-class CleanQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
+class CorrectedQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
     """Result of converting :py:class:`CorrectedDetectorMasked` to Q"""
 
 
-class CleanQxy(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
+class CorrectedQxy(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
     """Result of converting :py:class:`CorrectedDetectorMasked` to Qx and Qy"""
 
 
 class CleanSummedQ(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
+    """Result of histogramming/binning :py:class:`CorrectedQ` over all pixels into Q bins"""
 
 
 class CleanSummedQxy(
     sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQxy` over all pixels into Qx and
+    """Result of histogramming/binning :py:class:`CorrectedQxy` over all pixels into Qx and
     Qy bins"""
 
 

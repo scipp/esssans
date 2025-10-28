@@ -12,8 +12,8 @@ from .types import (
     BackgroundSubtractedIofQ,
     BackgroundSubtractedIofQxy,
     CleanDirectBeam,
-    CleanQ,
-    CleanQxy,
+    CorrectedQ,
+    CorrectedQxy,
     CleanSummedQ,
     CleanSummedQxy,
     CorrectedMonitor,
@@ -136,7 +136,7 @@ def resample_direct_beam(
 
 
 # def bin_in_q(
-#     data: CleanQ[ScatteringRunType, IofQPart],
+#     data: CorrectedQ[ScatteringRunType, IofQPart],
 #     q_bins: QBins,
 #     dims_to_keep: DimsToKeep,
 # ) -> CleanSummedQ[ScatteringRunType, IofQPart]:
@@ -166,7 +166,7 @@ def resample_direct_beam(
 
 
 # def bin_in_qxy(
-#     data: CleanQxy[ScatteringRunType, IofQPart],
+#     data: CorrectedQxy[ScatteringRunType, IofQPart],
 #     qx_bins: QxBins,
 #     qy_bins: QyBins,
 #     dims_to_keep: DimsToKeep,

@@ -13,8 +13,8 @@ from ess.reduce.uncertainty import broadcast_uncertainties
 
 from .common import mask_range
 from .types import (
-    CleanQ,
-    CleanQxy,
+    CorrectedQ,
+    CorrectedQxy,
     CleanSummedQ,
     CleanSummedQxy,
     CorrectedDetector,
@@ -240,7 +240,7 @@ def compute_Q(
     q_bins: QBins,
     dims_to_keep: DimsToKeep,
     graph: ElasticCoordTransformGraph,
-) -> CleanQ[ScatteringRunType, IofQPart]:
+) -> CorrectedQ[ScatteringRunType, IofQPart]:
     """
     Convert a data array from wavelength to Q.
     We then combine data from all pixels into a single I(Q) spectrum:
@@ -265,7 +265,7 @@ def compute_Q(
     :
         The input data converted to Q and then summed over all detector pixels.
     """
-    return CleanQ[ScatteringRunType, IofQPart](
+    return CorrectedQ[ScatteringRunType, IofQPart](
         _compute_Q(
             data=data,
             graph=graph,
@@ -282,7 +282,7 @@ def compute_Qxy(
     qy_bins: QyBins,
     dims_to_keep: DimsToKeep,
     graph: ElasticCoordTransformGraph,
-) -> CleanQxy[ScatteringRunType, IofQPart]:
+) -> CorrectedQxy[ScatteringRunType, IofQPart]:
     """
     Convert a data array from wavelength to Qx and Qy.
     We then combine data from all pixels into a single I(Qx, Qy) spectrum:
@@ -309,7 +309,7 @@ def compute_Qxy(
     :
         The input data converted to Qx and Qy and then summed over all detector pixels.
     """
-    return CleanQxy[ScatteringRunType, IofQPart](
+    return CorrectedQxy[ScatteringRunType, IofQPart](
         _compute_Q(
             data=data,
             graph=graph,
