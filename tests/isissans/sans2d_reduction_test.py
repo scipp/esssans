@@ -14,13 +14,12 @@ from ess.sans.types import (
     BackgroundRun,
     BackgroundSubtractedIntensityQ,
     BeamCenter,
-    EmptyDetector,
     CorrectForGravity,
-    RawDetector,
     DimsToKeep,
     DirectBeam,
     DirectBeamFilename,
     EmptyBeamRun,
+    EmptyDetector,
     Filename,
     Incident,
     IntensityQ,
@@ -28,6 +27,7 @@ from ess.sans.types import (
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
     QBins,
+    RawDetector,
     ReturnEvents,
     SampleRun,
     SolidAngle,
@@ -116,7 +116,9 @@ def test_pipeline_can_compute_background_subtracted_IntensityQ(pipeline, uncerta
     assert result.dims == ('Q',)
 
 
-def test_pipeline_can_compute_background_subtracted_IntensityQ_in_wavelength_bands(pipeline):
+def test_pipeline_can_compute_background_subtracted_IntensityQ_in_wavelength_bands(
+    pipeline,
+):
     pipeline[WavelengthBands] = sc.linspace(
         'wavelength', start=2.0, stop=16.0, num=11, unit='angstrom'
     )
