@@ -14,7 +14,7 @@ from ess.sans.types import (
     BackgroundRun,
     BackgroundSubtractedIofQ,
     BeamCenter,
-    CalibratedDetector,
+    EmptyDetector,
     CorrectForGravity,
     DetectorData,
     DimsToKeep,
@@ -178,7 +178,7 @@ def test_pipeline_can_compute_intermediate_results(pipeline):
 
 
 def pixel_dependent_direct_beam(
-    filename: DirectBeamFilename, shape: CalibratedDetector[SampleRun]
+    filename: DirectBeamFilename, shape: EmptyDetector[SampleRun]
 ) -> DirectBeam:
     direct_beam = isis.io.load_tutorial_direct_beam(filename)
     sizes = {'spectrum': shape.sizes['spectrum'], **direct_beam.sizes}
