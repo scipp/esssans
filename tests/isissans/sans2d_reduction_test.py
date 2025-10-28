@@ -16,7 +16,7 @@ from ess.sans.types import (
     BeamCenter,
     EmptyDetector,
     CorrectForGravity,
-    DetectorData,
+    RawDetector,
     DimsToKeep,
     DirectBeam,
     DirectBeamFilename,
@@ -224,7 +224,7 @@ def test_beam_center_finder_without_direct_beam_reproduces_verified_result(pipel
 
 def test_beam_center_can_get_closer_to_verified_result_with_low_counts_mask(pipeline):
     def low_counts_mask(
-        sample: DetectorData[SampleRun],
+        sample: RawDetector[SampleRun],
         low_counts_threshold: sans2d.LowCountThreshold,
     ) -> sans2d.SampleHolderMask:
         return sans2d.SampleHolderMask(sample.hist().data < low_counts_threshold)
@@ -284,9 +284,9 @@ def test_beam_center_finder_works_with_pixel_dependent_direct_beam(pipeline):
 
 def test_workflow_runs_without_gravity_if_beam_center_is_provided(pipeline):
     pipeline[CorrectForGravity] = False
-    da = pipeline.compute(DetectorData[SampleRun])
+    da = pipeline.compute(RawDetector[SampleRun])
     del da.coords['gravity']
-    pipeline[DetectorData[SampleRun]] = da
+    pipeline[RawDetector[SampleRun]] = da
     pipeline[BeamCenter] = MANTID_BEAM_CENTER
     result = pipeline.compute(BackgroundSubtractedIofQ)
     assert result.dims == ('Q',)
