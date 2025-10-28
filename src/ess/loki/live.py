@@ -17,8 +17,8 @@ from ess.reduce.live import LiveWorkflow
 from ess.sans import with_pixel_mask_filenames
 from ess.sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
     BeamCenter,
     CorrectForGravity,
     Denominator,
@@ -27,8 +27,8 @@ from ess.sans.types import (
     EmptyBeamRun,
     Filename,
     Incident,
-    IofQ,
-    IofQxy,
+    IntensityQ,
+    IntensityQxy,
     Numerator,
     QBins,
     QxBins,
@@ -181,9 +181,9 @@ def make_sample_run_workflow(
     try:
         workflow.compute(Filename[BackgroundRun])
     except sciline.UnsatisfiedRequirement:
-        iofq_keys = (IofQ[SampleRun], IofQxy[SampleRun])
+        iofq_keys = (IntensityQ[SampleRun], IntensityQxy[SampleRun])
     else:
-        iofq_keys = (BackgroundSubtractedIofQ, BackgroundSubtractedIofQxy)
+        iofq_keys = (BackgroundSubtractedIntensityQ, BackgroundSubtractedIntensityQxy)
     outputs.update(dict(zip(('I(Q)', '$I(Q_x, Q_y)$'), iofq_keys, strict=True)))
     factories = AccumulatorFactories(accum=streaming.RollingAccumulator, window=20)
 

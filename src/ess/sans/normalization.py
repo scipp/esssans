@@ -16,9 +16,9 @@ from .types import (
     DetectorPixelShape,
     EmptyBeamRun,
     Incident,
-    IofQ,
-    IofQPart,
-    IofQxy,
+    IntensityQ,
+    IntensityQPart,
+    IntensityQxy,
     MaskedSolidAngle,
     MonitorTerm,
     Numerator,
@@ -406,17 +406,17 @@ def _reduce(part: sc.DataArray, /, *, bands: ProcessedWavelengthBands) -> sc.Dat
 
 
 def reduce_q(
-    data: WavelengthScaledQ[ScatteringRunType, IofQPart],
+    data: WavelengthScaledQ[ScatteringRunType, IntensityQPart],
     bands: ProcessedWavelengthBands,
-) -> ReducedQ[ScatteringRunType, IofQPart]:
-    return ReducedQ[ScatteringRunType, IofQPart](_reduce(data, bands=bands))
+) -> ReducedQ[ScatteringRunType, IntensityQPart]:
+    return ReducedQ[ScatteringRunType, IntensityQPart](_reduce(data, bands=bands))
 
 
 def reduce_qxy(
-    data: WavelengthScaledQxy[ScatteringRunType, IofQPart],
+    data: WavelengthScaledQxy[ScatteringRunType, IntensityQPart],
     bands: ProcessedWavelengthBands,
-) -> ReducedQxy[ScatteringRunType, IofQPart]:
-    return ReducedQxy[ScatteringRunType, IofQPart](_reduce(data, bands=bands))
+) -> ReducedQxy[ScatteringRunType, IntensityQPart]:
+    return ReducedQxy[ScatteringRunType, IntensityQPart](_reduce(data, bands=bands))
 
 
 def normalize_q(
@@ -424,8 +424,8 @@ def normalize_q(
     denominator: ReducedQ[ScatteringRunType, Denominator],
     return_events: ReturnEvents,
     uncertainties: UncertaintyBroadcastMode,
-) -> IofQ[ScatteringRunType]:
-    return IofQ[ScatteringRunType](
+) -> IntensityQ[ScatteringRunType]:
+    return IntensityQ[ScatteringRunType](
         _normalize(
             numerator=numerator,
             denominator=denominator,
@@ -440,8 +440,8 @@ def normalize_qxy(
     denominator: ReducedQxy[ScatteringRunType, Denominator],
     return_events: ReturnEvents,
     uncertainties: UncertaintyBroadcastMode,
-) -> IofQxy[ScatteringRunType]:
-    return IofQxy[ScatteringRunType](
+) -> IntensityQxy[ScatteringRunType]:
+    return IntensityQxy[ScatteringRunType](
         _normalize(
             numerator=numerator,
             denominator=denominator,

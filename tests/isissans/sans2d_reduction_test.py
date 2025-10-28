@@ -12,7 +12,7 @@ from ess import sans
 from ess.isissans import MonitorOffset, SampleOffset, sans2d
 from ess.sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIntensityQ,
     BeamCenter,
     EmptyDetector,
     CorrectForGravity,
@@ -23,7 +23,7 @@ from ess.sans.types import (
     EmptyBeamRun,
     Filename,
     Incident,
-    IofQ,
+    IntensityQ,
     MaskedData,
     NeXusMonitorName,
     NonBackgroundWavelengthRange,
@@ -103,36 +103,36 @@ def pipeline():
 
 
 def test_can_create_pipeline(pipeline):
-    pipeline.get(IofQ[SampleRun])
+    pipeline.get(IntensityQ[SampleRun])
 
 
 @pytest.mark.parametrize(
     'uncertainties',
     [UncertaintyBroadcastMode.drop, UncertaintyBroadcastMode.upper_bound],
 )
-def test_pipeline_can_compute_background_subtracted_IofQ(pipeline, uncertainties):
+def test_pipeline_can_compute_background_subtracted_IntensityQ(pipeline, uncertainties):
     pipeline[UncertaintyBroadcastMode] = uncertainties
-    result = pipeline.compute(BackgroundSubtractedIofQ)
+    result = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('Q',)
 
 
-def test_pipeline_can_compute_background_subtracted_IofQ_in_wavelength_bands(pipeline):
+def test_pipeline_can_compute_background_subtracted_IntensityQ_in_wavelength_bands(pipeline):
     pipeline[WavelengthBands] = sc.linspace(
         'wavelength', start=2.0, stop=16.0, num=11, unit='angstrom'
     )
-    result = pipeline.compute(BackgroundSubtractedIofQ)
+    result = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('band', 'Q')
     assert result.sizes['band'] == 10
 
 
 def test_pipeline_wavelength_bands_is_optional(pipeline):
     pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
-    noband = pipeline.compute(BackgroundSubtractedIofQ)
+    noband = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert pipeline.compute(WavelengthBands) is None
     band = sc.linspace('wavelength', 2.0, 16.0, num=2, unit='angstrom')
     pipeline[WavelengthBands] = band
     assert sc.identical(band, pipeline.compute(WavelengthBands))
-    withband = pipeline.compute(BackgroundSubtractedIofQ)
+    withband = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert sc.identical(noband, withband)
 
 
@@ -141,7 +141,7 @@ def test_workflow_is_deterministic(pipeline):
     pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
     # This is Sciline's default scheduler, but we want to be explicit here
     scheduler = sciline.scheduler.DaskScheduler()
-    graph = pipeline.get(IofQ[SampleRun], scheduler=scheduler)
+    graph = pipeline.get(IntensityQ[SampleRun], scheduler=scheduler)
     reference = graph.compute().data
     result = graph.compute().data
     assert sc.identical(sc.values(result), sc.values(reference))
@@ -153,7 +153,7 @@ def test_pipeline_raises_VariancesError_if_normalization_errors_not_dropped(pipe
     )
     pipeline[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.fail
     with pytest.raises(sc.VariancesError):
-        pipeline.compute(BackgroundSubtractedIofQ)
+        pipeline.compute(BackgroundSubtractedIntensityQ)
 
 
 def test_uncertainty_broadcast_mode_drop_yields_smaller_variances(pipeline):
@@ -162,14 +162,14 @@ def test_uncertainty_broadcast_mode_drop_yields_smaller_variances(pipeline):
         dim='Q', start=0.01, stop=0.5, num=141, unit='1/angstrom'
     )
     pipeline[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.drop
-    drop = pipeline.compute(IofQ[SampleRun]).data
+    drop = pipeline.compute(IntensityQ[SampleRun]).data
     pipeline[UncertaintyBroadcastMode] = UncertaintyBroadcastMode.upper_bound
-    upper_bound = pipeline.compute(IofQ[SampleRun]).data
+    upper_bound = pipeline.compute(IntensityQ[SampleRun]).data
     assert sc.all(sc.variances(drop) < sc.variances(upper_bound)).value
 
 
-def test_pipeline_can_visualize_background_subtracted_IofQ(pipeline):
-    pipeline.visualize(BackgroundSubtractedIofQ)
+def test_pipeline_can_visualize_background_subtracted_IntensityQ(pipeline):
+    pipeline.visualize(BackgroundSubtractedIntensityQ)
 
 
 def test_pipeline_can_compute_intermediate_results(pipeline):
@@ -193,7 +193,7 @@ def test_pixel_dependent_direct_beam_is_supported(pipeline, uncertainties):
     pipeline[UncertaintyBroadcastMode] = uncertainties
     pipeline.insert(pixel_dependent_direct_beam)
     pipeline[BeamCenter] = sc.vector([0, 0, 0], unit='m')
-    result = pipeline.compute(BackgroundSubtractedIofQ)
+    result = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('Q',)
 
 
@@ -202,7 +202,7 @@ MANTID_BEAM_CENTER = sc.vector([0.09288, -0.08195, 0], unit='m')
 
 def test_beam_center_from_center_of_mass_is_close_to_verified_result(pipeline):
     center = sans.beam_center_from_center_of_mass(pipeline)
-    # This is the result obtained from Mantid, using the full IofQ
+    # This is the result obtained from Mantid, using the full IntensityQ
     # calculation. The difference is about 3 mm in X or Y, probably due to a bias
     # introduced by the sample holder, which the center-of-mass approach cannot ignore.
     assert sc.allclose(center, MANTID_BEAM_CENTER, atol=sc.scalar(3e-3, unit='m'))
@@ -288,5 +288,5 @@ def test_workflow_runs_without_gravity_if_beam_center_is_provided(pipeline):
     del da.coords['gravity']
     pipeline[RawDetector[SampleRun]] = da
     pipeline[BeamCenter] = MANTID_BEAM_CENTER
-    result = pipeline.compute(BackgroundSubtractedIofQ)
+    result = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('Q',)

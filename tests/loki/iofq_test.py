@@ -14,16 +14,16 @@ from ess import loki, sans
 from ess.sans.conversions import ElasticCoordTransformGraph
 from ess.sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
     BeamCenter,
     CorrectedDetector,
     CorrectForGravity,
     Denominator,
     DimsToKeep,
     Filename,
-    IofQ,
-    IofQxy,
+    IntensityQ,
+    IntensityQxy,
     MaskedData,
     Numerator,
     QBins,
@@ -44,7 +44,7 @@ from common import make_workflow
 def test_can_create_pipeline():
     pipeline = make_workflow()
     pipeline[BeamCenter] = sc.vector([0, 0, 0], unit='m')
-    pipeline.get(BackgroundSubtractedIofQ)
+    pipeline.get(BackgroundSubtractedIntensityQ)
 
 
 def test_can_create_pipeline_with_pixel_masks():
@@ -53,7 +53,7 @@ def test_can_create_pipeline_with_pixel_masks():
         pipeline, loki.data.loki_tutorial_mask_filenames()
     )
     pipeline[BeamCenter] = sc.vector([0, 0, 0], unit='m')
-    pipeline.get(BackgroundSubtractedIofQ)
+    pipeline.get(BackgroundSubtractedIntensityQ)
 
 
 @pytest.mark.parametrize(
@@ -61,7 +61,7 @@ def test_can_create_pipeline_with_pixel_masks():
     [UncertaintyBroadcastMode.drop, UncertaintyBroadcastMode.upper_bound],
 )
 @pytest.mark.parametrize('qxy', [False, True])
-def test_pipeline_can_compute_IofQ(uncertainties, qxy: bool):
+def test_pipeline_can_compute_IntensityQ(uncertainties, qxy: bool):
     pipeline = make_workflow(no_masks=False)
     pipeline[UncertaintyBroadcastMode] = uncertainties
     pipeline = sans.with_pixel_mask_filenames(
@@ -69,20 +69,20 @@ def test_pipeline_can_compute_IofQ(uncertainties, qxy: bool):
     )
     pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
     if qxy:
-        result = pipeline.compute(BackgroundSubtractedIofQxy)
+        result = pipeline.compute(BackgroundSubtractedIntensityQxy)
         assert result.dims == ('Qy', 'Qx')
         assert sc.identical(result.coords['Qx'], pipeline.compute(QxBins))
         assert sc.identical(result.coords['Qy'], pipeline.compute(QyBins))
         assert result.sizes['Qx'] == 90
         assert result.sizes['Qy'] == 77
     else:
-        result = pipeline.compute(BackgroundSubtractedIofQ)
+        result = pipeline.compute(BackgroundSubtractedIntensityQ)
         assert result.dims == ('Q',)
         assert sc.identical(result.coords['Q'], pipeline.compute(QBins))
         assert result.sizes['Q'] == 100
     if uncertainties == UncertaintyBroadcastMode.drop:
         test_dir = os.path.dirname(os.path.abspath(__file__))
-        name = Path(f'reference_IofQ{"xy" if qxy else ""}_{uncertainties}.hdf5')
+        name = Path(f'reference_IntensityQ{"xy" if qxy else ""}_{uncertainties}.hdf5')
         reference = sc.io.load_hdf5(test_dir / name)
         assert_identical(result, reference)
 
@@ -94,20 +94,20 @@ def test_pipeline_can_compute_IofQ(uncertainties, qxy: bool):
 @pytest.mark.parametrize(
     'target',
     [
-        IofQ[SampleRun],
-        IofQxy[SampleRun],
-        BackgroundSubtractedIofQ,
-        BackgroundSubtractedIofQxy,
+        IntensityQ[SampleRun],
+        IntensityQxy[SampleRun],
+        BackgroundSubtractedIntensityQ,
+        BackgroundSubtractedIntensityQxy,
     ],
 )
-def test_pipeline_can_compute_IofQ_in_event_mode(uncertainties, target):
+def test_pipeline_can_compute_IntensityQ_in_event_mode(uncertainties, target):
     pipeline = make_workflow()
     pipeline[UncertaintyBroadcastMode] = uncertainties
     pipeline[BeamCenter] = sans.beam_center_from_center_of_mass(pipeline)
     reference = pipeline.compute(target)
     pipeline[ReturnEvents] = True
     result = pipeline.compute(target)
-    qxy = target in (IofQxy[SampleRun], BackgroundSubtractedIofQxy)
+    qxy = target in (IntensityQxy[SampleRun], BackgroundSubtractedIntensityQxy)
     assert result.bins is not None
     assert result.dims == ('Qy', 'Qx') if qxy else ('Q',)
     assert sc.allclose(
@@ -133,7 +133,7 @@ def test_pipeline_can_compute_IofQ_in_event_mode(uncertainties, target):
 
 
 @pytest.mark.parametrize('qxy', [False, True])
-def test_pipeline_can_compute_IofQ_in_wavelength_bands(qxy: bool):
+def test_pipeline_can_compute_IntensityQ_in_wavelength_bands(qxy: bool):
     pipeline = make_workflow()
     pipeline[WavelengthBands] = sc.linspace(
         'wavelength',
@@ -143,14 +143,14 @@ def test_pipeline_can_compute_IofQ_in_wavelength_bands(qxy: bool):
     )
     pipeline[BeamCenter] = _compute_beam_center()
     result = pipeline.compute(
-        BackgroundSubtractedIofQxy if qxy else BackgroundSubtractedIofQ
+        BackgroundSubtractedIntensityQxy if qxy else BackgroundSubtractedIntensityQ
     )
     assert result.dims == ('band', 'Qy', 'Qx') if qxy else ('band', 'Q')
     assert result.sizes['band'] == 10
 
 
 @pytest.mark.parametrize('qxy', [False, True])
-def test_pipeline_can_compute_IofQ_in_overlapping_wavelength_bands(qxy: bool):
+def test_pipeline_can_compute_IntensityQ_in_overlapping_wavelength_bands(qxy: bool):
     pipeline = make_workflow()
     # Bands have double the width
     edges = pipeline.compute(WavelengthBins)
@@ -160,19 +160,19 @@ def test_pipeline_can_compute_IofQ_in_overlapping_wavelength_bands(qxy: bool):
     ).transpose()
     pipeline[BeamCenter] = _compute_beam_center()
     result = pipeline.compute(
-        BackgroundSubtractedIofQxy if qxy else BackgroundSubtractedIofQ
+        BackgroundSubtractedIntensityQxy if qxy else BackgroundSubtractedIntensityQ
     )
     assert result.dims == ('band', 'Qy', 'Qx') if qxy else ('band', 'Q')
     assert result.sizes['band'] == 10
 
 
 @pytest.mark.parametrize('qxy', [False, True])
-def test_pipeline_can_compute_IofQ_in_layers(qxy: bool):
+def test_pipeline_can_compute_IntensityQ_in_layers(qxy: bool):
     pipeline = make_workflow()
     pipeline[DimsToKeep] = ['layer']
     pipeline[BeamCenter] = _compute_beam_center()
     result = pipeline.compute(
-        BackgroundSubtractedIofQxy if qxy else BackgroundSubtractedIofQ
+        BackgroundSubtractedIntensityQxy if qxy else BackgroundSubtractedIntensityQ
     )
     assert result.dims == ('layer', 'Qy', 'Qx') if qxy else ('layer', 'Q')
     assert result.sizes['layer'] == 4
@@ -182,7 +182,7 @@ def _compute_beam_center():
     return sans.beam_center_from_center_of_mass(make_workflow())
 
 
-def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs():
+def test_pipeline_can_compute_IntensityQ_merging_events_from_multiple_runs():
     sample_runs = [
         loki.data.loki_tutorial_sample_run_60250(),
         loki.data.loki_tutorial_sample_run_60339(),
@@ -200,22 +200,22 @@ def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs():
     pipeline = sans.with_sample_runs(pipeline, runs=sample_runs)
     pipeline = sans.with_background_runs(pipeline, runs=background_runs)
 
-    result = pipeline.compute(BackgroundSubtractedIofQ)
+    result = pipeline.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('Q',)
-    result = pipeline.compute(BackgroundSubtractedIofQxy)
+    result = pipeline.compute(BackgroundSubtractedIntensityQxy)
     assert result.dims == ('Qy', 'Qx')
 
 
-def test_pipeline_can_compute_IofQ_by_bank():
+def test_pipeline_can_compute_IntensityQ_by_bank():
     pipeline = make_workflow()
     pipeline[BeamCenter] = _compute_beam_center()
     pipeline = sans.with_banks(pipeline, banks=['larmor_detector'])
 
-    results = sciline.compute_mapped(pipeline, BackgroundSubtractedIofQ)
+    results = sciline.compute_mapped(pipeline, BackgroundSubtractedIntensityQ)
     assert results['larmor_detector'].dims == ('Q',)
 
 
-def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs_by_bank():
+def test_pipeline_can_compute_IntensityQ_merging_events_from_multiple_runs_by_bank():
     sample_runs = [
         loki.data.loki_tutorial_sample_run_60250(),
         loki.data.loki_tutorial_sample_run_60339(),
@@ -229,7 +229,7 @@ def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs_by_bank():
 
     pipeline = sans.with_sample_runs(pipeline, runs=sample_runs)
     pipeline = sans.with_background_runs(pipeline, runs=background_runs)
-    key = BackgroundSubtractedIofQ
+    key = BackgroundSubtractedIntensityQ
     reference = pipeline.compute(key)
 
     pipeline = sans.with_banks(
@@ -241,7 +241,7 @@ def test_pipeline_can_compute_IofQ_merging_events_from_multiple_runs_by_bank():
     assert_identical(sc.values(results['bank1']), sc.values(reference))
 
 
-def test_pipeline_IofQ_merging_events_yields_consistent_results():
+def test_pipeline_IntensityQ_merging_events_yields_consistent_results():
     N = 3
     center = _compute_beam_center()
     pipeline_single = make_workflow()
@@ -252,8 +252,8 @@ def test_pipeline_IofQ_merging_events_yields_consistent_results():
     pipeline_triple = sans.with_sample_runs(pipeline_single, runs=sample_runs)
     pipeline_triple = sans.with_background_runs(pipeline_triple, runs=background_runs)
 
-    iofq1 = pipeline_single.compute(BackgroundSubtractedIofQ)
-    iofq3 = pipeline_triple.compute(BackgroundSubtractedIofQ)
+    iofq1 = pipeline_single.compute(BackgroundSubtractedIntensityQ)
+    iofq3 = pipeline_triple.compute(BackgroundSubtractedIntensityQ)
     assert sc.allclose(sc.values(iofq1.data), sc.values(iofq3.data))
     assert sc.identical(iofq1.coords['Q'], iofq3.coords['Q'])
     assert all(sc.variances(iofq1.data) > sc.variances(iofq3.data))

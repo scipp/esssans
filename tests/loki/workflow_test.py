@@ -11,10 +11,10 @@ from ess.loki import LokiAtLarmorWorkflow
 from ess.reduce import workflow
 from ess.sans.types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
+    BackgroundSubtractedIntensityQ,
     BeamCenter,
     Filename,
-    IofQ,
+    IntensityQ,
     PixelMaskFilename,
     QBins,
     ReturnEvents,
@@ -40,7 +40,7 @@ def test_sans_workflow_registers_subclasses():
 
 def test_loki_workflow_parameters_returns_filtered_params():
     wf = LokiAtLarmorWorkflow()
-    parameters = workflow.get_parameters(wf, (IofQ[SampleRun],))
+    parameters = workflow.get_parameters(wf, (IntensityQ[SampleRun],))
     assert Filename[SampleRun] in parameters
     assert Filename[BackgroundRun] not in parameters
 
@@ -64,7 +64,7 @@ def test_loki_workflow_compute_with_single_pixel_mask():
     # For simplicity, insert a fake beam center instead of computing it.
     wf[BeamCenter] = sc.vector([0.0, 0.0, 0.0], unit='m')
 
-    result = wf.compute(BackgroundSubtractedIofQ)
+    result = wf.compute(BackgroundSubtractedIntensityQ)
     assert result.dims == ('Q',)
     assert sc.identical(result.coords['Q'], wf.compute(QBins))
     assert result.sizes['Q'] == 100

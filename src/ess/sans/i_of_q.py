@@ -9,17 +9,17 @@ from .common import mask_range
 from .logging import get_logger
 from .types import (
     BackgroundRun,
-    BackgroundSubtractedIofQ,
-    BackgroundSubtractedIofQxy,
+    BackgroundSubtractedIntensityQ,
+    BackgroundSubtractedIntensityQxy,
     CleanDirectBeam,
     CorrectedMonitor,
     CorrectedQ,
     CorrectedQxy,
     DimsToKeep,
     DirectBeam,
-    IofQ,
-    IofQPart,
-    IofQxy,
+    IntensityQ,
+    IntensityQPart,
+    IntensityQxy,
     MonitorType,
     NonBackgroundWavelengthRange,
     QBins,
@@ -148,11 +148,11 @@ def _subtract_background(
 
 
 def subtract_background(
-    sample: IofQ[SampleRun],
-    background: IofQ[BackgroundRun],
+    sample: IntensityQ[SampleRun],
+    background: IntensityQ[BackgroundRun],
     return_events: ReturnEvents,
-) -> BackgroundSubtractedIofQ:
-    return BackgroundSubtractedIofQ(
+) -> BackgroundSubtractedIntensityQ:
+    return BackgroundSubtractedIntensityQ(
         _subtract_background(
             sample=sample, background=background, return_events=return_events
         )
@@ -160,11 +160,11 @@ def subtract_background(
 
 
 def subtract_background_xy(
-    sample: IofQxy[SampleRun],
-    background: IofQxy[BackgroundRun],
+    sample: IntensityQxy[SampleRun],
+    background: IntensityQxy[BackgroundRun],
     return_events: ReturnEvents,
-) -> BackgroundSubtractedIofQxy:
-    return BackgroundSubtractedIofQxy(
+) -> BackgroundSubtractedIntensityQxy:
+    return BackgroundSubtractedIntensityQxy(
         _subtract_background(
             sample=sample, background=background, return_events=return_events
         )

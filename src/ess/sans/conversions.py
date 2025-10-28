@@ -21,7 +21,7 @@ from .types import (
     CorrectForGravity,
     Denominator,
     DimsToKeep,
-    IofQPart,
+    IntensityQPart,
     MaskedData,
     MonitorTerm,
     MonitorType,
@@ -236,11 +236,11 @@ def _compute_Q(
 
 
 def compute_Q(
-    data: CorrectedDetector[ScatteringRunType, IofQPart],
+    data: CorrectedDetector[ScatteringRunType, IntensityQPart],
     q_bins: QBins,
     dims_to_keep: DimsToKeep,
     graph: ElasticCoordTransformGraph,
-) -> CorrectedQ[ScatteringRunType, IofQPart]:
+) -> CorrectedQ[ScatteringRunType, IntensityQPart]:
     """
     Convert a data array from wavelength to Q.
     We then combine data from all pixels into a single I(Q) spectrum:
@@ -265,7 +265,7 @@ def compute_Q(
     :
         The input data converted to Q and then summed over all detector pixels.
     """
-    return CorrectedQ[ScatteringRunType, IofQPart](
+    return CorrectedQ[ScatteringRunType, IntensityQPart](
         _compute_Q(
             data=data,
             graph=graph,
@@ -277,12 +277,12 @@ def compute_Q(
 
 
 def compute_Qxy(
-    data: CorrectedDetector[ScatteringRunType, IofQPart],
+    data: CorrectedDetector[ScatteringRunType, IntensityQPart],
     qx_bins: QxBins,
     qy_bins: QyBins,
     dims_to_keep: DimsToKeep,
     graph: ElasticCoordTransformGraph,
-) -> CorrectedQxy[ScatteringRunType, IofQPart]:
+) -> CorrectedQxy[ScatteringRunType, IntensityQPart]:
     """
     Convert a data array from wavelength to Qx and Qy.
     We then combine data from all pixels into a single I(Qx, Qy) spectrum:
@@ -309,7 +309,7 @@ def compute_Qxy(
     :
         The input data converted to Qx and Qy and then summed over all detector pixels.
     """
-    return CorrectedQxy[ScatteringRunType, IofQPart](
+    return CorrectedQxy[ScatteringRunType, IntensityQPart](
         _compute_Q(
             data=data,
             graph=graph,
