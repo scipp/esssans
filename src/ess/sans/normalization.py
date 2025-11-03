@@ -17,8 +17,8 @@ from .types import (
     EmptyDetector,
     Incident,
     IntensityQ,
-    IntensityQxQy,
     IntensityQPart,
+    IntensityQxQy,
     MaskedSolidAngle,
     MonitorTerm,
     NeXusTransformation,
@@ -90,11 +90,11 @@ def solid_angle(
     )
 
 
-def mask_solid_angle(
-    solid_angle: SolidAngle[ScatteringRunType],
-    masks: DetectorMasks,
-) -> MaskedSolidAngle[ScatteringRunType]:
-    return MaskedSolidAngle[ScatteringRunType](solid_angle.assign_masks(masks))
+# def mask_solid_angle(
+#     solid_angle: SolidAngle[ScatteringRunType],
+#     masks: DetectorMasks,
+# ) -> MaskedSolidAngle[ScatteringRunType]:
+#     return MaskedSolidAngle[ScatteringRunType](solid_angle.assign_masks(masks))
 
 
 def _approximate_solid_angle_for_cylinder_shaped_pixel_of_detector(
@@ -209,12 +209,14 @@ def norm_monitor_term(
 
 
 def norm_detector_term(
-    solid_angle: MaskedSolidAngle[ScatteringRunType],
+    solid_angle: SolidAngle[ScatteringRunType],
+    masks: DetectorMasks,
     direct_beam: CleanDirectBeam,
     uncertainties: UncertaintyBroadcastMode,
 ) -> CorrectedDetector[ScatteringRunType, Denominator]:
     """
-    Compute the detector-dependent contribution to the denominator term of I(Q).
+    Compute the detector-dependent contribution to the denominator term of I(Q), with
+    masking correction applied.
 
     This is basically ``solid_angle * direct_beam``.
     If the direct beam is not supplied, it is assumed to be 1.
@@ -232,6 +234,8 @@ def norm_detector_term(
     ----------
     solid_angle:
         The solid angle of the detector pixels, as viewed from the sample position.
+    masks:
+        Pixel masks to apply to the solid angle.
     direct_beam:
         The direct beam function (depends on wavelength).
     uncertainties:
@@ -248,7 +252,7 @@ def norm_detector_term(
     dims.remove('wavelength')
     dims.append('wavelength')
     direct_beam = direct_beam.transpose(dims)
-    out = solid_angle * broadcast_uncertainties(
+    out = solid_angle.assign_masks(masks) * broadcast_uncertainties(
         direct_beam, prototype=solid_angle, mode=uncertainties
     )
     # Convert wavelength coordinate to midpoints for future histogramming
@@ -472,5 +476,5 @@ providers = (
     normalize_qxy,
     process_wavelength_bands,
     solid_angle,
-    mask_solid_angle,
+    # mask_solid_angle,
 )

@@ -51,24 +51,24 @@ def to_detector_mask(
     return DetectorMasks({str(path): mask})
 
 
-def apply_pixel_masks(
-    data: TofDetector[ScatteringRunType],
-    masks: DetectorMasks,
-) -> MaskedData[ScatteringRunType]:
-    """Apply pixel-specific masks to raw data.
+# def apply_pixel_masks(
+#     data: TofDetector[ScatteringRunType],
+#     masks: DetectorMasks,
+# ) -> MaskedData[ScatteringRunType]:
+#     """Apply pixel-specific masks to raw data.
 
-    Parameters
-    ----------
-    data:
-        Raw data with configured component positions.
-    masks:
-        A series of masks.
-    """
-    return MaskedData[ScatteringRunType](data.assign_masks(masks))
+#     Parameters
+#     ----------
+#     data:
+#         Raw data with configured component positions.
+#     masks:
+#         A series of masks.
+#     """
+#     return MaskedData[ScatteringRunType](data.assign_masks(masks))
 
 
 providers = (
     get_detector_ids_from_detector,
     to_detector_mask,
-    apply_pixel_masks,
+    # apply_pixel_masks,
 )

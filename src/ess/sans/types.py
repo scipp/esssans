@@ -182,8 +182,8 @@ class TofMonitor(sciline.Scope[RunType, MonitorType, sc.DataGroup], sc.DataGroup
 PixelMask = NewType('PixelMask', sc.Variable)
 
 
-class MaskedData(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
-    """Raw data with pixel-specific masks applied"""
+# class MaskedData(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
+#     """Raw data with pixel-specific masks applied"""
 
 
 class MonitorTerm(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):

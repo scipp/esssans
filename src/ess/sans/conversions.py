@@ -18,10 +18,11 @@ from .types import (
     CorrectedQxQy,
     CorrectForGravity,
     Denominator,
+    DetectorMasks,
     DimsToKeep,
     GravityVector,
     IntensityQPart,
-    MaskedData,
+    # MaskedData,
     MonitorTerm,
     MonitorType,
     Numerator,
@@ -31,6 +32,7 @@ from .types import (
     QyBins,
     RunType,
     ScatteringRunType,
+    TofDetector,
     TofMonitor,
     UncertaintyBroadcastMode,
     WavelengthMask,
@@ -194,12 +196,14 @@ def monitor_to_wavelength(
 # TODO This demonstrates a problem: Transforming to wavelength should be possible
 # for RawData, MaskedData, ... no reason to restrict necessarily.
 # Would we be fine with just choosing on option, or will this get in the way for users?
-def detector_to_wavelength(
-    detector: MaskedData[ScatteringRunType],
+def apply_detector_masks_and_compute_wavelength(
+    detector: TofDetector[ScatteringRunType],
+    masks: DetectorMasks,
     graph: ElasticCoordTransformGraph[ScatteringRunType],
 ) -> CorrectedDetector[ScatteringRunType, Numerator]:
+    masked = detector.assign_masks(masks)
     return CorrectedDetector[ScatteringRunType, Numerator](
-        detector.transform_coords('wavelength', graph=graph, keep_inputs=False)
+        masked.transform_coords('wavelength', graph=graph, keep_inputs=False)
     )
 
 
@@ -352,7 +356,7 @@ providers = (
     sans_elastic,
     sans_monitor,
     monitor_to_wavelength,
-    detector_to_wavelength,
+    apply_detector_masks_and_compute_wavelength,
     mask_wavelength_q,
     mask_wavelength_qxy,
     mask_and_scale_wavelength_q,
