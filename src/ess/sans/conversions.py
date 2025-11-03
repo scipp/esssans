@@ -13,9 +13,7 @@ from ess.reduce.uncertainty import broadcast_uncertainties
 
 from .common import mask_range
 from .types import (
-    CleanSummedQ,
-    CleanSummedQxy,
-    CleanWavelength,
+    CorrectedDetector,
     CorrectedDetector,
     CorrectedQ,
     CorrectedQxy,
@@ -200,14 +198,14 @@ def monitor_to_wavelength(
 def detector_to_wavelength(
     detector: MaskedData[ScatteringRunType],
     graph: ElasticCoordTransformGraph[ScatteringRunType],
-) -> CleanWavelength[ScatteringRunType, Numerator]:
-    return CleanWavelength[ScatteringRunType, Numerator](
+) -> CorrectedDetector[ScatteringRunType, Numerator]:
+    return CorrectedDetector[ScatteringRunType, Numerator](
         detector.transform_coords('wavelength', graph=graph, keep_inputs=False)
     )
 
 
 def mask_wavelength_q(
-    da: CleanSummedQ[ScatteringRunType, Numerator], mask: WavelengthMask
+    da: CorrectedQ[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQ[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -215,7 +213,7 @@ def mask_wavelength_q(
 
 
 def mask_wavelength_qxy(
-    da: CleanSummedQxy[ScatteringRunType, Numerator], mask: WavelengthMask
+    da: CorrectedQxy[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQxy[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -223,7 +221,7 @@ def mask_wavelength_qxy(
 
 
 def mask_and_scale_wavelength_q(
-    da: CleanSummedQ[ScatteringRunType, Denominator],
+    da: CorrectedQ[ScatteringRunType, Denominator],
     mask: WavelengthMask,
     wavelength_term: MonitorTerm[ScatteringRunType],
     uncertainties: UncertaintyBroadcastMode,
@@ -235,7 +233,7 @@ def mask_and_scale_wavelength_q(
 
 
 def mask_and_scale_wavelength_qxy(
-    da: CleanSummedQxy[ScatteringRunType, Denominator],
+    da: CorrectedQxy[ScatteringRunType, Denominator],
     mask: WavelengthMask,
     wavelength_term: MonitorTerm[ScatteringRunType],
     uncertainties: UncertaintyBroadcastMode,
