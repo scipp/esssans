@@ -49,7 +49,7 @@ Numerator = NewType('Numerator', sc.DataArray)
 """Numerator of IntensityQ"""
 Denominator = NewType('Denominator', sc.DataArray)
 """Denominator of IntensityQ"""
-IofQPart = TypeVar('IofQPart', Numerator, Denominator)
+IntensityQPart = TypeVar('IntensityQPart', Numerator, Denominator)
 """TypeVar used for specifying Numerator or Denominator of IntensityQ"""
 
 # 1.4  Entry paths in NeXus files
@@ -191,7 +191,7 @@ class MonitorTerm(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
 
 
 class CleanWavelength(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """
     Prerequisite for IofQ numerator or denominator.
@@ -203,44 +203,44 @@ class CleanWavelength(
 
 
 class WavelengthScaledQ(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQ`"""
 
 
 class WavelengthScaledQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQxy`"""
 
 
-class CleanQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
+class CleanQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
     """Result of converting :py:class:`CleanWavelengthMasked` to Q"""
 
 
-class CleanQxy(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
+class CleanQxy(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
     """Result of converting :py:class:`CleanWavelengthMasked` to Qx and Qy"""
 
 
 class CleanSummedQ(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
 
 
 class CleanSummedQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of histogramming/binning :py:class:`CleanQxy` over all pixels into Qx and
     Qy bins"""
 
 
-class ReducedQ(sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray):
+class ReducedQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
     """Result of reducing :py:class:`CleanSummedQ` over the wavelength dimensions"""
 
 
 class ReducedQxy(
-    sciline.Scope[ScatteringRunType, IofQPart, sc.DataArray], sc.DataArray
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of reducing :py:class:`CleanSummedQxy` over the wavelength dimensions"""
 

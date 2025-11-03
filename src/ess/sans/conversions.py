@@ -13,20 +13,25 @@ from ess.reduce.uncertainty import broadcast_uncertainties
 
 from .common import mask_range
 from .types import (
-    CleanQ,
-    CleanQxy,
     CleanSummedQ,
     CleanSummedQxy,
     CleanWavelength,
+    CorrectedDetector,
+    CorrectedQ,
+    CorrectedQxy,
     CorrectForGravity,
     Denominator,
+    DimsToKeep,
     GravityVector,
-    IofQPart,
+    IntensityQPart,
     MaskedData,
     MonitorTerm,
     MonitorType,
     Numerator,
     Position,
+    QBins,
+    QxBins,
+    QyBins,
     RunType,
     ScatteringRunType,
     TofMonitor,
@@ -242,40 +247,107 @@ def mask_and_scale_wavelength_qxy(
 
 
 def _compute_Q(
-    data: sc.DataArray, graph: ElasticCoordTransformGraph, target: tuple[str, ...]
+    data: sc.DataArray,
+    graph: ElasticCoordTransformGraph,
+    target: tuple[str, ...],
+    edges: dict[str, sc.Variable],
+    dims_to_keep: tuple[str, ...],
 ) -> sc.DataArray:
     # Keep naming of wavelength dim, subsequent steps use a (Q[xy], wavelength) binning.
-    return CleanQ[ScatteringRunType, IofQPart](
-        data.transform_coords(
-            target,
-            graph=graph,
-            keep_intermediate=False,
-            rename_dims=False,
-        )
+    data_q = data.transform_coords(
+        target,
+        graph=graph,
+        keep_intermediate=False,
+        rename_dims=False,
+    )
+    dims_to_reduce = set(data_q.dims) - {'wavelength'} - set(dims_to_keep or ())
+    return (data_q.hist if data_q.bins is None else data_q.bin)(
+        **edges, dim=dims_to_reduce
     )
 
 
 def compute_Q(
-    data: CleanWavelength[ScatteringRunType, IofQPart],
-    graph: ElasticCoordTransformGraph[ScatteringRunType],
-) -> CleanQ[ScatteringRunType, IofQPart]:
+    data: CorrectedDetector[ScatteringRunType, IntensityQPart],
+    q_bins: QBins,
+    dims_to_keep: DimsToKeep,
+    graph: ElasticCoordTransformGraph,
+) -> CorrectedQ[ScatteringRunType, IntensityQPart]:
     """
     Convert a data array from wavelength to Q.
+    We then combine data from all pixels into a single I(Q) spectrum:
+
+    * In the case of event data, events in all bins are concatenated
+    * In the case of dense data, counts in all spectra are summed
+
+    Parameters
+    ----------
+    data:
+        A DataArray containing the data that is to be converted to Q.
+    q_bins:
+        The binning in Q to be used.
+    dims_to_keep:
+        Dimensions that should not be reduced and thus still be present in the final
+        I(Q) result (this is typically the layer dimension).
+    graph:
+        The coordinate transformation graph to use.
+
+    Returns
+    -------
+    :
+        The input data converted to Q and then summed over all detector pixels.
     """
-    return CleanQ[ScatteringRunType, IofQPart](
-        _compute_Q(data=data, graph=graph, target=('Q',))
+    return CorrectedQ[ScatteringRunType, IntensityQPart](
+        _compute_Q(
+            data=data,
+            graph=graph,
+            target=('Q',),
+            edges={'Q': q_bins},
+            dims_to_keep=dims_to_keep,
+        )
     )
 
 
 def compute_Qxy(
-    data: CleanWavelength[ScatteringRunType, IofQPart],
-    graph: ElasticCoordTransformGraph[ScatteringRunType],
-) -> CleanQxy[ScatteringRunType, IofQPart]:
+    data: CorrectedDetector[ScatteringRunType, IntensityQPart],
+    qx_bins: QxBins,
+    qy_bins: QyBins,
+    dims_to_keep: DimsToKeep,
+    graph: ElasticCoordTransformGraph,
+) -> CorrectedQxy[ScatteringRunType, IntensityQPart]:
     """
     Convert a data array from wavelength to Qx and Qy.
+    We then combine data from all pixels into a single I(Qx, Qy) spectrum:
+
+    * In the case of event data, events in all bins are concatenated
+    * In the case of dense data, counts in all spectra are summed
+
+    Parameters
+    ----------
+    data:
+        A DataArray containing the data that is to be converted to Q.
+    qx_bins:
+        The binning in Qx to be used.
+    qy_bins:
+        The binning in Qy to be used.
+    dims_to_keep:
+        Dimensions that should not be reduced and thus still be present in the final
+        I(Qx, Qy) result (this is typically the layer dimension).
+    graph:
+        The coordinate transformation graph to use.
+
+    Returns
+    -------
+    :
+        The input data converted to Qx and Qy and then summed over all detector pixels.
     """
-    return CleanQxy[ScatteringRunType, IofQPart](
-        _compute_Q(data=data, graph=graph, target=('Qx', 'Qy'))
+    return CorrectedQxy[ScatteringRunType, IntensityQPart](
+        _compute_Q(
+            data=data,
+            graph=graph,
+            target=('Qx', 'Qy'),
+            edges={'Qy': qy_bins, 'Qx': qx_bins},
+            dims_to_keep=dims_to_keep,
+        )
     )
 
 

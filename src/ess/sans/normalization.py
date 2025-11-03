@@ -18,7 +18,7 @@ from .types import (
     Incident,
     IntensityQ,
     IntensityQxQy,
-    IofQPart,
+    IntensityQPart,
     MaskedSolidAngle,
     MonitorTerm,
     NeXusTransformation,
@@ -411,17 +411,17 @@ def _reduce(part: sc.DataArray, /, *, bands: ProcessedWavelengthBands) -> sc.Dat
 
 
 def reduce_q(
-    data: WavelengthScaledQ[ScatteringRunType, IofQPart],
+    data: WavelengthScaledQ[ScatteringRunType, IntensityQPart],
     bands: ProcessedWavelengthBands,
-) -> ReducedQ[ScatteringRunType, IofQPart]:
-    return ReducedQ[ScatteringRunType, IofQPart](_reduce(data, bands=bands))
+) -> ReducedQ[ScatteringRunType, IntensityQPart]:
+    return ReducedQ[ScatteringRunType, IntensityQPart](_reduce(data, bands=bands))
 
 
 def reduce_qxy(
-    data: WavelengthScaledQxy[ScatteringRunType, IofQPart],
+    data: WavelengthScaledQxy[ScatteringRunType, IntensityQPart],
     bands: ProcessedWavelengthBands,
-) -> ReducedQxy[ScatteringRunType, IofQPart]:
-    return ReducedQxy[ScatteringRunType, IofQPart](_reduce(data, bands=bands))
+) -> ReducedQxy[ScatteringRunType, IntensityQPart]:
+    return ReducedQxy[ScatteringRunType, IntensityQPart](_reduce(data, bands=bands))
 
 
 def normalize_q(
