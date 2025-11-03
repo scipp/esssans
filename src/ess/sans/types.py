@@ -190,11 +190,11 @@ class MonitorTerm(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
     """Monitor-dependent factor of the Normalization term (numerator) for IofQ."""
 
 
-class CleanWavelength(
+class CorrectedDetector(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """
-    Prerequisite for IofQ numerator or denominator.
+    Prerequisite for IntensityQ numerator or denominator.
 
     This can either be the sample or background counts, converted to wavelength,
     or the respective normalization terms computed from the respective solid angle,
@@ -214,35 +214,29 @@ class WavelengthScaledQxy(
     """Result of applying wavelength scaling/masking to :py:class:`CleanSummedQxy`"""
 
 
-class CleanQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanWavelengthMasked` to Q"""
-
-
-class CleanQxy(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
-    """Result of converting :py:class:`CleanWavelengthMasked` to Qx and Qy"""
-
-
-class CleanSummedQ(
+class CorrectedQ(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQ` over all pixels into Q bins"""
+    """Result of computing Q coordinate and histogramming/binning into Q bins"""
 
 
-class CleanSummedQxy(
+class CorrectedQxy(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of histogramming/binning :py:class:`CleanQxy` over all pixels into Qx and
-    Qy bins"""
+    """Result of computing Qx and Qy coordinates and histogramming/binning into
+    Qx and Qy bins"""
 
 
-class ReducedQ(sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray):
-    """Result of reducing :py:class:`CleanSummedQ` over the wavelength dimensions"""
+class ReducedQ(
+    sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
+):
+    """Result of reducing :py:class:`CorrectedQ` over the wavelength dimensions"""
 
 
 class ReducedQxy(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of reducing :py:class:`CleanSummedQxy` over the wavelength dimensions"""
+    """Result of reducing :py:class:`CorrectedQxy` over the wavelength dimensions"""
 
 
 class IntensityQ(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):
