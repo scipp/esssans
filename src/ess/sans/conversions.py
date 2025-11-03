@@ -193,9 +193,6 @@ def monitor_to_wavelength(
     )
 
 
-# TODO This demonstrates a problem: Transforming to wavelength should be possible
-# for RawData, MaskedData, ... no reason to restrict necessarily.
-# Would we be fine with just choosing on option, or will this get in the way for users?
 def apply_detector_masks_and_compute_wavelength(
     detector: TofDetector[ScatteringRunType],
     masks: DetectorMasks,

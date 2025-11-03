@@ -11,12 +11,9 @@ from .types import (
     DetectorIDs,
     DetectorMasks,
     EmptyDetector,
-    MaskedData,
     MaskedDetectorIDs,
     PixelMaskFilename,
     SampleRun,
-    ScatteringRunType,
-    TofDetector,
 )
 
 

@@ -24,7 +24,6 @@ from ess.sans.types import (
     Filename,
     IntensityQ,
     IntensityQxQy,
-    MaskedData,
     Numerator,
     QBins,
     QxBins,
@@ -313,7 +312,7 @@ def test_phi_with_gravity():
     # Exclude pixels near y=0, since phi with gravity could drop below y=0 and give a
     # difference of almost 2*pi.
     y = sc.abs(
-        pipeline.compute(MaskedData[SampleRun])
+        pipeline.compute(CorrectedDetector[SampleRun, Numerator])
         .coords['position']
         .fields.y.flatten(to='pixel')
     )
