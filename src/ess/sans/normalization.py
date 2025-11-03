@@ -4,7 +4,7 @@ import scipp as sc
 import scippnexus as snx
 from scipp.core import concepts
 
-from ess.reduce.nexus.types import CalibratedBeamline, NeXusTransformation
+from ess.reduce.nexus.types import NeXusTransformation
 from ess.reduce.uncertainty import UncertaintyBroadcastMode, broadcast_uncertainties
 
 from .types import (
@@ -15,6 +15,7 @@ from .types import (
     DetectorMasks,
     DetectorPixelShape,
     EmptyBeamRun,
+    EmptyDetector,
     Incident,
     IntensityQ,
     IntensityQPart,
@@ -22,6 +23,7 @@ from .types import (
     MaskedSolidAngle,
     MonitorTerm,
     Numerator,
+    Position,
     ProcessedWavelengthBands,
     ReducedQ,
     ReducedQxy,
@@ -39,9 +41,10 @@ from .types import (
 
 
 def solid_angle(
-    data: CalibratedBeamline[ScatteringRunType],
+    data: EmptyDetector[ScatteringRunType],
     pixel_shape: DetectorPixelShape[ScatteringRunType],
     transform: NeXusTransformation[snx.NXdetector, ScatteringRunType],
+    sample_position: Position[snx.NXsample, ScatteringRunType],
 ) -> SolidAngle[ScatteringRunType]:
     """
     Solid angle for cylindrical pixels.
@@ -75,7 +78,7 @@ def solid_angle(
     length = sc.norm(cylinder_axis)
 
     omega = _approximate_solid_angle_for_cylinder_shaped_pixel_of_detector(
-        pixel_position=data.coords['position'] - data.coords['sample_position'],
+        pixel_position=data.coords['position'] - sample_position,
         cylinder_axis=cylinder_axis,
         radius=radius,
         length=length,
