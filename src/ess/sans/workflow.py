@@ -187,6 +187,7 @@ def SansWorkflow() -> sciline.Pipeline:
         monitor_types=(Incident, Transmission),
     )
     for provider in providers:
+        print(provider)
         workflow.insert(provider)
     workflow[CorrectForGravity] = CorrectForGravity(False)
     workflow[DetectorBankSizes] = DetectorBankSizes({})

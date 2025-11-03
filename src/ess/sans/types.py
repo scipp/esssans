@@ -44,7 +44,7 @@ ScatteringRunType = TypeVar('ScatteringRunType', BackgroundRun, SampleRun)
 
 UncertaintyBroadcastMode = _UncertaintyBroadcastMode
 
-# 1.3  Numerator and denominator of IofQ
+# 1.3  Numerator and denominator of IntensityQ
 Numerator = NewType('Numerator', sc.DataArray)
 """Numerator of IntensityQ"""
 Denominator = NewType('Denominator', sc.DataArray)
@@ -220,7 +220,7 @@ class CorrectedQ(
     """Result of computing Q coordinate and histogramming/binning into Q bins"""
 
 
-class CorrectedQxy(
+class CorrectedQxQy(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
     """Result of computing Qx and Qy coordinates and histogramming/binning into
@@ -236,7 +236,7 @@ class ReducedQ(
 class ReducedQxy(
     sciline.Scope[ScatteringRunType, IntensityQPart, sc.DataArray], sc.DataArray
 ):
-    """Result of reducing :py:class:`CorrectedQxy` over the wavelength dimensions"""
+    """Result of reducing :py:class:`CorrectedQxQy` over the wavelength dimensions"""
 
 
 class IntensityQ(sciline.Scope[ScatteringRunType, sc.DataArray], sc.DataArray):

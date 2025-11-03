@@ -14,9 +14,8 @@ from ess.reduce.uncertainty import broadcast_uncertainties
 from .common import mask_range
 from .types import (
     CorrectedDetector,
-    CorrectedDetector,
     CorrectedQ,
-    CorrectedQxy,
+    CorrectedQxQy,
     CorrectForGravity,
     Denominator,
     DimsToKeep,
@@ -213,7 +212,7 @@ def mask_wavelength_q(
 
 
 def mask_wavelength_qxy(
-    da: CorrectedQxy[ScatteringRunType, Numerator], mask: WavelengthMask
+    da: CorrectedQxQy[ScatteringRunType, Numerator], mask: WavelengthMask
 ) -> WavelengthScaledQxy[ScatteringRunType, Numerator]:
     if mask is not None:
         da = mask_range(da, mask=mask)
@@ -233,7 +232,7 @@ def mask_and_scale_wavelength_q(
 
 
 def mask_and_scale_wavelength_qxy(
-    da: CorrectedQxy[ScatteringRunType, Denominator],
+    da: CorrectedQxQy[ScatteringRunType, Denominator],
     mask: WavelengthMask,
     wavelength_term: MonitorTerm[ScatteringRunType],
     uncertainties: UncertaintyBroadcastMode,
@@ -264,7 +263,7 @@ def _compute_Q(
     )
 
 
-def compute_Q(
+def compute_Q_coordinate_and_bin_in_Q(
     data: CorrectedDetector[ScatteringRunType, IntensityQPart],
     q_bins: QBins,
     dims_to_keep: DimsToKeep,
@@ -305,13 +304,13 @@ def compute_Q(
     )
 
 
-def compute_Qxy(
+def compute_Qxy_coordinate_and_bin_in_Qxy(
     data: CorrectedDetector[ScatteringRunType, IntensityQPart],
     qx_bins: QxBins,
     qy_bins: QyBins,
     dims_to_keep: DimsToKeep,
     graph: ElasticCoordTransformGraph,
-) -> CorrectedQxy[ScatteringRunType, IntensityQPart]:
+) -> CorrectedQxQy[ScatteringRunType, IntensityQPart]:
     """
     Convert a data array from wavelength to Qx and Qy.
     We then combine data from all pixels into a single I(Qx, Qy) spectrum:
@@ -338,7 +337,7 @@ def compute_Qxy(
     :
         The input data converted to Qx and Qy and then summed over all detector pixels.
     """
-    return CorrectedQxy[ScatteringRunType, IntensityQPart](
+    return CorrectedQxQy[ScatteringRunType, IntensityQPart](
         _compute_Q(
             data=data,
             graph=graph,
@@ -358,6 +357,6 @@ providers = (
     mask_wavelength_qxy,
     mask_and_scale_wavelength_q,
     mask_and_scale_wavelength_qxy,
-    compute_Q,
-    compute_Qxy,
+    compute_Q_coordinate_and_bin_in_Q,
+    compute_Qxy_coordinate_and_bin_in_Qxy,
 )
