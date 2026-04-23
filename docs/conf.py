@@ -32,6 +32,7 @@ extensions = [
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',
     'sphinx_design',
+    'sphinx_reredirects',
     'sphinxcontrib.autodoc_pydantic',
     'nbsphinx',
     'myst_parser',
@@ -271,3 +272,9 @@ linkcheck_ignore = [
     r'https?://doi\.org/',
     r'https?://dx\.doi\.org/',
 ]
+
+# -- Redirect to new docs --------------------------------------------------
+
+redirects = {
+    "*": "https://scipp.github.io/ess/sans/$source.html",
+}

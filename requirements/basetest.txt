@@ -9,7 +9,7 @@ asttokens==3.0.1
     # via stack-data
 certifi==2026.2.25
     # via requests
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
 comm==0.2.3
     # via ipywidgets
@@ -23,13 +23,13 @@ executing==2.2.1
     # via stack-data
 fonttools==4.62.1
     # via matplotlib
-idna==3.11
+idna==3.12
     # via requests
 iniconfig==2.3.0
     # via pytest
 ipympl==0.10.0
     # via -r basetest.in
-ipython==9.10.0
+ipython==9.10.1
     # via
     #   ipympl
     #   ipywidgets
@@ -47,13 +47,13 @@ matplotlib==3.10.8
     # via ipympl
 matplotlib-inline==0.2.1
     # via ipython
-numpy==2.4.3
+numpy==2.4.4
     # via
     #   contourpy
     #   ipympl
     #   matplotlib
     #   scipy
-packaging==26.0
+packaging==26.1
     # via
     #   matplotlib
     #   pooch
@@ -62,11 +62,11 @@ parso==0.8.6
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==12.1.1
+pillow==12.2.0
     # via
     #   ipympl
     #   matplotlib
-platformdirs==4.9.4
+platformdirs==4.9.6
     # via pooch
 pluggy==1.6.0
     # via pytest
@@ -78,18 +78,18 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   ipython
     #   ipython-pygments-lexers
     #   pytest
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.0.2
+pytest==9.0.3
     # via -r basetest.in
 python-dateutil==2.9.0.post0
     # via matplotlib
-requests==2.33.0
+requests==2.33.1
     # via pooch
 scipy==1.17.1
     # via -r basetest.in
